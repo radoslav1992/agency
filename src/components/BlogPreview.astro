@@ -1,0 +1,145 @@
+---
+import { getPosts, formatDate } from '../lib/posts.ts';
+
+interface Props {
+  limit?: number;
+}
+
+const { limit = 4 } = Astro.props;
+const posts = (await getPosts()).slice(0, limit);
+---
+
+{
+  posts.length > 0 && (
+    <section class="preview container">
+      <header class="head">
+        <div>
+          <p class="eyebrow">Блог</p>
+          <h2 class="section-title">Пиша за AI без магия</h2>
+        </div>
+        <a class="head__link" href="/blog/">
+          Всички публикации →
+        </a>
+      </header>
+
+      <ul class="list">
+        {posts.map((post) => (
+          <li class="row">
+            <a class="row__link" href={`/blog/${post.id}/`}>
+              <time class="row__date" datetime={post.data.pubDate.toISOString()}>
+                {formatDate(post.data.pubDate)}
+              </time>
+              <span class="row__main">
+                <span class="row__title">{post.data.title}</span>
+                <span class="row__excerpt">{post.data.excerpt}</span>
+              </span>
+              <span class="row__tag">{post.data.tag}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .preview {
+    padding-block: 88px;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .head__link {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--accent);
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .row {
+    border-top: 1px solid var(--line);
+  }
+
+  .row__link {
+    display: grid;
+    grid-template-columns: 110px 1fr 150px;
+    gap: 24px;
+    align-items: center;
+    padding: 22px 4px;
+    color: inherit;
+    transition: background-color 0.16s ease;
+  }
+
+  .row__link:hover {
+    background: var(--bg-sand);
+    color: inherit;
+  }
+
+  .row__date {
+    font-size: 13px;
+    color: var(--ink-subtle);
+  }
+
+  .row__title {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .row__excerpt {
+    display: block;
+    font-size: 15px;
+    color: var(--ink-muted);
+    margin-top: 6px;
+  }
+
+  .row__tag {
+    font-size: 12.5px;
+    justify-self: end;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 5px 12px;
+    color: var(--ink-body);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 780px) {
+    .preview {
+      padding-block: 56px;
+    }
+
+    .row__link {
+      grid-template-columns: 1fr auto;
+      gap: 8px 16px;
+      align-items: start;
+    }
+
+    .row__date {
+      order: 1;
+    }
+
+    .row__tag {
+      order: 2;
+    }
+
+    .row__main {
+      order: 3;
+      grid-column: span 2;
+    }
+  }
+</style>

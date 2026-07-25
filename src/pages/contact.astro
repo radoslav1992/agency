@@ -1,0 +1,164 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { SITE } from '../data/site.mjs';
+---
+
+<BaseLayout
+  title="Контакти"
+  description="Пиши на Кова студио — сайт, уеб приложение, AI агент или обучение. Отговарям лично, обикновено до 24 часа."
+  canonical="/contact/"
+>
+  <div class="container wrap">
+    <div class="lead-col">
+      <p class="eyebrow">Контакти</p>
+      <h1 class="title">Да видим има ли смисъл да работим заедно.</h1>
+      <p class="lead">
+        Попълни формата или ми пиши директно. Отговарям лично, обикновено до 24 часа.
+      </p>
+      <ContactForm />
+    </div>
+
+    <aside class="side">
+      <div class="panel panel--dark">
+        <p class="panel__title">Директно до мен</p>
+        <a class="panel__link" href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>
+        <a class="panel__link" href={SITE.owner.linkedin} target="_blank" rel="noopener">
+          {SITE.owner.linkedinLabel}
+        </a>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title panel__title--ink">30 минути разговор</p>
+        <p class="panel__text">Безплатно и без ангажимент. Онлайн или на кафе в София.</p>
+        <a
+          class="panel__cta"
+          href={SITE.bookingUrl ?? `mailto:${SITE.owner.email}?subject=${encodeURIComponent('Разговор 30 мин.')}`}
+          {...SITE.bookingUrl ? { target: '_blank', rel: 'noopener' } : {}}
+        >
+          {SITE.bookingUrl ? 'Избери час в календара' : 'Предложи удобен час'}
+        </a>
+      </div>
+
+      <div class="panel">
+        <p class="panel__address">
+          {SITE.name}<br />{SITE.location}<br />Работим и дистанционно из цялата страна.
+        </p>
+      </div>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: 76px 96px;
+    display: grid;
+    grid-template-columns: 1fr 0.85fr;
+    gap: 56px;
+    align-items: start;
+  }
+
+  .title {
+    font-size: clamp(32px, 5.5vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin: 12px 0 14px;
+  }
+
+  .lead {
+    font-size: 18px;
+    color: var(--ink-muted);
+    margin: 0 0 34px;
+    max-width: 520px;
+  }
+
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 24px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 28px;
+  }
+
+  .panel--dark {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #fff;
+  }
+
+  .panel__title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 0 0 16px;
+  }
+
+  .panel__title--ink {
+    margin-bottom: 10px;
+  }
+
+  .panel__link {
+    display: block;
+    font-size: 16px;
+    color: #fff;
+    word-break: break-word;
+  }
+
+  .panel__link + .panel__link {
+    margin-top: 10px;
+  }
+
+  .panel__link:hover {
+    color: var(--accent-soft);
+    text-decoration: underline;
+  }
+
+  .panel__text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 0 0 16px;
+  }
+
+  .panel__cta {
+    display: inline-block;
+    border: 1px solid var(--ink);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .panel__cta:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .panel__address {
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  @media (max-width: 940px) {
+    .wrap {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      padding-block: 48px 64px;
+    }
+
+    .side {
+      padding-top: 0;
+    }
+  }
+</style>

@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kova-studio",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Cloudflare Pages and Workers are one product now: the whole prerendered
+  // site is uploaded as Worker static assets and only /api/* hits the Worker.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    // Non-secret defaults. Secrets (RESEND_API_KEY) go in
+    // `wrangler secret put` / the Cloudflare dashboard, never here.
+    "CONTACT_TO": "radoslav.dodnikov@gmail.com",
+    "CONTACT_FROM": "Кова студио <onboarding@resend.dev>"
+  }
+}

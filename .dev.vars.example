@@ -1,0 +1,11 @@
+# Copy to `.dev.vars` for local development (`wrangler dev`).
+# In production these live in the Cloudflare dashboard / `wrangler secret put`.
+
+# Resend API key — https://resend.com/api-keys
+RESEND_API_KEY=""
+
+# Inbox that receives contact-form submissions.
+CONTACT_TO="radoslav.dodnikov@gmail.com"
+
+# Verified sender. Until your domain is verified in Resend, use onboarding@resend.dev.
+CONTACT_FROM="Кова студио <onboarding@resend.dev>"

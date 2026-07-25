@@ -1,0 +1,87 @@
+---
+import { SITE } from '../data/site.mjs';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">К</span>
+      <span class="brand__text">© {year} {SITE.name} · {SITE.owner.name}</span>
+    </div>
+    <nav class="links" aria-label="Долна навигация">
+      <a href="/#services">Услуги</a>
+      <a href="/blog/">Блог</a>
+      <a href="/contact/">Контакти</a>
+      <a href={SITE.owner.linkedin} class="links__accent" rel="me noopener" target="_blank">
+        LinkedIn
+      </a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--line);
+    background: var(--bg-sand);
+  }
+
+  .inner {
+    padding-block: 44px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand__mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--accent);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 13px;
+    flex: none;
+  }
+
+  .brand__text {
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    font-size: 14px;
+  }
+
+  .links a {
+    color: var(--ink-muted);
+    transition: color 0.16s ease;
+  }
+
+  .links a:hover {
+    color: var(--ink);
+  }
+
+  .links a.links__accent {
+    color: var(--accent);
+  }
+
+  .links a.links__accent:hover {
+    color: var(--accent-darker);
+  }
+</style>
