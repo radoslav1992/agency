@@ -1,0 +1,323 @@
+---
+import { NEEDS } from '../data/content.ts';
+import { SITE } from '../data/site.mjs';
+---
+
+<form class="form" method="post" action="/api/contact" novalidate data-contact-form>
+  <div class="row">
+    <label class="field">
+      Име
+      <input
+        type="text"
+        name="name"
+        autocomplete="name"
+        placeholder="Име и фамилия"
+        required
+        maxlength="120"
+      />
+    </label>
+    <label class="field">
+      Имейл
+      <input
+        type="email"
+        name="email"
+        autocomplete="email"
+        placeholder="ime@firma.bg"
+        required
+        maxlength="180"
+      />
+    </label>
+  </div>
+
+  <fieldset class="needs">
+    <legend>От какво имаш нужда?</legend>
+    <div class="needs__options">
+      {
+        NEEDS.map((need, index) => (
+          <span class="need">
+            <input class="need__input" id={`need-${index}`} type="checkbox" name="needs" value={need} />
+            <label class="need__label" for={`need-${index}`}>
+              {need}
+            </label>
+          </span>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <label class="field">
+    Разкажи накратко
+    <textarea
+      name="message"
+      rows="5"
+      placeholder="Какъв е бизнесът ти, какъв е проблемът и има ли срок?"
+      required
+      maxlength="4000"></textarea>
+  </label>
+
+  {/* Honeypot — hidden from people, tempting for bots. */}
+  <div class="honeypot" aria-hidden="true">
+    <label>
+      Не попълвай това поле
+      <input type="text" name="website" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <button class="btn btn--primary submit" type="submit">Изпрати запитване</button>
+
+  <p class="status" role="status" data-form-status hidden></p>
+  <p class="fallback">
+    Или просто ми пиши на <a href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>.
+  </p>
+</form>
+
+<style>
+  .form {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .field input,
+  .field textarea {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 400;
+    padding: 13px 15px;
+    border: 1px solid var(--line-field);
+    border-radius: 12px;
+    background: var(--field);
+    outline: none;
+    color: var(--ink);
+    width: 100%;
+    transition:
+      border-color 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+
+  .field textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(226, 84, 43, 0.14);
+  }
+
+  .field :global(input[aria-invalid='true']),
+  .field :global(textarea[aria-invalid='true']) {
+    border-color: var(--accent-dark);
+  }
+
+  .needs {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .needs legend {
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .needs__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .need__input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+
+  .need__label {
+    display: inline-block;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line-field);
+    background: var(--field);
+    color: var(--ink-body);
+    transition:
+      background-color 0.16s ease,
+      color 0.16s ease,
+      border-color 0.16s ease;
+  }
+
+  .need__label:hover {
+    border-color: var(--ink);
+  }
+
+  .need__input:checked + .need__label {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  .need__input:focus-visible + .need__label {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .submit {
+    width: 100%;
+  }
+
+  .submit[disabled] {
+    opacity: 0.7;
+    cursor: progress;
+  }
+
+  .status {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--chip);
+    color: var(--ink-body);
+  }
+
+  .status[data-tone='success'] {
+    background: rgba(52, 168, 83, 0.12);
+    color: #1f6b34;
+  }
+
+  .status[data-tone='error'] {
+    background: rgba(226, 84, 43, 0.12);
+    color: var(--accent-darker);
+  }
+
+  .fallback {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+  }
+
+  @media (max-width: 560px) {
+    .form {
+      padding: 24px 20px;
+    }
+
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  const status = document.querySelector<HTMLParagraphElement>('[data-form-status]');
+
+  const SUCCESS = 'Благодаря! Получих запитването и ще ти пиша до 24 часа.';
+
+  function show(message: string, tone: 'success' | 'error') {
+    if (!status) return;
+    status.textContent = message;
+    status.dataset.tone = tone;
+    status.hidden = false;
+  }
+
+  // Redirect target for the no-JS flow — also covers a reload after submit.
+  const params = new URLSearchParams(location.search);
+  if (params.get('sent') === '1') {
+    show(SUCCESS, 'success');
+    history.replaceState({}, '', location.pathname);
+  } else if (params.get('error')) {
+    show(decodeURIComponent(params.get('error')!), 'error');
+    history.replaceState({}, '', location.pathname);
+  }
+
+  if (form) {
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      // Native validation first, so the browser shows the familiar messages.
+      for (const field of form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input[required], textarea[required]',
+      )) {
+        field.setAttribute('aria-invalid', String(!field.checkValidity()));
+      }
+      if (!form.reportValidity()) return;
+
+      const data = new FormData(form);
+      const payload = {
+        name: String(data.get('name') ?? ''),
+        email: String(data.get('email') ?? ''),
+        message: String(data.get('message') ?? ''),
+        website: String(data.get('website') ?? ''),
+        needs: data.getAll('needs').map(String),
+      };
+
+      submit?.setAttribute('disabled', '');
+      const original = submit?.textContent ?? '';
+      if (submit) submit.textContent = 'Изпращам…';
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', accept: 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const result = (await response.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+        };
+
+        if (response.ok && result.ok) {
+          form.reset();
+          show(SUCCESS, 'success');
+          if (submit) submit.textContent = 'Изпратено ✓';
+          return;
+        }
+
+        show(result.error ?? 'Нещо се обърка. Пиши ми директно на имейла отдолу.', 'error');
+      } catch {
+        show('Няма връзка със сървъра. Пиши ми директно на имейла отдолу.', 'error');
+      } finally {
+        if (submit && submit.textContent !== 'Изпратено ✓') {
+          submit.removeAttribute('disabled');
+          submit.textContent = original;
+        }
+      }
+    });
+  }
+</script>

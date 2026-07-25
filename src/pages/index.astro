@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ExperienceBar from '../components/ExperienceBar.astro';
+import Services from '../components/Services.astro';
+import Process from '../components/Process.astro';
+import About from '../components/About.astro';
+import Testimonials from '../components/Testimonials.astro';
+import Pricing from '../components/Pricing.astro';
+import BlogPreview from '../components/BlogPreview.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+import { SITE } from '../data/site.mjs';
+
+/** Set to `false` to hide the pricing section site-wide (the design's `showPricing` prop). */
+const SHOW_PRICING = true;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: SITE.name,
+  description: SITE.description,
+  url: SITE.url,
+  email: SITE.owner.email,
+  areaServed: 'BG',
+  address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },
+  founder: {
+    '@type': 'Person',
+    name: SITE.owner.name,
+    jobTitle: 'Senior AI Data Engineer',
+    sameAs: [SITE.owner.linkedin],
+  },
+  knowsLanguage: ['bg', 'en'],
+};
+---
+
+<BaseLayout canonical="/">
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structuredData)}
+    />
+  </Fragment>
+
+  <Hero />
+  <ExperienceBar />
+  <Services />
+  <Process />
+  <About />
+  <Testimonials />
+  {SHOW_PRICING && <Pricing />}
+  <BlogPreview limit={4} />
+  <CtaBanner />
+</BaseLayout>

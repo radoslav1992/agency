@@ -1,0 +1,140 @@
+---
+import { Image } from 'astro:assets';
+import stageImage from '../assets/sap-dcom-stage.png';
+import { ABOUT } from '../data/content.ts';
+---
+
+<section id="about" class="about">
+  <div class="container inner">
+    <figure class="figure">
+      <Image
+        class="figure__image"
+        src={stageImage}
+        alt="Радослав Додников на сцената на SAP d-com"
+        widths={[400, 620, 900]}
+        sizes="(max-width: 900px) 90vw, 460px"
+        loading="lazy"
+      />
+      <figcaption class="figure__caption">{ABOUT.imageCaption}</figcaption>
+    </figure>
+
+    <div class="copy">
+      <p class="eyebrow">За мен</p>
+      <h2 class="section-title">{ABOUT.heading}</h2>
+      {ABOUT.paragraphs.map((text) => <p class="copy__text">{text}</p>)}
+
+      <div class="stats">
+        {
+          ABOUT.stats.map((stat) => (
+            <div class="stat">
+              <p class="stat__value">{stat.value}</p>
+              <p class="stat__label">{stat.label}</p>
+            </div>
+          ))
+        }
+      </div>
+
+      <ul class="skills">
+        {ABOUT.skills.map((skill) => <li class="pill pill--outline">{skill}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    background: var(--bg-sand-strong);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .inner {
+    padding-block: 88px;
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .figure {
+    margin: 0;
+  }
+
+  .figure__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 24px;
+  }
+
+  .figure__caption {
+    font-size: 13px;
+    color: var(--ink-subtle);
+    margin-top: 12px;
+  }
+
+  .copy__text {
+    font-size: 17.5px;
+    line-height: 1.62;
+    color: var(--ink-soft);
+    margin: 20px 0 0;
+  }
+
+  .copy__text + .copy__text {
+    margin-top: 16px;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 18px;
+  }
+
+  .stat__value {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .stat__label {
+    font-size: 14px;
+    color: var(--ink-muted);
+    margin: 4px 0 0;
+  }
+
+  .skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (max-width: 900px) {
+    .inner {
+      grid-template-columns: 1fr;
+      gap: 36px;
+      padding-block: 56px;
+    }
+
+    .figure {
+      max-width: 460px;
+    }
+  }
+
+  @media (max-width: 460px) {
+    .stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

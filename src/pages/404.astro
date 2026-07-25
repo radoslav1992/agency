@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Страницата не е намерена" noindex>
+  <div class="container wrap">
+    <p class="code">404</p>
+    <h1 class="title">Тази страница я няма.</h1>
+    <p class="lead">
+      Може да е преместена или линкът да е сгрешен. Ето откъде можеш да продължиш:
+    </p>
+    <div class="actions">
+      <a class="btn btn--primary" href="/">Към началото</a>
+      <a class="btn btn--outline" href="/blog/">Към блога</a>
+      <a class="btn btn--outline" href="/contact/">Контакти</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: 96px 120px;
+    max-width: 680px;
+    text-align: center;
+  }
+
+  .code {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .title {
+    font-size: clamp(32px, 6vw, 44px);
+    letter-spacing: -0.035em;
+    margin: 14px 0 0;
+  }
+
+  .lead {
+    font-size: 18px;
+    color: var(--ink-muted);
+    margin: 16px 0 32px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+</style>

@@ -1,0 +1,185 @@
+---
+import { Image } from 'astro:assets';
+import heroPortrait from '../assets/hero-portrait.png';
+import { SITE } from '../data/site.mjs';
+---
+
+<section class="hero container">
+  <div class="hero__copy">
+    {
+      SITE.availability && (
+        <p class="availability">
+          <span class="availability__dot" aria-hidden="true" />
+          {SITE.availability}
+        </p>
+      )
+    }
+
+    <h1 class="hero__title">
+      Сайтове, приложения и <span class="accent">AI агенти</span> за бизнеси, които бързат.
+    </h1>
+
+    <p class="hero__lead">
+      От сайт на квартална сладкарница до AI асистент върху вътрешните документи на компания.
+      Говорим на човешки език, работим бързо и показваме резултат, а не слайдове.
+    </p>
+
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="/contact/">Запази 30 мин. разговор</a>
+      <a class="btn btn--outline" href="/#services">Виж услугите</a>
+    </div>
+
+    <ul class="hero__facts">
+      <li>⏱ Първи вариант до 2 седмици</li>
+      <li>💬 Пишеш директно на мен</li>
+      <li>🇧🇬 Работим на български</li>
+    </ul>
+  </div>
+
+  <div class="hero__media">
+    <div class="hero__blob" aria-hidden="true"></div>
+    <Image
+      class="hero__image"
+      src={heroPortrait}
+      alt={SITE.owner.name}
+      widths={[420, 640, 900]}
+      sizes="(max-width: 900px) 90vw, 440px"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="hero__badge">
+      <p class="hero__badge-name">{SITE.owner.name}</p>
+      <p class="hero__badge-role">{SITE.owner.role}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: 84px 64px;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 56px;
+    align-items: center;
+  }
+
+  .availability {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  .availability__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    flex: none;
+  }
+
+  .hero__title {
+    font-size: clamp(36px, 6vw, 58px);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    margin: 22px 0 0;
+  }
+
+  .accent {
+    color: var(--accent);
+  }
+
+  .hero__lead {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-body);
+    max-width: 520px;
+    margin: 24px 0 0;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    margin: 40px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+
+  .hero__media {
+    position: relative;
+  }
+
+  .hero__blob {
+    position: absolute;
+    inset: 12% -4% -2% 6%;
+    background: var(--bg-blush);
+    border-radius: 32px;
+  }
+
+  .hero__image {
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: var(--shadow-hero);
+  }
+
+  .hero__badge {
+    position: absolute;
+    left: -8px;
+    bottom: 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .hero__badge-name {
+    font-weight: 700;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .hero__badge-role {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    margin: 2px 0 0;
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding-block: 48px 40px;
+    }
+
+    .hero__media {
+      order: -1;
+      max-width: 420px;
+      margin-inline: auto;
+      width: 100%;
+    }
+
+    .hero__badge {
+      left: 0;
+    }
+  }
+</style>

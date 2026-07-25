@@ -1,0 +1,345 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts, formatDate } from '../../lib/posts.ts';
+import { SITE } from '../../data/site.mjs';
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post, index) => ({
+    params: { slug: post.id },
+    props: { post, prev: posts[index + 1] ?? null, next: posts[index - 1] ?? null },
+  }));
+}) satisfies GetStaticPaths;
+
+const { post, prev, next } = Astro.props;
+const { Content } = await render(post);
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.excerpt,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  author: { '@type': 'Person', name: SITE.owner.name, url: SITE.owner.linkedin },
+  publisher: { '@type': 'Organization', name: SITE.name },
+  mainEntityOfPage: new URL(`/blog/${post.id}/`, SITE.url).href,
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.excerpt}
+  canonical={`/blog/${post.id}/`}
+  ogType="article"
+  noindex={post.data.draft}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
+  </Fragment>
+
+  <article class="container wrap">
+    <a class="back" href="/blog/">← Всички публикации</a>
+
+    <header class="head">
+      <p class="meta">
+        <span class="meta__tag">{post.data.tag}</span>
+        <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+        <span>{post.data.readMinutes} мин четене</span>
+      </p>
+      <h1 class="title">{post.data.title}</h1>
+      <p class="excerpt">{post.data.excerpt}</p>
+    </header>
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <footer class="foot">
+      <div class="author">
+        <span class="author__mark" aria-hidden="true">К</span>
+        <span>
+          <span class="author__name">{SITE.owner.name}</span>
+          <span class="author__role">{SITE.owner.role}</span>
+        </span>
+      </div>
+      <a class="btn btn--primary" href="/contact/">Разкажи ми за проекта си</a>
+    </footer>
+
+    {
+      (prev || next) && (
+        <nav class="siblings" aria-label="Други публикации">
+          {prev && (
+            <a class="sibling" href={`/blog/${prev.id}/`}>
+              <span class="sibling__label">← По-стара</span>
+              <span class="sibling__title">{prev.data.title}</span>
+            </a>
+          )}
+          {next && (
+            <a class="sibling sibling--next" href={`/blog/${next.id}/`}>
+              <span class="sibling__label">По-нова →</span>
+              <span class="sibling__title">{next.data.title}</span>
+            </a>
+          )}
+        </nav>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .wrap {
+    max-width: 760px;
+    padding-block: 56px 96px;
+  }
+
+  .back {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  .back:hover {
+    color: var(--accent);
+  }
+
+  .head {
+    margin-top: 28px;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+    color: var(--ink-subtle);
+    margin: 0;
+  }
+
+  .meta__tag {
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 4px 11px;
+    color: var(--ink-body);
+  }
+
+  .title {
+    font-size: clamp(30px, 5.5vw, 42px);
+    line-height: 1.14;
+    letter-spacing: -0.035em;
+    margin: 18px 0 0;
+  }
+
+  .excerpt {
+    font-size: 18.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 16px 0 0;
+  }
+
+  .prose {
+    margin-top: 40px;
+    padding-top: 36px;
+    border-top: 1px solid var(--line);
+    font-size: 17.5px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+
+  .foot {
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .author__mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    flex: none;
+  }
+
+  .author__name {
+    display: block;
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .author__role {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-subtle);
+  }
+
+  .siblings {
+    margin-top: 36px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .sibling {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px 20px;
+    color: inherit;
+    transition: border-color 0.18s ease;
+  }
+
+  .sibling:hover {
+    border-color: var(--accent);
+    color: inherit;
+  }
+
+  .sibling--next {
+    text-align: right;
+    grid-column: 2;
+  }
+
+  .sibling__label {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-subtle);
+  }
+
+  .sibling__title {
+    display: block;
+    font-weight: 600;
+    font-size: 15.5px;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 620px) {
+    .siblings {
+      grid-template-columns: 1fr;
+    }
+
+    .sibling--next {
+      grid-column: auto;
+      text-align: left;
+    }
+  }
+</style>
+
+<style is:global>
+  /* Markdown body ------------------------------------------------- */
+  .prose > * {
+    margin-block: 0 22px;
+  }
+
+  .prose h2 {
+    font-size: 26px;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    margin-block: 44px 14px;
+  }
+
+  .prose h3 {
+    font-family: var(--font-body);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: normal;
+    color: var(--ink);
+    margin-block: 32px 10px;
+  }
+
+  .prose ul,
+  .prose ol {
+    padding-left: 22px;
+  }
+
+  .prose li {
+    margin-bottom: 10px;
+  }
+
+  .prose li::marker {
+    color: var(--accent);
+  }
+
+  .prose strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .prose a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .prose blockquote {
+    margin: 28px 0;
+    padding: 4px 0 4px 20px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-body);
+    font-style: italic;
+  }
+
+  .prose hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin-block: 36px;
+  }
+
+  .prose code {
+    font-size: 0.9em;
+    background: var(--chip);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+
+  .prose pre {
+    background: var(--dark);
+    color: var(--dark-ink);
+    border-radius: 16px;
+    padding: 20px 22px;
+    overflow-x: auto;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .prose pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .prose img {
+    border-radius: 18px;
+    height: auto;
+  }
+
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+  }
+
+  .prose th,
+  .prose td {
+    border-bottom: 1px solid var(--line);
+    padding: 10px 12px;
+    text-align: left;
+  }
+</style>
