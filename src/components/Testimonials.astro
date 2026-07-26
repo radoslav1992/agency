@@ -19,20 +19,20 @@ import { TESTIMONIALS, PLACEHOLDER_TESTIMONIALS, initialsOf } from '../data/test
             <span>
               <span class="quote__name">{item.author}</span>
               <span class="quote__role">{item.role}</span>
-              {item.project && (
-                <span class="quote__project">
-                  {item.project.url ? (
-                    <a href={item.project.url} target="_blank" rel="noopener">
-                      {item.project.name} ↗
-                    </a>
-                  ) : (
-                    item.project.name
-                  )}
-                  {item.project.result && <span class="quote__result">{item.project.result}</span>}
-                </span>
-              )}
             </span>
           </figcaption>
+          {item.project && (
+            <p class="quote__project">
+              {item.project.url ? (
+                <a class="quote__project-name" href={item.project.url} target="_blank" rel="noopener">
+                  {item.project.name} ↗
+                </a>
+              ) : (
+                <span class="quote__project-name">{item.project.name}</span>
+              )}
+              {item.project.result && <span class="quote__result">{item.project.result}</span>}
+            </p>
+          )}
         </figure>
       ))
     }
@@ -82,7 +82,7 @@ import { TESTIMONIALS, PLACEHOLDER_TESTIMONIALS, initialsOf } from '../data/test
   .quote__author {
     margin-top: auto;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
   }
 
@@ -102,23 +102,41 @@ import { TESTIMONIALS, PLACEHOLDER_TESTIMONIALS, initialsOf } from '../data/test
     display: block;
     font-weight: 600;
     font-size: 14.5px;
+    line-height: 1.35;
   }
 
   .quote__role {
     display: block;
     font-size: 13px;
+    line-height: 1.4;
     color: var(--ink-subtle);
+    margin-top: 2px;
   }
 
+  /* Optional project credit — its own strip so it never reads as part of the role. */
   .quote__project {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    margin: -4px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
     font-size: 13px;
-    margin-top: 4px;
+  }
+
+  .quote__project-name {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  a.quote__project-name:hover {
+    color: var(--accent);
   }
 
   .quote__result {
-    display: block;
     color: var(--ink-muted);
+    line-height: 1.4;
   }
 
   @media (max-width: 980px) {
