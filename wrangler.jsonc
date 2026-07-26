@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kova-studio",
+  "name": "agency",
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2025-11-01",
   "compatibility_flags": ["nodejs_compat"],
