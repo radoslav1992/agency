@@ -30,6 +30,7 @@ export const SITE = {
 export const NAV = [
   { label: 'Начало', href: '/' },
   { label: 'Услуги', href: '/#services' },
+  { label: 'Проекти', href: '/projects/' },
   { label: 'За мен', href: '/#about' },
   { label: 'Блог', href: '/blog/' },
 ];

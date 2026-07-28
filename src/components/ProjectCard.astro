@@ -1,0 +1,118 @@
+---
+import { domainOf, initialOf, type Project } from '../data/projects.ts';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<a class="project" href={project.url} target="_blank" rel="noopener">
+  <span class="project__head">
+    <span class="project__mark" aria-hidden="true">{initialOf(project)}</span>
+    <span class="project__domain">{domainOf(project)}</span>
+    <span class="project__arrow" aria-hidden="true">↗</span>
+  </span>
+
+  <h3 class="project__name">{project.name}</h3>
+  <p class="project__tagline">{project.tagline}</p>
+
+  <span class="project__foot">
+    {project.tags.map((tag) => <span class="pill">{tag}</span>)}
+    {project.year && <span class="project__year">{project.year}</span>}
+  </span>
+</a>
+
+<style>
+  .project {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 26px 26px 24px;
+    color: inherit;
+    transition:
+      border-color 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .project:hover {
+    border-color: var(--accent);
+    color: inherit;
+    transform: translateY(-2px);
+  }
+
+  .project__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .project__mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--bg-blush);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    flex: none;
+  }
+
+  .project:hover .project__mark {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .project__domain {
+    font-size: 13px;
+    color: var(--ink-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .project__arrow {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--ink-faint);
+    transition: color 0.18s ease;
+  }
+
+  .project:hover .project__arrow {
+    color: var(--accent);
+  }
+
+  .project__name {
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    margin: 18px 0 8px;
+  }
+
+  .project__tagline {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 0 0 20px;
+  }
+
+  .project__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-top: auto;
+  }
+
+  .project__year {
+    font-size: 12.5px;
+    color: var(--ink-subtle);
+    margin-left: auto;
+  }
+</style>

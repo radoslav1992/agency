@@ -1,0 +1,80 @@
+---
+import ProjectCard from './ProjectCard.astro';
+import { PROJECTS, PROJECTS_ON_HOME } from '../data/projects.ts';
+
+const shown = PROJECTS.slice(0, PROJECTS_ON_HOME);
+const hasMore = PROJECTS.length > shown.length;
+---
+
+<section id="projects" class="projects container">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Проекти</p>
+      <h2 class="section-title">Неща, които сме пуснали</h2>
+    </div>
+    {
+      hasMore ? (
+        <a class="head__link" href="/projects/">
+          Всички {PROJECTS.length} проекта →
+        </a>
+      ) : (
+        <p class="head__note">Всеки от тях е жив — отвори го и виж сам.</p>
+      )
+    }
+  </header>
+
+  <div class="grid">
+    {shown.map((project) => <ProjectCard project={project} />)}
+  </div>
+</section>
+
+<style>
+  .projects {
+    padding-block: 88px 0;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .head__link {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .head__note {
+    font-size: 16px;
+    color: var(--ink-muted);
+    max-width: 380px;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 980px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 680px) {
+    .projects {
+      padding-block: 56px 0;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
