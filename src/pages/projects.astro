@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+import { PROJECTS } from '../data/projects.ts';
+---
+
+<BaseLayout
+  title="Проекти"
+  description="Сайтове, приложения и AI продукти, пуснати от Кова студио. Всеки от тях е жив — отвори го и виж сам."
+  canonical="/projects/"
+>
+  <div class="container wrap">
+    <p class="eyebrow">Проекти</p>
+    <h1 class="title">Неща, които сме пуснали</h1>
+    <p class="lead">
+      Продукти, сайтове и AI инструменти — повечето тръгнали от собствена идея, всички живи в
+      интернет. Отвори който и да е и виж сам.
+    </p>
+
+    <div class="grid">
+      {PROJECTS.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </div>
+
+  <CtaBanner />
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: 76px 88px;
+  }
+
+  .title {
+    font-size: clamp(32px, 6vw, 48px);
+    letter-spacing: -0.035em;
+    margin: 12px 0;
+  }
+
+  .lead {
+    font-size: 18px;
+    color: var(--ink-muted);
+    max-width: 620px;
+    margin: 0 0 48px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 980px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 680px) {
+    .wrap {
+      padding-block: 48px 56px;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
