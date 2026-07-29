@@ -1,13 +1,13 @@
 ---
-import { TESTIMONIALS, PLACEHOLDER_TESTIMONIALS, initialsOf } from '../data/testimonials.ts';
+import { TESTIMONIALS, TESTIMONIALS_NOTE, initialsOf } from '../data/testimonials.ts';
 ---
 
 <section class="testimonials container">
   <p class="eyebrow">Отзиви</p>
-  <h2 class="section-title">Какво казват клиентите</h2>
-  {PLACEHOLDER_TESTIMONIALS && <p class="note">Примерни текстове — заменяме ги с реалните ти отзиви.</p>}
+  <h2 class="section-title">Какво казват екипите</h2>
+  {TESTIMONIALS_NOTE && <p class="note">{TESTIMONIALS_NOTE}</p>}
 
-  <div class:list={['grid', !PLACEHOLDER_TESTIMONIALS && 'grid--tight']}>
+  <div class="grid">
     {
       TESTIMONIALS.map((item) => (
         <figure class="quote">
@@ -46,7 +46,9 @@ import { TESTIMONIALS, PLACEHOLDER_TESTIMONIALS, initialsOf } from '../data/test
 
   .note {
     font-size: 15px;
+    line-height: 1.55;
     color: var(--ink-subtle);
+    max-width: 640px;
     margin: 8px 0 0;
   }
 
@@ -54,10 +56,6 @@ import { TESTIMONIALS, PLACEHOLDER_TESTIMONIALS, initialsOf } from '../data/test
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
-    margin-top: 36px;
-  }
-
-  .grid--tight {
     margin-top: 36px;
   }
 
