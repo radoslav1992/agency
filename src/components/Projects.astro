@@ -17,7 +17,7 @@ const linkLabel = hasMore ? `Всички ${PROJECTS.length} проекта →`
   </header>
 
   <div class="grid">
-    {shown.map((project) => <ProjectCard project={project} />)}
+    {shown.map((project, index) => <ProjectCard project={project} eager={index < 3} />)}
   </div>
 </section>
 
