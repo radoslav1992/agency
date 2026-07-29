@@ -32,12 +32,20 @@ export function initialOf(project: Project): string {
   return project.name.trim().charAt(0).toUpperCase();
 }
 
+/**
+ * Име на файла за екранната снимка на проекта: домейнът без разширението.
+ * `routinly.org` → `routinly`, тоест `src/assets/projects/routinly.png`.
+ */
+export function slugOf(project: Project): string {
+  return domainOf(project).replace(/\.[^.]+$/, '');
+}
+
 export const PROJECTS: Project[] = [
   {
     name: 'Routinly',
     url: 'https://routinly.org/',
     tagline:
-      'Записваш екрана, а Routinly написва ръководството стъпка по стъпка — със снимки на екрана. Работа за следобед става за пет минути.',
+      'Записваш екрана си, а Routinly написва ръководството стъпка по стъпка, със снимки. Това, което отнемаше следобед, става за пет минути.',
     tags: ['AI', 'Документация'],
   },
   {
@@ -51,7 +59,7 @@ export const PROJECTS: Project[] = [
     name: 'Plumeo',
     url: 'https://plumeo.ink/',
     tagline:
-      'Превръща обикновен Markdown в документи с живи диаграми и графики — и ги издава в твоите цветове, шрифт и лого, като PDF или уеб страница.',
+      'Превръща обикновен Markdown в документи с живи диаграми и графики — и ги изнася в твоите цветове, шрифт и лого, като PDF или уеб страница.',
     tags: ['Уеб приложение', 'Документи'],
   },
   {

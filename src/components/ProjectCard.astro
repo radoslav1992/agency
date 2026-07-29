@@ -1,16 +1,49 @@
 ---
-import { domainOf, initialOf, type Project } from '../data/projects.ts';
+import { Image } from 'astro:assets';
+import { domainOf, initialOf, slugOf, type Project } from '../data/projects.ts';
 
 interface Props {
   project: Project;
+  /** The first cards on screen should not lazy-load. */
+  eager?: boolean;
 }
 
-const { project } = Astro.props;
+const { project, eager = false } = Astro.props;
+
+/**
+ * Screenshots are optional and matched by file name: drop
+ * `src/assets/projects/<slug>.png` (or .jpg/.webp) and the card picks it up.
+ * A glob keeps a missing file from breaking the build, which a static
+ * `import` would.
+ */
+const shots = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/projects/*.{png,jpg,jpeg,webp,avif}',
+  { eager: true },
+);
+
+const slug = slugOf(project);
+const shot = Object.entries(shots).find(
+  ([path]) => path.split('/').pop()?.replace(/\.\w+$/, '') === slug,
+)?.[1].default;
 ---
 
-<a class="project" href={project.url} target="_blank" rel="noopener">
+<a class:list={['project', shot && 'project--shot']} href={project.url} target="_blank" rel="noopener">
+  {
+    shot && (
+      <span class="project__shot">
+        <Image
+          src={shot}
+          alt={`Екран от ${project.name}`}
+          widths={[380, 560, 760]}
+          sizes="(max-width: 680px) 90vw, (max-width: 980px) 45vw, 360px"
+          loading={eager ? 'eager' : 'lazy'}
+        />
+      </span>
+    )
+  }
+
   <span class="project__head">
-    <span class="project__mark" aria-hidden="true">{initialOf(project)}</span>
+    {!shot && <span class="project__mark" aria-hidden="true">{initialOf(project)}</span>}
     <span class="project__domain">{domainOf(project)}</span>
     <span class="project__arrow" aria-hidden="true">↗</span>
   </span>
@@ -45,10 +78,42 @@ const { project } = Astro.props;
     transform: translateY(-2px);
   }
 
+  /* With a screenshot the image sits flush to the card edges. */
+  .project--shot {
+    padding: 0 0 24px;
+    overflow: hidden;
+  }
+
+  .project__shot {
+    display: block;
+    background: var(--bg-sand);
+    border-bottom: 1px solid var(--line);
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+
+  .project__shot :global(img) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    /* Anchor to the top so the hero of each site stays visible. */
+    object-position: top center;
+    transition: transform 0.4s ease;
+  }
+
+  .project:hover .project__shot :global(img) {
+    transform: scale(1.02);
+  }
+
   .project__head {
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .project--shot .project__head {
+    padding: 20px 26px 0;
   }
 
   .project__mark {
@@ -102,12 +167,24 @@ const { project } = Astro.props;
     margin: 0 0 20px;
   }
 
+  .project--shot :is(.project__name, .project__tagline) {
+    padding-inline: 26px;
+  }
+
+  .project--shot .project__name {
+    margin-top: 14px;
+  }
+
   .project__foot {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 7px;
     margin-top: auto;
+  }
+
+  .project--shot .project__foot {
+    padding-inline: 26px;
   }
 
   .project__year {
