@@ -45,12 +45,6 @@ export const PROJECTS: Project[] = [
     tags: ['Уеб приложение', 'Продукт'],
   },
   {
-    name: 'The AI Cofounder',
-    url: 'https://the-ai-cofounder.com/',
-    tagline: 'AI съосновател за предприемачи — помага при идеите, плана и следващата стъпка.',
-    tags: ['AI агент', 'Продукт'],
-  },
-  {
     name: 'Bulgaria Radio',
     url: 'https://bulgariaradio.com/',
     tagline: 'Българските радиостанции на едно място — слушане директно в браузъра.',
@@ -63,10 +57,10 @@ export const PROJECTS: Project[] = [
     tags: ['Уеб приложение', 'AI'],
   },
   {
-    name: 'Пенсионен калкулатор',
-    url: 'https://pensionen-kalkulator.bg/',
-    tagline: 'Изчислява очакваната пенсия по българските правила — на разбираем език.',
-    tags: ['Калкулатор', 'Сайт'],
+    name: 'Ponomer',
+    url: 'https://ponomer.com/',
+    tagline: 'Бърза справка по номер, без регистрация и без излишни стъпки.',
+    tags: ['Уеб приложение'],
   },
   {
     name: 'Community Lovable BG',
@@ -75,45 +69,9 @@ export const PROJECTS: Project[] = [
     tags: ['Общност', 'Сайт'],
   },
   {
-    name: 'Omni Coworker',
-    url: 'https://omnicoworker.eu/',
-    tagline: 'AI колега, който поема рутинните задачи в екипа.',
-    tags: ['AI агент', 'Автоматизации'],
-  },
-  {
-    name: 'AI Help Center',
-    url: 'https://aihelpcenter.dev/',
-    tagline: 'Помощен център, в който AI отговаря на въпросите на потребителите по документацията.',
-    tags: ['RAG', 'Поддръжка'],
-  },
-  {
-    name: 'Sentinel Local',
-    url: 'https://sentinellocal.org/',
-    tagline: 'Наблюдение и сигнали, които работят локално — без данните да напускат средата.',
-    tags: ['Локални LLM', 'Мониторинг'],
-  },
-  {
-    name: 'Prompts BG',
-    url: 'https://promptsbg.com/',
-    tagline: 'Библиотека с промптове на български — готови за реална работа.',
-    tags: ['AI', 'Ресурс'],
-  },
-  {
-    name: 'Fiction & Fact Library',
-    url: 'https://fictionandfactlibrary.com/',
-    tagline: 'Библиотека за книги — художествена литература и нехудожествени заглавия на едно място.',
-    tags: ['Уеб приложение', 'Съдържание'],
-  },
-  {
-    name: 'The Everyday Revolution',
-    url: 'https://theeverydayrevolution.com/',
-    tagline: 'Издание за малките ежедневни промени, които се натрупват в голяма разлика.',
-    tags: ['Съдържание', 'Сайт'],
-  },
-  {
-    name: 'Ponomer',
-    url: 'https://ponomer.com/',
-    tagline: 'Бърза справка по номер, без регистрация и без излишни стъпки.',
-    tags: ['Уеб приложение'],
+    name: 'Пенсионен калкулатор',
+    url: 'https://pensionen-kalkulator.bg/',
+    tagline: 'Изчислява очакваната пенсия по българските правила — на разбираем език.',
+    tags: ['Калкулатор', 'Сайт'],
   },
 ];
