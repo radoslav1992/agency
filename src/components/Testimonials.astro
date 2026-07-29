@@ -1,11 +1,10 @@
 ---
-import { TESTIMONIALS, TESTIMONIALS_NOTE, initialsOf } from '../data/testimonials.ts';
+import { TESTIMONIALS, initialsOf } from '../data/testimonials.ts';
 ---
 
 <section class="testimonials container">
   <p class="eyebrow">Отзиви</p>
   <h2 class="section-title">Какво казват екипите</h2>
-  {TESTIMONIALS_NOTE && <p class="note">{TESTIMONIALS_NOTE}</p>}
 
   <div class="grid">
     {
@@ -31,6 +30,7 @@ import { TESTIMONIALS, TESTIMONIALS_NOTE, initialsOf } from '../data/testimonial
                 <span class="quote__project-name">{item.project.name}</span>
               )}
               {item.project.result && <span class="quote__result">{item.project.result}</span>}
+              {item.own && <span class="quote__own">собствен продукт на студиото</span>}
             </p>
           )}
         </figure>
@@ -135,6 +135,18 @@ import { TESTIMONIALS, TESTIMONIALS_NOTE, initialsOf } from '../data/testimonial
   .quote__result {
     color: var(--ink-muted);
     line-height: 1.4;
+  }
+
+  /* Казва открито, че проектът е наш — иначе отзивът чете като чужда препоръка. */
+  .quote__own {
+    align-self: flex-start;
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--ink-subtle);
+    background: var(--chip);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-top: 2px;
   }
 
   @media (max-width: 980px) {
