@@ -1,12 +1,23 @@
 /// <reference types="astro/client" />
 
+/** Cloudflare Email Routing `send_email` binding. */
+interface SendEmailBinding {
+  send(message: unknown): Promise<void>;
+}
+
 interface Env {
-  /** Resend API key. Set with `wrangler secret put RESEND_API_KEY`. */
-  RESEND_API_KEY?: string;
-  /** Inbox that receives contact-form submissions. */
+  /** Bound in wrangler.jsonc → `send_email`. Delivers to verified destinations. */
+  SEND_EMAIL?: SendEmailBinding;
+  /** Inbox that receives contact-form submissions (a verified destination). */
   CONTACT_TO?: string;
-  /** Verified "from" address, e.g. `Кова студио <hi@kova.studio>`. */
+  /** Sender address on a zone with Email Routing enabled, e.g. `hi@kova.bg`. */
   CONTACT_FROM?: string;
+}
+
+declare module 'cloudflare:email' {
+  export class EmailMessage {
+    constructor(from: string, to: string, raw: ReadableStream | string);
+  }
 }
 
 type Runtime = import('@astrojs/cloudflare').Runtime<Env>;

@@ -13,10 +13,19 @@
   "observability": {
     "enabled": true
   },
+  // Contact form delivery via Cloudflare Email Routing — no third-party service
+  // and no API key. `destination_address` must be a VERIFIED destination in
+  // Email Routing, and it is the only address this Worker can email.
+  "send_email": [
+    {
+      "name": "SEND_EMAIL",
+      "destination_address": "radoslav.dodnikov@gmail.com"
+    }
+  ],
   "vars": {
-    // Non-secret defaults. Secrets (RESEND_API_KEY) go in
-    // `wrangler secret put` / the Cloudflare dashboard, never here.
+    // Where submissions land — must match the binding's destination_address.
     "CONTACT_TO": "radoslav.dodnikov@gmail.com",
-    "CONTACT_FROM": "Кова студио <onboarding@resend.dev>"
+    // Sender. Must be on a zone in this account with Email Routing enabled.
+    "CONTACT_FROM": "forma@kova.bg"
   }
 }
