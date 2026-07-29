@@ -33,7 +33,7 @@ const shot = Object.entries(shots).find(
       <span class="project__shot">
         <Image
           src={shot}
-          alt={`Екран от ${project.name}`}
+          alt={project.alt ?? `Екран от ${project.name}`}
           widths={[380, 560, 760]}
           sizes="(max-width: 680px) 90vw, (max-width: 980px) 45vw, 360px"
           loading={eager ? 'eager' : 'lazy'}
