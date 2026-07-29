@@ -4,6 +4,7 @@ import { PROJECTS, PROJECTS_ON_HOME } from '../data/projects.ts';
 
 const shown = PROJECTS.slice(0, PROJECTS_ON_HOME);
 const hasMore = PROJECTS.length > shown.length;
+const linkLabel = hasMore ? `Всички ${PROJECTS.length} проекта →` : 'Всички проекти →';
 ---
 
 <section id="projects" class="projects container">
@@ -12,15 +13,7 @@ const hasMore = PROJECTS.length > shown.length;
       <p class="eyebrow">Проекти</p>
       <h2 class="section-title">Неща, които сме пуснали</h2>
     </div>
-    {
-      hasMore ? (
-        <a class="head__link" href="/projects/">
-          Всички {PROJECTS.length} проекта →
-        </a>
-      ) : (
-        <p class="head__note">Всеки от тях е жив — отвори го и виж сам.</p>
-      )
-    }
+    <a class="head__link" href="/projects/">{linkLabel}</a>
   </header>
 
   <div class="grid">
@@ -47,13 +40,6 @@ const hasMore = PROJECTS.length > shown.length;
     font-size: 15px;
     color: var(--accent);
     white-space: nowrap;
-  }
-
-  .head__note {
-    font-size: 16px;
-    color: var(--ink-muted);
-    max-width: 380px;
-    margin: 0;
   }
 
   .grid {
