@@ -15,7 +15,7 @@ export const SITE = {
     'Кова студио прави сайтове, уеб приложения и AI агенти за български бизнеси. Първи вариант до 2 седмици, работа на етапи, комуникация на човешки език.',
   owner: {
     name: 'Радослав Додников',
-    role: 'Основател · Senior AI Data Engineer @ SAP',
+    role: 'Основател · Senior AI Data Engineer',
     email: 'radoslav.dodnikov@gmail.com',
     linkedin: 'https://www.linkedin.com/in/radoslav-dodnikov',
     linkedinLabel: 'linkedin.com/in/radoslav-dodnikov',
