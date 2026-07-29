@@ -106,19 +106,21 @@ draft: false      # true = вижда се само в dev
 
 Защити: honeypot поле, валидация на сървъра, ограничение на дължините, CSRF проверка на `Origin` (вградена в Astro).
 
-Изпращането минава през [Resend](https://resend.com). Без настроени променливи формата не се преструва, че е изпратила — връща „Пиши ми директно на имейла отдолу“.
+Изпращането минава през **Cloudflare Email Routing** (`send_email` binding) — без външна услуга и без API ключ. Без настроен binding формата не се преструва, че е изпратила — връща „Пиши ми директно на имейла отдолу“.
 
-```bash
-cp .dev.vars.example .dev.vars   # за локална разработка
-```
+### Настройка (веднъж, в Cloudflare Dashboard)
 
-За продукция:
+1. **Email → Email Routing** за зоната (напр. `kova.bg`) → Enable.
+2. **Destination addresses** → добави личния си имейл и потвърди линка, който идва по пощата. Binding-ът може да праща **само** до потвърден адрес — това е и цялата защита срещу превръщане на формата в spam relay.
+3. По желание **Routing rules**: `hi@kova.bg` → личния имейл (това е „redirect email“ частта).
+4. В `wrangler.jsonc` сложи същия адрес и на двете места:
+   - `send_email[0].destination_address` — единственият получател, разрешен на Worker-а
+   - `vars.CONTACT_TO` — адресът, до който route-ът пише
+5. `vars.CONTACT_FROM` трябва да е адрес **от зона в същия акаунт** с включен Email Routing (напр. `forma@kova.bg`). Не е нужно да съществува като пощенска кутия.
 
-```bash
-npx wrangler secret put RESEND_API_KEY
-```
+Локално `wrangler dev` не праща истински имейл — записва `.eml` файл в `.wrangler/tmp/email/` и изписва пътя в конзолата. Удобно за проверка на съдържанието.
 
-`CONTACT_TO` и `CONTACT_FROM` са в `wrangler.jsonc` → `vars` (не са тайни). `CONTACT_FROM` трябва да е адрес от домейн, верифициран в Resend; докато това стане, ползвай `onboarding@resend.dev`.
+Кирилицата минава коректно: заглавието и имената са `=?utf-8?B?…?=`, а тялото е base64 (mimetext само надписва Content-Transfer-Encoding, затова кодирането се прави в `contact.ts`).
 
 ## Деплой към Cloudflare
 

@@ -64,50 +64,66 @@ function validate(data: Submission): string | null {
   return null;
 }
 
-function escapeHtml(value: string): string {
-  return value.replace(
-    /[&<>"']/g,
-    (char) =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] as string,
-  );
+/**
+ * Headers must not carry raw newlines — a name or subject containing one could
+ * otherwise inject extra headers into the message.
+ */
+function headerSafe(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').trim();
 }
 
-async function sendEmail(env: Env, data: Submission): Promise<boolean> {
+/**
+ * mimetext labels the transfer encoding but does not apply it, and its default
+ * of `7bit` would mislabel a Cyrillic body as ASCII. Encode it ourselves,
+ * wrapped at the 76 characters RFC 2045 allows per line.
+ */
+function toBase64Body(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return (btoa(binary).match(/.{1,76}/g) ?? []).join('\r\n');
+}
+
+/**
+ * Sends through Cloudflare Email Routing's `send_email` binding.
+ *
+ * The binding only delivers to addresses verified as destinations on the
+ * account, which is exactly what a contact form needs — everything lands in
+ * the studio inbox. `cloudflare:email` exists only in the Workers runtime, so
+ * it is imported lazily to keep `astro dev` and `astro build` running on Node.
+ */
+async function sendEmail(env: Env, data: Submission): Promise<void> {
   const to = env.CONTACT_TO;
-  const from = env.CONTACT_FROM ?? 'Кова студио <onboarding@resend.dev>';
-  if (!env.RESEND_API_KEY || !to) return false;
+  const from = env.CONTACT_FROM;
+  if (!env.SEND_EMAIL || !to || !from) throw new Error('send_email binding is not configured');
+
+  // `mimetext/browser` is the build without Node built-ins — smaller on the edge.
+  const [{ EmailMessage }, { createMimeMessage, Mailbox }] = await Promise.all([
+    import('cloudflare:email'),
+    import('mimetext/browser'),
+  ]);
 
   const needs = data.needs.length > 0 ? data.needs.join(', ') : '—';
-  const html = `
-    <h2>Ново запитване от сайта</h2>
-    <p><strong>Име:</strong> ${escapeHtml(data.name)}</p>
-    <p><strong>Имейл:</strong> ${escapeHtml(data.email)}</p>
-    <p><strong>Нужди:</strong> ${escapeHtml(needs)}</p>
-    <p><strong>Съобщение:</strong></p>
-    <p style="white-space:pre-wrap">${escapeHtml(data.message)}</p>
-  `;
+  const name = headerSafe(data.name);
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${env.RESEND_API_KEY}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      reply_to: data.email,
-      subject: `Запитване от ${data.name}${data.needs.length ? ` — ${needs}` : ''}`,
-      html,
-    }),
+  const msg = createMimeMessage();
+  msg.setSender({ name: 'Кова студио', addr: from });
+  msg.setRecipient(to);
+  msg.setSubject(headerSafe(`Запитване от ${name}${data.needs.length ? ` — ${needs}` : ''}`));
+  // Lets you hit reply and answer the person directly. A Mailbox (not a plain
+  // string) is required here — it also base64-encodes the Cyrillic display name.
+  msg.setHeader('Reply-To', new Mailbox({ name, addr: data.email }));
+  msg.addMessage({
+    contentType: 'text/plain',
+    encoding: 'base64',
+    data: toBase64Body(
+      [`Име: ${data.name}`, `Имейл: ${data.email}`, `Нужди: ${needs}`, '', data.message].join(
+        '\r\n',
+      ),
+    ),
   });
 
-  if (!response.ok) {
-    console.error('Resend error', response.status, await response.text().catch(() => ''));
-    return false;
-  }
-
-  return true;
+  await env.SEND_EMAIL.send(new EmailMessage(from, to, msg.asRaw()));
 }
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
@@ -139,14 +155,14 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
 
   const env = locals.runtime?.env ?? ({} as Env);
 
-  if (!env.RESEND_API_KEY || !env.CONTACT_TO) {
-    console.warn('Contact form is not configured: missing RESEND_API_KEY or CONTACT_TO.');
+  if (!env.SEND_EMAIL || !env.CONTACT_TO || !env.CONTACT_FROM) {
+    console.warn('Contact form is not configured: missing SEND_EMAIL, CONTACT_TO or CONTACT_FROM.');
     return respond(false, ERRORS.notConfigured, 503);
   }
 
   try {
-    const sent = await sendEmail(env, data);
-    return sent ? respond(true) : respond(false, ERRORS.send, 502);
+    await sendEmail(env, data);
+    return respond(true);
   } catch (error) {
     console.error('Contact form failed', error);
     return respond(false, ERRORS.send, 502);
