@@ -18,7 +18,7 @@ import { PLANS } from '../data/content.ts';
             <h3 class="plan__name">{plan.name}</h3>
             <p class="plan__pitch">{plan.pitch}</p>
             <p class="plan__price">{plan.price}</p>
-            <p class="plan__timeline">{plan.timeline}</p>
+            {plan.timeline && <p class="plan__timeline">{plan.timeline}</p>}
             <ul class="plan__features">
               {plan.features.map((feature) => (
                 <li>{feature}</li>
@@ -28,6 +28,11 @@ import { PLANS } from '../data/content.ts';
         ))
       }
     </div>
+
+    <p class="footnote">
+      Срокът зависи от обхвата и го фиксирам заедно с цената — в
+      <a href="/blog/oferta-na-edna-stranica/">оферта на една страница</a>, преди да започнем.
+    </p>
   </div>
 </section>
 
@@ -101,6 +106,24 @@ import { PLANS } from '../data/content.ts';
     font-family: var(--font-display);
     font-size: 30px;
     margin: 22px 0 4px;
+    color: #fff;
+  }
+
+  .footnote {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--dark-ink-subtle);
+    margin: 26px 0 0;
+    max-width: 620px;
+  }
+
+  .footnote a {
+    color: var(--dark-ink-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .footnote a:hover {
     color: #fff;
   }
 

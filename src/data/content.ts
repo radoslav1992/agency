@@ -92,7 +92,11 @@ export type Plan = {
   name: string;
   pitch: string;
   price: string;
-  timeline: string;
+  /**
+   * Не се показва на картите — срокът стои до цената и кани читателя да ги
+   * раздели наум, което подценява работата. Мястото му е в офертата.
+   */
+  timeline?: string;
   features: string[];
   featured?: boolean;
   badge?: string;
@@ -103,7 +107,6 @@ export const PLANS: Plan[] = [
     name: 'Визитка',
     pitch: 'За малък бизнес, който трябва да го намират.',
     price: 'от 900 €',
-    timeline: '2–3 седмици',
     features: [
       'До 5 страници, дизайн по мярка',
       'Мобилна версия и SEO основа',
@@ -115,7 +118,6 @@ export const PLANS: Plan[] = [
     name: 'Приложение',
     pitch: 'Система, която върши работа вместо хора.',
     price: 'от 3 300 €',
-    timeline: '6–10 седмици',
     features: [
       'Анализ на процеса и прототип',
       'Потребители, роли, справки',
@@ -129,7 +131,6 @@ export const PLANS: Plan[] = [
     name: 'AI решение',
     pitch: 'Агент или чатбот върху твоите данни.',
     price: 'от 2 100 €',
-    timeline: '4–8 седмици',
     features: [
       'Пилот върху реални твои документи',
       'Отговори с посочени източници',
