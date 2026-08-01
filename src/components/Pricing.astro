@@ -1,5 +1,5 @@
 ---
-import { PLANS } from '../data/content.ts';
+import { PLANS, PRICING_PROMO } from '../data/content.ts';
 ---
 
 <section class="pricing">
@@ -9,6 +9,15 @@ import { PLANS } from '../data/content.ts';
     <p class="lead">
       Всеки проект е различен, но за да имаш представа още преди да пишеш — ето откъде тръгваме.
     </p>
+
+    {
+      PRICING_PROMO && (
+        <p class="promo">
+          <span class="promo__dot" aria-hidden="true" />
+          {PRICING_PROMO}
+        </p>
+      )
+    }
 
     <div class="grid">
       {
@@ -55,6 +64,33 @@ import { PLANS } from '../data/content.ts';
     color: var(--dark-ink-subtle);
     margin: 8px 0 38px;
     max-width: 560px;
+  }
+
+  /* The lead's 38px gap is right without the promo, too much with it. */
+  .lead:has(+ .promo) {
+    margin-bottom: 20px;
+  }
+
+  .promo {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 32px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(226, 84, 43, 0.4);
+    background: rgba(226, 84, 43, 0.12);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+
+  .promo__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex: none;
   }
 
   .grid {
