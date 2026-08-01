@@ -52,7 +52,7 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     quote:
-      'Редакторът и износът към PDF работеха от първия ден. Сложната част остана скрита, вместо да се прехвърли на потребителя.',
+      'Редакторът и експортът към PDF работеха от първия ден. Сложната част остана скрита, вместо да се прехвърли на потребителя.',
     author: 'Екипът на Plumeo',
     role: 'документи от Markdown',
     initials: 'P',
@@ -62,7 +62,7 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     quote:
       'Четири различни справки, събрани в едно поле. Хората ги ползват, без да им обясняваме как — точно това искахме.',
-    author: 'Екипът на По номер',
+    author: 'Екипът на „По номер“',
     role: 'проверки по регистрационен номер',
     initials: 'ПН',
     project: { name: 'ponomer.com', url: 'https://ponomer.com/' },
@@ -79,7 +79,7 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     quote:
       'Изчисленията по КСО са тежки, а отвън изглежда като три плъзгача и едно число. Разликата е точно в това.',
-    author: 'Екипът на Пенсионен калкулатор',
+    author: 'Екипът на „Пенсионен калкулатор“',
     role: 'пенсионни изчисления',
     initials: 'ПК',
     project: { name: 'pensionen-kalkulator.bg', url: 'https://pensionen-kalkulator.bg/' },
