@@ -1,0 +1,870 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+---
+
+<BaseLayout
+  title="Анализатор на сайтове"
+  description="Безплатен анализатор на сайтове на български — SEO, сигурност, технологии, DNS и съдържание. Всички данни директно при теб, без AI обработка и без регистрация."
+  canonical="/analyzer/"
+>
+  <section class="container hero">
+    <p class="eyebrow">Безплатен инструмент</p>
+    <h1 class="title">Анализатор на сайтове</h1>
+    <p class="lead">
+      Въведи адрес и получи пълен технически разбор — SEO, сигурност, технологии, DNS, съдържание
+      и структура. Показваме всички събрани данни директно при теб — без AI обобщения, без
+      регистрация и без да пазим резултата.
+    </p>
+
+    <form class="scan" data-analyzer-form novalidate>
+      <label class="scan__label" for="scan-url">Адрес на сайта</label>
+      <div class="scan__row">
+        <input
+          id="scan-url"
+          class="scan__input"
+          type="text"
+          name="url"
+          inputmode="url"
+          autocomplete="url"
+          spellcheck="false"
+          placeholder="example.bg"
+          required
+          maxlength="2048"
+        />
+        <button class="btn btn--primary scan__submit" type="submit">Анализирай</button>
+      </div>
+      <p class="scan__hint">Например: kova.studio или https://example.bg — анализът отнема 5–15 секунди.</p>
+      <p class="scan__status" role="status" data-scan-status hidden></p>
+    </form>
+  </section>
+
+  <section class="container results" data-results hidden aria-live="polite"></section>
+
+  <section class="container note-wrap" data-results-note hidden>
+    <p class="note">
+      Всички данни са събрани в реално време от нашия сървър в момента на проверката — без AI
+      обработка, без съкращения и без съхранение на резултата.
+    </p>
+  </section>
+
+  <CtaBanner />
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: 76px 40px;
+    max-width: 900px;
+  }
+
+  .title {
+    font-size: clamp(32px, 5.5vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin: 12px 0 14px;
+  }
+
+  .lead {
+    font-size: 18px;
+    color: var(--ink-muted);
+    margin: 0 0 34px;
+    max-width: 640px;
+    line-height: 1.6;
+  }
+
+  .scan {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .scan__label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .scan__row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .scan__input {
+    flex: 1;
+    font-family: var(--font-body);
+    font-size: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--line-field);
+    border-radius: 999px;
+    background: var(--field);
+    outline: none;
+    color: var(--ink);
+    min-width: 0;
+    transition:
+      border-color 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+
+  .scan__input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(226, 84, 43, 0.14);
+  }
+
+  .scan__submit[disabled] {
+    opacity: 0.7;
+    cursor: progress;
+  }
+
+  .scan__hint {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+  }
+
+  .scan__status {
+    margin: 4px 0 0;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--chip);
+    color: var(--ink-body);
+  }
+
+  .scan__status[data-tone='error'] {
+    background: rgba(226, 84, 43, 0.12);
+    color: var(--accent-darker);
+  }
+
+  .results {
+    padding-block: 8px 24px;
+    display: grid;
+    gap: 28px;
+  }
+
+  .note-wrap {
+    padding-block: 0 72px;
+  }
+
+  .note {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+    line-height: 1.6;
+  }
+
+  /* ---- рендерирани от скрипта елементи ---- */
+
+  .results :global(.block__title) {
+    font-size: 22px;
+    margin: 0 0 14px;
+  }
+
+  .results :global(.card + .card) {
+    margin-top: 14px;
+  }
+
+  .results :global(.kv) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  .results :global(.kv td) {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+
+  .results :global(.kv tr:first-child td) {
+    border-top: 0;
+  }
+
+  .results :global(.kv td:first-child) {
+    width: 240px;
+    color: var(--ink-muted);
+    font-weight: 600;
+    font-size: 14px;
+    padding-right: 18px;
+  }
+
+  .results :global(.kv td:last-child) {
+    color: var(--ink);
+    word-break: break-word;
+    white-space: pre-line;
+  }
+
+  .results :global(.card h3) {
+    font-size: 16px;
+    margin: 18px 0 10px;
+  }
+
+  .results :global(.card h3:first-child) {
+    margin-top: 0;
+  }
+
+  .results :global(.badge) {
+    display: inline-block;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 3px 10px;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+
+  .results :global(.badge--ok) {
+    background: rgba(52, 168, 83, 0.14);
+    color: #1f6b34;
+  }
+
+  .results :global(.badge--warn) {
+    background: rgba(226, 160, 43, 0.16);
+    color: #8a5c0d;
+  }
+
+  .results :global(.badge--bad) {
+    background: rgba(226, 84, 43, 0.13);
+    color: var(--accent-darker);
+  }
+
+  .results :global(.pills) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .results :global(.muted) {
+    color: var(--ink-subtle);
+  }
+
+  .results :global(.grade) {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .results :global(.grade__letter) {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .results :global(.grade__letter[data-grade='A']) {
+    background: var(--success);
+  }
+
+  .results :global(.grade__letter[data-grade='B']) {
+    background: #6aa84f;
+  }
+
+  .results :global(.grade__letter[data-grade='C']) {
+    background: #e2a02b;
+  }
+
+  .results :global(.grade__letter[data-grade='D']),
+  .results :global(.grade__letter[data-grade='F']) {
+    background: var(--accent-dark);
+  }
+
+  .results :global(.grade__score) {
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+
+  .results :global(.list) {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .results :global(details) {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .results :global(summary) {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--ink-body);
+  }
+
+  .results :global(pre) {
+    background: var(--chip);
+    border-radius: 12px;
+    padding: 14px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .results :global(.chain) {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+    line-height: 1.8;
+    word-break: break-all;
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding-block: 48px 28px;
+    }
+
+    .scan__row {
+      flex-direction: column;
+    }
+
+    .results :global(.kv td:first-child) {
+      width: 40%;
+    }
+  }
+</style>
+
+<script>
+  type Tone = 'ok' | 'warn' | 'bad';
+
+  const form = document.querySelector<HTMLFormElement>('[data-analyzer-form]');
+  const input = document.getElementById('scan-url') as HTMLInputElement | null;
+  const status = document.querySelector<HTMLParagraphElement>('[data-scan-status]');
+  const results = document.querySelector<HTMLElement>('[data-results]');
+  const resultsNote = document.querySelector<HTMLElement>('[data-results-note]');
+
+  /* ---------- малки помощници за DOM ---------- */
+
+  function el<K extends keyof HTMLElementTagNameMap>(
+    tag: K,
+    className?: string,
+    text?: string,
+  ): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function badge(text: string, tone: Tone): HTMLSpanElement {
+    return el('span', `badge badge--${tone}`, text);
+  }
+
+  function link(href: string, text?: string): HTMLAnchorElement {
+    const a = el('a', undefined, text ?? href);
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener nofollow';
+    return a;
+  }
+
+  function muted(text: string): HTMLSpanElement {
+    return el('span', 'muted', text);
+  }
+
+  type KvValue = string | number | Node | (string | Node)[] | null | undefined;
+
+  function kvTable(rows: [string, KvValue][]): HTMLTableElement {
+    const table = el('table', 'kv');
+    const tbody = el('tbody');
+    for (const [label, value] of rows) {
+      const tr = el('tr');
+      tr.appendChild(el('td', undefined, label));
+      const td = el('td');
+      if (value === null || value === undefined || value === '') {
+        td.appendChild(muted('—'));
+      } else if (Array.isArray(value)) {
+        for (const part of value) td.append(part);
+      } else if (value instanceof Node) {
+        td.appendChild(value);
+      } else {
+        td.textContent = String(value);
+      }
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function pills(items: string[]): HTMLUListElement {
+    const list = el('ul', 'pills');
+    for (const item of items) {
+      const li = el('li');
+      li.appendChild(el('span', 'pill', item));
+      list.appendChild(li);
+    }
+    return list;
+  }
+
+  function section(title: string, ...cards: Node[]): HTMLElement {
+    const block = el('section', 'block');
+    block.appendChild(el('h2', 'block__title', title));
+    for (const card of cards) block.appendChild(card);
+    return block;
+  }
+
+  function card(...children: Node[]): HTMLDivElement {
+    const node = el('div', 'card');
+    for (const child of children) node.appendChild(child);
+    return node;
+  }
+
+  function detailsBlock(summaryText: string, content: Node): HTMLDetailsElement {
+    const details = el('details');
+    details.appendChild(el('summary', undefined, summaryText));
+    details.appendChild(content);
+    return details;
+  }
+
+  const nf = new Intl.NumberFormat('bg-BG');
+  const num = (value: number) => nf.format(value);
+
+  /* ---------- секции ---------- */
+
+  function renderOverview(r: any): HTMLElement {
+    const statusTone: Tone = r.page.ok ? 'ok' : 'bad';
+    const timeTone: Tone =
+      r.page.responseTimeMs < 500 ? 'ok' : r.page.responseTimeMs < 1500 ? 'warn' : 'bad';
+
+    const rows: [string, KvValue][] = [
+      ['Краен адрес', link(r.page.finalUrl)],
+      ['HTTP статус', [String(r.page.status), badge(r.page.ok ? 'OK' : 'Проблем', statusTone)]],
+      [
+        'Време за отговор',
+        [
+          `${num(r.page.responseTimeMs)} ms`,
+          badge(timeTone === 'ok' ? 'Бързо' : timeTone === 'warn' ? 'Средно' : 'Бавно', timeTone),
+        ],
+      ],
+      ['Размер на HTML', `${num(Math.round(r.architecture.htmlBytes / 1024))} KB`],
+      ['Тип съдържание', r.page.contentType],
+      ['Сървър', r.page.server],
+      ['X-Powered-By', r.page.poweredBy],
+    ];
+
+    const nodes: Node[] = [kvTable(rows)];
+
+    if (r.redirects.length > 1) {
+      const chain = el('ol', 'chain');
+      for (const hop of r.redirects) {
+        chain.appendChild(el('li', undefined, `${hop.status || 'грешка'} — ${hop.url}`));
+      }
+      nodes.push(detailsBlock(`Верига от редиректи (${r.redirects.length} стъпки)`, chain));
+    }
+
+    return section('Обзор', card(...nodes));
+  }
+
+  function renderSeo(r: any): HTMLElement {
+    const s = r.seo;
+    const titleTone: Tone = s.titleLength >= 30 && s.titleLength <= 60 ? 'ok' : 'warn';
+    const descTone: Tone =
+      s.metaDescriptionLength >= 50 && s.metaDescriptionLength <= 160 ? 'ok' : 'warn';
+
+    const metaRows: [string, KvValue][] = [
+      [
+        'Заглавие (title)',
+        s.title ? [s.title, badge(`${s.titleLength} знака`, titleTone)] : badge('Липсва', 'bad'),
+      ],
+      [
+        'Мета описание',
+        s.metaDescription
+          ? [s.metaDescription, badge(`${s.metaDescriptionLength} знака`, descTone)]
+          : badge('Липсва', 'warn'),
+      ],
+      ['Canonical адрес', s.canonical],
+      ['Език (lang)', s.lang ?? badge('Липсва', 'warn')],
+      ['Кодиране (charset)', s.charset],
+      ['Viewport (мобилни)', s.viewport ? badge('Има', 'ok') : badge('Липсва', 'bad')],
+      ['Favicon', s.favicon ? badge('Има', 'ok') : badge('Липсва', 'warn')],
+      [
+        'Meta robots',
+        s.metaRobots
+          ? [s.metaRobots, ...(s.noindex ? [badge('noindex — скрит от търсачки', 'bad')] : [])]
+          : muted('Не е зададен (индексира се по подразбиране)'),
+      ],
+      ['Hreflang алтернативи', s.hreflangCount > 0 ? String(s.hreflangCount) : null],
+      ['Генератор', s.generator],
+    ];
+
+    const h1Tone: Tone = s.headingCounts.H1 === 1 ? 'ok' : s.headingCounts.H1 === 0 ? 'bad' : 'warn';
+    const headingRows: [string, KvValue][] = [
+      [
+        'Брой заглавия',
+        [
+          `H1: ${s.headingCounts.H1} · H2: ${s.headingCounts.H2} · H3: ${s.headingCounts.H3} · H4: ${s.headingCounts.H4} · H5: ${s.headingCounts.H5} · H6: ${s.headingCounts.H6}`,
+          badge(
+            s.headingCounts.H1 === 1 ? 'Точно едно H1' : s.headingCounts.H1 === 0 ? 'Няма H1' : 'Повече от едно H1',
+            h1Tone,
+          ),
+        ],
+      ],
+      [
+        'Изображения',
+        [
+          `${num(s.imagesTotal)} общо`,
+          s.imagesMissingAlt > 0
+            ? badge(`${s.imagesMissingAlt} без alt текст`, 'warn')
+            : badge('Всички имат alt', 'ok'),
+        ],
+      ],
+    ];
+
+    const headingNodes: Node[] = [kvTable(headingRows)];
+    if (s.headings.length > 0) {
+      const list = el('ul', 'list');
+      for (const h of s.headings) {
+        list.appendChild(el('li', undefined, `${h.tag}: ${h.text || '(празно)'}`));
+      }
+      headingNodes.push(detailsBlock(`Всички заглавия на страницата (${s.headings.length})`, list));
+    }
+
+    return section('SEO и мета данни', card(kvTable(metaRows)), card(...headingNodes));
+  }
+
+  function renderSharing(r: any): HTMLElement {
+    const og = Object.entries(r.seo.ogTags) as [string, string][];
+    const tw = Object.entries(r.seo.twitterTags) as [string, string][];
+
+    const nodes: Node[] = [];
+    if (og.length > 0) {
+      nodes.push(el('h3', undefined, 'Open Graph тагове'));
+      nodes.push(kvTable(og.map(([k, v]) => [`og:${k}`, v] as [string, KvValue])));
+    }
+    if (tw.length > 0) {
+      nodes.push(el('h3', undefined, 'Twitter Card тагове'));
+      nodes.push(kvTable(tw.map(([k, v]) => [`twitter:${k}`, v] as [string, KvValue])));
+    }
+    if (og.length === 0 && tw.length === 0) {
+      nodes.push(
+        el('p', 'muted', 'Няма Open Graph и Twitter тагове — при споделяне в социални мрежи сайтът ще изглежда непълно.'),
+      );
+    }
+
+    if (r.socialProfiles.length > 0) {
+      nodes.push(el('h3', undefined, 'Открити профили в социални мрежи'));
+      const list = el('ul', 'list');
+      for (const p of r.socialProfiles) {
+        const li = el('li', undefined, `${p.platform}: `);
+        li.appendChild(link(p.url));
+        list.appendChild(li);
+      }
+      nodes.push(list);
+    }
+
+    return section('Социално споделяне', card(...nodes));
+  }
+
+  function renderContent(r: any): HTMLElement {
+    const c = r.content;
+    const rows: [string, KvValue][] = [
+      ['Брой думи', num(c.wordCount)],
+      ['Брой изречения', num(c.sentenceCount)],
+      ['Средно думи в изречение', c.avgWordsPerSentence],
+    ];
+
+    const nodes: Node[] = [kvTable(rows)];
+    if (c.keywords.length > 0) {
+      nodes.push(el('h3', undefined, 'Най-чести думи'));
+      nodes.push(pills(c.keywords.map((k: any) => `${k.word} × ${k.count}`)));
+    }
+
+    return section('Съдържание', card(...nodes));
+  }
+
+  function renderLinks(r: any): HTMLElement {
+    const rows: [string, KvValue][] = [
+      ['Вътрешни връзки', num(r.links.internal)],
+      ['Външни връзки', num(r.links.external)],
+    ];
+
+    const nodes: Node[] = [kvTable(rows)];
+    if (r.links.outboundDomains.length > 0) {
+      const list = el('ul', 'list');
+      for (const d of r.links.outboundDomains) {
+        const li = el('li');
+        li.appendChild(link(d.href, d.domain));
+        list.appendChild(li);
+      }
+      nodes.push(detailsBlock(`Външни домейни (${r.links.outboundDomains.length})`, list));
+    }
+
+    return section('Връзки', card(...nodes));
+  }
+
+  function renderStructuredData(r: any): HTMLElement {
+    const sd = r.structuredData;
+    const nodes: Node[] = [];
+
+    if (sd.jsonLdTypes.length > 0) {
+      nodes.push(el('h3', undefined, 'JSON-LD схеми'));
+      nodes.push(pills(sd.jsonLdTypes));
+    }
+    if (sd.microdataTypes.length > 0) {
+      nodes.push(el('h3', undefined, 'Microdata схеми'));
+      nodes.push(pills(sd.microdataTypes));
+    }
+    if (nodes.length === 0) {
+      nodes.push(
+        el('p', 'muted', 'Няма открити структурирани данни (schema.org) — те помагат на търсачките да разберат съдържанието.'),
+      );
+    }
+
+    return section('Структурирани данни', card(...nodes));
+  }
+
+  function renderTech(r: any): HTMLElement {
+    const nodes: Node[] = [];
+
+    if (r.technologies.length > 0) {
+      const byCategory = new Map<string, string[]>();
+      for (const t of r.technologies) {
+        const list = byCategory.get(t.category) ?? [];
+        list.push(t.name);
+        byCategory.set(t.category, list);
+      }
+      const rows: [string, KvValue][] = [];
+      for (const [category, names] of byCategory) rows.push([category, pills(names)]);
+      nodes.push(kvTable(rows));
+    } else {
+      nodes.push(el('p', 'muted', 'Не са разпознати технологии по публичните сигнатури на страницата.'));
+    }
+
+    const cards: Node[] = [card(...nodes)];
+
+    if (r.trackers.length > 0) {
+      const rows = r.trackers.map((t: any) => [t.name, t.id] as [string, KvValue]);
+      cards.push(card(el('h3', undefined, 'Проследяващи кодове (тракери)'), kvTable(rows)));
+    }
+
+    return section('Технологии', ...cards);
+  }
+
+  function renderSecurity(r: any): HTMLElement {
+    const s = r.security;
+
+    const grade = el('div', 'grade');
+    const letter = el('div', 'grade__letter', s.grade);
+    letter.dataset.grade = s.grade;
+    grade.appendChild(letter);
+    grade.appendChild(
+      el('p', 'grade__score', `${s.score} от 100 точки за защитни HTTP хедъри · ${s.https ? 'HTTPS е активен' : 'Без HTTPS!'}`),
+    );
+
+    const rows: [string, KvValue][] = s.headers.map(
+      (h: any) =>
+        [
+          h.label,
+          h.value !== null
+            ? [badge('Има', 'ok'), ' ', el('span', 'muted', String(h.value).slice(0, 120))]
+            : badge('Липсва', 'bad'),
+        ] as [string, KvValue],
+    );
+
+    const nodes: Node[] = [grade, kvTable(rows)];
+
+    if (s.recommendations.length > 0) {
+      const list = el('ul', 'list');
+      for (const rec of s.recommendations) list.appendChild(el('li', undefined, rec));
+      nodes.push(detailsBlock(`Препоръки (${s.recommendations.length})`, list));
+    }
+
+    return section('Сигурност', card(...nodes));
+  }
+
+  function renderDns(r: any): HTMLElement {
+    const d = r.dns;
+    const joinList = (items: string[]) => (items.length > 0 ? items.join('\n') : null);
+
+    const asPre = (items: string[]): Node | null => {
+      if (items.length === 0) return null;
+      const pre = el('pre', undefined, items.join('\n'));
+      return pre;
+    };
+
+    const rows: [string, KvValue][] = [
+      ['A записи (IPv4)', joinList(d.a)],
+      ['AAAA записи (IPv6)', joinList(d.aaaa)],
+      ['NS сървъри', joinList(d.ns)],
+      ['MX записи (поща)', d.mx.length > 0 ? joinList(d.mx) : badge('Няма — домейнът не приема поща', 'warn')],
+      [
+        'SPF запис',
+        d.spf ? [badge('Има', 'ok'), ' ', el('span', 'muted', d.spf)] : badge('Липсва', d.mx.length > 0 ? 'bad' : 'warn'),
+      ],
+      [
+        'DMARC запис',
+        d.dmarc
+          ? [badge('Има', 'ok'), ' ', el('span', 'muted', d.dmarc)]
+          : badge('Липсва', d.mx.length > 0 ? 'bad' : 'warn'),
+      ],
+    ];
+
+    const nodes: Node[] = [kvTable(rows)];
+    const txtPre = asPre(d.txt);
+    if (txtPre) nodes.push(detailsBlock(`Всички TXT записи (${d.txt.length})`, txtPre));
+
+    return section('DNS и имейл', card(...nodes));
+  }
+
+  function renderIndexing(r: any): HTMLElement {
+    const robotsNodes: Node[] = [];
+    const robotsRows: [string, KvValue][] = [
+      ['robots.txt', r.robots.found ? badge('Има', 'ok') : badge('Липсва', 'warn')],
+    ];
+    if (r.robots.sitemaps.length > 0) {
+      robotsRows.push(['Обявени sitemap адреси', r.robots.sitemaps.join('\n')]);
+    }
+    robotsNodes.push(kvTable(robotsRows));
+    if (r.robots.raw) {
+      robotsNodes.push(detailsBlock('Съдържание на robots.txt', el('pre', undefined, r.robots.raw)));
+    }
+
+    const sitemapRows: [string, KvValue][] = [
+      ['Sitemap', r.sitemap.found ? [badge('Има', 'ok'), ' ', link(r.sitemap.url)] : badge('Не е открит', 'warn')],
+    ];
+    if (r.sitemap.found) {
+      sitemapRows.push(['Брой URL адреси', num(r.sitemap.urlCount)]);
+    }
+    const sitemapNodes: Node[] = [kvTable(sitemapRows)];
+    if (r.sitemap.sampleUrls.length > 0) {
+      const list = el('ul', 'list');
+      for (const u of r.sitemap.sampleUrls) list.appendChild(el('li', undefined, u));
+      sitemapNodes.push(detailsBlock(`Примерни адреси от sitemap (първите ${r.sitemap.sampleUrls.length})`, list));
+    }
+
+    return section('Индексиране', card(...robotsNodes), card(...sitemapNodes));
+  }
+
+  function renderArchitecture(r: any): HTMLElement {
+    const a = r.architecture;
+    const rows: [string, KvValue][] = [
+      ['HTML елементи (приблизително)', num(a.domElements)],
+      ['Скриптове', `${num(a.scriptsExternal)} външни · ${num(a.scriptsInline)} вградени`],
+      ['Стилове', `${num(a.stylesheets)} външни · ${num(a.inlineStyles)} вградени`],
+      ['Изображения', num(a.images)],
+      [
+        'Модерни формати (WebP/AVIF)',
+        a.images > 0 ? [num(a.modernImages), a.modernImages > 0 ? badge('Използват се', 'ok') : badge('Не се използват', 'warn')] : num(a.modernImages),
+      ],
+      ['Компресия при пренос', a.compression ?? muted('Не е отчетена')],
+    ];
+
+    return section('Архитектура на страницата', card(kvTable(rows)));
+  }
+
+  function renderContacts(r: any): HTMLElement {
+    const nodes: Node[] = [];
+    if (r.contacts.emails.length === 0 && r.contacts.phones.length === 0) {
+      nodes.push(el('p', 'muted', 'Няма открити имейли или телефони на страницата.'));
+    } else {
+      const rows: [string, KvValue][] = [];
+      if (r.contacts.emails.length > 0) rows.push(['Имейли', r.contacts.emails.join('\n')]);
+      if (r.contacts.phones.length > 0) rows.push(['Телефони', r.contacts.phones.join('\n')]);
+      nodes.push(kvTable(rows));
+    }
+    return section('Открити контакти', card(...nodes));
+  }
+
+  /* ---------- поток на формата ---------- */
+
+  function showStatus(message: string, tone?: 'error') {
+    if (!status) return;
+    status.textContent = message;
+    if (tone) status.dataset.tone = tone;
+    else delete status.dataset.tone;
+    status.hidden = false;
+  }
+
+  function hideStatus() {
+    if (status) status.hidden = true;
+  }
+
+  function renderAll(r: any) {
+    if (!results || !resultsNote) return;
+    results.replaceChildren(
+      renderOverview(r),
+      renderSeo(r),
+      renderSharing(r),
+      renderContent(r),
+      renderLinks(r),
+      renderStructuredData(r),
+      renderTech(r),
+      renderSecurity(r),
+      renderDns(r),
+      renderIndexing(r),
+      renderArchitecture(r),
+      renderContacts(r),
+    );
+    results.hidden = false;
+    resultsNote.hidden = false;
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Предварително попълване от ?url= (без автоматично стартиране).
+  const preset = new URLSearchParams(location.search).get('url');
+  if (preset && input) input.value = preset;
+
+  if (form && input) {
+    const submit = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const url = input.value.trim();
+      if (!url) {
+        showStatus('Въведи адрес на сайт, например example.bg.', 'error');
+        input.focus();
+        return;
+      }
+
+      hideStatus();
+      if (results) results.hidden = true;
+      if (resultsNote) resultsNote.hidden = true;
+      submit?.setAttribute('disabled', '');
+      const original = submit?.textContent ?? '';
+      if (submit) submit.textContent = 'Анализирам…';
+      showStatus('Анализирам сайта — това отнема 5–15 секунди…');
+
+      try {
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', accept: 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        const data = (await response.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+          result?: unknown;
+        };
+
+        if (response.ok && data.ok && data.result) {
+          hideStatus();
+          renderAll(data.result);
+          return;
+        }
+
+        showStatus(data.error ?? 'Нещо се обърка при анализа. Опитай отново след малко.', 'error');
+      } catch {
+        showStatus('Няма връзка със сървъра. Провери интернет връзката си и опитай отново.', 'error');
+      } finally {
+        submit?.removeAttribute('disabled');
+        if (submit) submit.textContent = original;
+      }
+    });
+  }
+</script>
