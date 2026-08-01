@@ -80,6 +80,14 @@ export const PROJECTS: Project[] = [
     alt: 'Началната страница на По номер с поле за регистрационен номер и бутон „Провери всичко“',
   },
   {
+    name: 'Beaver Games',
+    url: 'https://beavergames.online/',
+    tagline:
+      'Аркада с подбрани браузърни игри, които тръгват под секунда — без сваляне, без реклами и без регистрация. Работи дори без интернет.',
+    tags: ['Уеб приложение', 'Игри'],
+    alt: 'Началната страница на Beaver Games с надпис „No downloads. Just press start.“ и демо на играта Chicken Attack',
+  },
+  {
     name: 'Lovable Общност',
     url: 'https://communitylovable.bg/',
     tagline:
