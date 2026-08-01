@@ -21,8 +21,8 @@ export const SITE = {
     linkedinLabel: 'linkedin.com/in/radoslav-dodnikov',
   },
   location: 'София, България',
-  /** Availability pill in the hero. Set to `null` to hide it. */
-  availability: 'Свободен за 2 нови проекта през септември',
+  /** Availability pill in the hero. Set to a string to show it again. */
+  availability: null,
   /** Booking link for the "30 минути разговор" card. `null` falls back to email. */
   bookingUrl: null,
 };
