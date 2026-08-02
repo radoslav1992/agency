@@ -32,6 +32,11 @@ export const SITE = {
    * името на дружеството (напр. „Кова студио ЕООД, ЕИК …“), когато има такова.
    */
   legalName: 'Кова студио · Радослав Додников',
+  /**
+   * Google Analytics 4 measurement ID. Зарежда се само след съгласие от
+   * банера за бисквитки. `null` изключва аналитиката и банера изцяло.
+   */
+  gaId: 'G-5B1VWF8HL4',
   /** Availability pill in the hero. Set to a string to show it again. */
   availability: null,
   /** Booking link for the "30 минути разговор" card. `null` falls back to email. */
