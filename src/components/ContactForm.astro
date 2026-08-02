@@ -46,13 +46,12 @@ import { SITE } from '../data/site.mjs';
   </fieldset>
 
   <label class="field">
-    Разкажи накратко
-    <textarea
-      name="message"
-      rows="5"
-      placeholder="Какъв е бизнесът ти, какъв е проблемът и има ли срок?"
-      required
-      maxlength="4000"></textarea>
+    Разкажи ми накратко
+    <span class="field__hint">
+      Опиши как работи процесът в момента, какво те затруднява и какъв резултат искаш да
+      постигнеш. Не е необходимо да имаш готово техническо задание.
+    </span>
+    <textarea name="message" rows="5" required maxlength="4000"></textarea>
   </label>
 
   {/* Honeypot — hidden from people, tempting for bots. */}
@@ -63,7 +62,7 @@ import { SITE } from '../data/site.mjs';
     </label>
   </div>
 
-  <button class="btn btn--primary submit" type="submit">Изпрати запитване</button>
+  <button class="btn btn--primary submit" type="submit">Изпрати запитването</button>
 
   <p class="status" role="status" data-form-status hidden></p>
   <p class="fallback">
@@ -94,6 +93,13 @@ import { SITE } from '../data/site.mjs';
     gap: 7px;
     font-size: 14px;
     font-weight: 600;
+  }
+
+  .field__hint {
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--ink-subtle);
   }
 
   .field input,
@@ -245,7 +251,7 @@ import { SITE } from '../data/site.mjs';
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
   const status = document.querySelector<HTMLParagraphElement>('[data-form-status]');
 
-  const SUCCESS = 'Благодаря! Получих запитването и ще ти пиша до 24 часа.';
+  const SUCCESS = 'Благодаря! Получих запитването и ще ти отговоря до един работен ден.';
 
   function show(message: string, tone: 'success' | 'error') {
     if (!status) return;
@@ -262,7 +268,7 @@ import { SITE } from '../data/site.mjs';
   const about = params.get('about');
   const messageField = form?.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
   if (about && messageField && !messageField.value) {
-    messageField.value = `Анализирах ${about} с анализатора. Кои са трите най-важни неща, които да подобря?`;
+    messageField.value = `Проверих ${about} с безплатния анализ. Кои са трите промени, които трябва да направя първо?`;
   }
 
   if (params.get('sent') === '1') {

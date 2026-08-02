@@ -4,17 +4,17 @@ import CtaBanner from '../components/CtaBanner.astro';
 ---
 
 <BaseLayout
-  title="Анализатор на сайтове"
-  description="Безплатен анализатор на сайтове на български — SEO, сигурност, технологии, DNS и съдържание. Всички данни директно при теб, без AI обработка и без регистрация."
+  title="Безплатен анализ на сайт"
+  description="Безплатна техническа проверка на сайт — SEO, сигурност, достъпност, технологии, домейн и готовност за AI търсачки. Без регистрация и без съхранение на резултатите."
   canonical="/analyzer/"
 >
   <section class="container hero">
-    <p class="eyebrow">Безплатен инструмент</p>
-    <h1 class="title">Анализатор на сайтове</h1>
+    <p class="eyebrow">Безплатен анализ на сайт</p>
+    <h1 class="title">Провери какво може да се подобри по сайта ти</h1>
     <p class="lead">
-      Въведи адрес и получи пълен технически разбор — технологии, SEO, GEO (видимост пред AI
-      търсачки), сигурност, достъпност, хостинг, домейн, DNS и бисквитки. Всички събрани данни се
-      показват директно при теб — без AI обобщения, без регистрация и без да пазим резултата.
+      Въведи адреса на сайта и получи техническа проверка на SEO, сигурността, достъпността,
+      използваните технологии, домейна и готовността за AI търсачки. Проверката е безплатна, не
+      изисква регистрация и не съхранява резултатите.
     </p>
 
     <form class="scan" data-analyzer-form novalidate>
@@ -32,52 +32,60 @@ import CtaBanner from '../components/CtaBanner.astro';
           required
           maxlength="2048"
         />
-        <button class="btn btn--primary scan__submit" type="submit">Анализирай</button>
+        <button class="btn btn--primary scan__submit" type="submit">Провери сайта</button>
       </div>
-      <p class="scan__hint">Например: kova.studio или https://example.bg — анализът отнема 5–15 секунди.</p>
+      <p class="scan__hint">
+        Например: kova.bg или https://example.bg — проверката обикновено отнема между 5 и 15
+        секунди.
+      </p>
       <p class="scan__status" role="status" data-scan-status hidden></p>
+      <p class="scan__note">
+        Данните се събират в момента на анализа от публично достъпни източници. Резултатите не се
+        генерират или обобщават от AI.
+      </p>
     </form>
   </section>
 
   <section class="container results" data-results hidden aria-live="polite"></section>
 
-  <section class="container note-wrap" data-results-note hidden>
-    <p class="note">
-      Всички данни са събрани в реално време от нашия сървър в момента на проверката — без AI
-      обработка, без съкращения и без съхранение на резултата.
-    </p>
-  </section>
-
-  {/* Естественият следващ ход след безплатния резултат — трите нива. */}
-  <section class="container next-wrap" data-next-steps hidden>
-    <h2 class="next__title">Какво следва от тук?</h2>
+  {/* Естественият следващ ход след безплатния резултат. */}
+  <section class="container next-wrap" data-next-steps>
+    <h2 class="next__title">Какво получаваш?</h2>
     <div class="next">
       <article class="next__card">
-        <p class="next__level">1 · Безплатно</p>
-        <h3>Пълният резултат</h3>
+        <h3>Всички резултати веднага</h3>
         <p>
-          Всичко по-горе е твое — без регистрация и без уловки. Сподели линка към анализатора с
-          когото искаш.
+          Виждаш всички открити технически сигнали директно в браузъра — без регистрация и без
+          заключени платени секции. Можеш да използваш резултатите самостоятелно или да ги
+          изпратиш на човека, който поддържа сайта ти.
         </p>
       </article>
       <article class="next__card">
-        <p class="next__level">2 · Безплатно</p>
-        <h3>Персонална препоръка</h3>
+        <h3>Не си сигурен кое е важно?</h3>
         <p>
-          Не си сигурен кое от всичко това е важно? Изпрати ми адреса на сайта и ще ти върна трите
-          най-важни действия — лично, не автоматично.
+          Изпрати ми адреса на сайта и ще прегледам резултатите лично. Ще ти посоча трите промени,
+          които според мен трябва да бъдат направени първо, и ще обясня защо са важни.
         </p>
-        <a class="btn btn--outline" href="/contact/" data-next-recommend>Поискай препоръка</a>
+        <a class="btn btn--outline" href="/contact/" data-next-recommend>Поискай личен преглед</a>
       </article>
       <article class="next__card next__card--accent">
-        <p class="next__level">3 · Платено</p>
-        <h3>Одит или изпълнение</h3>
+        <h3>Искаш проблемите да бъдат отстранени?</h3>
         <p>
-          Мога да подготвя приоритизиран план с бюджет за всяка поправка — или директно да
-          отстраня проблемите вместо теб.
+          Мога да подготвя конкретен план с приоритети, срок и ориентировъчен бюджет. При желание
+          мога да поема и самото изпълнение — от отделни технически подобрения до цялостно
+          обновяване на сайта.
         </p>
-        <a class="btn btn--primary" href="/contact/" data-next-offer>Поискай оферта за поправките</a>
+        <a class="btn btn--primary" href="/contact/" data-next-offer>Поискай план и оферта</a>
       </article>
+    </div>
+
+    <div class="scope">
+      <h3 class="scope__title">Какво не включва проверката?</h3>
+      <p class="scope__text">
+        Това е пасивен анализ на публично достъпни технически сигнали. Той не замества тест за
+        проникване, пълен одит за достъпност, юридическа проверка или анализ на системи, които не
+        са публично достъпни.
+      </p>
     </div>
   </section>
 
@@ -178,12 +186,8 @@ import CtaBanner from '../components/CtaBanner.astro';
     gap: 28px;
   }
 
-  .note-wrap {
-    padding-block: 0 8px;
-  }
-
-  .note {
-    margin: 0;
+  .scan__note {
+    margin: 14px 0 0;
     font-size: 13.5px;
     color: var(--ink-subtle);
     line-height: 1.6;
@@ -191,10 +195,6 @@ import CtaBanner from '../components/CtaBanner.astro';
 
   .next-wrap {
     padding-block: 40px 72px;
-  }
-
-  .next-wrap[hidden] {
-    display: none;
   }
 
   .next__title {
@@ -224,22 +224,13 @@ import CtaBanner from '../components/CtaBanner.astro';
     border-color: var(--accent);
   }
 
-  .next__level {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--accent);
-    margin: 0;
-  }
-
   .next__card h3 {
     font-size: 19px;
     letter-spacing: -0.02em;
     margin: 0;
   }
 
-  .next__card p:not(.next__level) {
+  .next__card p {
     font-size: 14.5px;
     line-height: 1.6;
     color: var(--ink-muted);
@@ -248,6 +239,26 @@ import CtaBanner from '../components/CtaBanner.astro';
 
   .next__card .btn {
     margin-top: auto;
+  }
+
+  .scope {
+    margin-top: 28px;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    max-width: 760px;
+  }
+
+  .scope__title {
+    font-size: 16px;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+
+  .scope__text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-subtle);
+    margin: 0;
   }
 
   @media (max-width: 900px) {
@@ -445,8 +456,6 @@ import CtaBanner from '../components/CtaBanner.astro';
   const input = document.getElementById('scan-url') as HTMLInputElement | null;
   const status = document.querySelector<HTMLParagraphElement>('[data-scan-status]');
   const results = document.querySelector<HTMLElement>('[data-results]');
-  const resultsNote = document.querySelector<HTMLElement>('[data-results-note]');
-  const nextSteps = document.querySelector<HTMLElement>('[data-next-steps]');
 
   /* ---------- малки помощници за DOM ---------- */
 
@@ -731,7 +740,7 @@ import CtaBanner from '../components/CtaBanner.astro';
     letter.dataset.grade = g.grade;
     grade.appendChild(letter);
     grade.appendChild(
-      el('p', 'grade__score', `${g.score} от 100 за видимост пред AI търсачки (ChatGPT, Perplexity, Google AI Overviews, Gemini, Claude)`),
+      el('p', 'grade__score', `${g.score} от 100 за готовност за AI търсачки (ChatGPT, Perplexity, Google AI Overviews, Gemini, Claude)`),
     );
 
     const statusToBadge = (status: string): HTMLSpanElement =>
@@ -770,7 +779,7 @@ import CtaBanner from '../components/CtaBanner.astro';
     }
     nodes.push(detailsBlock(`Достъп на AI ботове до сайта (${blocked.length} забранени)`, crawlerList));
 
-    return section('GEO — оптимизация за AI търсачки', card(...nodes));
+    return section('GEO — готовност за AI търсачки', card(...nodes));
   }
 
   function renderSharing(r: any): HTMLElement {
@@ -1211,7 +1220,7 @@ import CtaBanner from '../components/CtaBanner.astro';
   }
 
   function renderAll(r: any) {
-    if (!results || !resultsNote) return;
+    if (!results) return;
     results.replaceChildren(
       renderOverview(r),
       renderHosting(r),
@@ -1234,8 +1243,6 @@ import CtaBanner from '../components/CtaBanner.astro';
       renderContacts(r),
     );
     results.hidden = false;
-    resultsNote.hidden = false;
-    if (nextSteps) nextSteps.hidden = false;
     results.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1267,12 +1274,10 @@ import CtaBanner from '../components/CtaBanner.astro';
 
       hideStatus();
       if (results) results.hidden = true;
-      if (resultsNote) resultsNote.hidden = true;
-      if (nextSteps) nextSteps.hidden = true;
       submit?.setAttribute('disabled', '');
       const original = submit?.textContent ?? '';
-      if (submit) submit.textContent = 'Анализирам…';
-      showStatus('Анализирам сайта — това отнема 5–15 секунди…');
+      if (submit) submit.textContent = 'Проверявам…';
+      showStatus('Проверявам сайта — обикновено отнема между 5 и 15 секунди…');
 
       try {
         const response = await fetch('/api/analyze', {
@@ -1293,7 +1298,7 @@ import CtaBanner from '../components/CtaBanner.astro';
           return;
         }
 
-        showStatus(data.error ?? 'Нещо се обърка при анализа. Опитай отново след малко.', 'error');
+        showStatus(data.error ?? 'Нещо се обърка при проверката. Опитай отново след малко.', 'error');
       } catch {
         showStatus('Няма връзка със сървъра. Провери интернет връзката си и опитай отново.', 'error');
       } finally {
