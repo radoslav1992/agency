@@ -17,7 +17,8 @@ export const SITE = {
   email: 'info@kova.bg',
   owner: {
     name: 'Радослав Додников',
-    role: 'Основател · Senior AI Data Engineer',
+    /** Български вариант за сайта; официалната длъжност остава в LinkedIn. */
+    role: 'Основател · Софтуерен и AI инженер',
     /** Директен контакт с основателя. */
     email: 'radoslav.dodnikov@kova.bg',
     linkedin: 'https://www.linkedin.com/in/radoslav-dodnikov',
@@ -40,7 +41,8 @@ export const SITE = {
 export const NAV = [
   { label: 'Начало', href: '/' },
   { label: 'Услуги', href: '/#services' },
-  { label: 'Казуси', href: '/projects/' },
+  /** Временно „Проекти“ — връща се на „Казуси“ при първия външен казус. */
+  { label: 'Проекти', href: '/projects/' },
   { label: 'Анализатор', href: '/analyzer/' },
   { label: 'За мен', href: '/#about' },
   { label: 'Блог', href: '/blog/' },

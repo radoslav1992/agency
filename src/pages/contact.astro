@@ -6,44 +6,62 @@ import { SITE } from '../data/site.mjs';
 
 <BaseLayout
   title="Контакти"
-  description="Пиши на Кова студио — AI асистент, автоматизация, вътрешно приложение, бизнес сайт или обучение. Отговарям лично, обикновено до 24 часа."
+  description="Пиши на Кова студио — AI асистент, автоматизация, вътрешна система, бизнес сайт или обучение. Преглеждам всяко запитване лично и отговарям до един работен ден."
   canonical="/contact/"
 >
   <div class="container wrap">
     <div class="lead-col">
       <p class="eyebrow">Контакти</p>
-      <h1 class="title">Да видим има ли смисъл да работим заедно.</h1>
+      <h1 class="title">Нека видим дали мога да помогна.</h1>
       <p class="lead">
-        Попълни формата или ми пиши директно. Отговарям лично, обикновено до 24 часа.
+        Разкажи ми накратко как работи процесът в момента и какво искаш да подобриш. Ще прегледам
+        запитването лично и ще ти отговоря до един работен ден.
       </p>
       <ContactForm />
     </div>
 
     <aside class="side">
+      <div class="panel">
+        <p class="panel__title panel__title--ink">Какво се случва след това?</p>
+        <p class="panel__text">
+          Преглеждам запитването лично и ти отговарям до един работен ден. Ако проектът е
+          подходящ, уговаряме безплатен 30-минутен разговор. След него получаваш кратка оферта с
+          конкретен обхват, срок и цена.
+        </p>
+        <p class="panel__text">
+          Ако преценя, че друг подход или специалист е по-подходящ, ще ти го кажа директно.
+        </p>
+      </div>
+
       <div class="panel panel--dark">
-        <p class="panel__title">Директно до мен</p>
+        <p class="panel__title">Предпочиташ да пишеш по имейл?</p>
+        <p class="panel__label">Общи запитвания</p>
+        <a class="panel__link" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <p class="panel__label">Директно до Радослав</p>
         <a class="panel__link" href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>
-        <a class="panel__link" href={SITE.owner.linkedin} target="_blank" rel="noopener">
+        <a class="panel__link panel__link--secondary" href={SITE.owner.linkedin} target="_blank" rel="noopener">
           {SITE.owner.linkedinLabel}
         </a>
-        <p class="panel__hint">Общи запитвания: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
       </div>
 
       <div class="panel">
-        <p class="panel__title panel__title--ink">30 минути разговор</p>
-        <p class="panel__text">Безплатно и без ангажимент. Онлайн или на кафе в София.</p>
+        <p class="panel__title panel__title--ink">Безплатен 30-минутен разговор</p>
+        <p class="panel__text">
+          Разговорът е безплатен и не те ангажира с поръчка. Можем да се чуем онлайн или да се
+          срещнем в София.
+        </p>
         <a
           class="panel__cta"
           href={SITE.bookingUrl ?? `mailto:${SITE.owner.email}?subject=${encodeURIComponent('Разговор 30 мин.')}`}
           {...SITE.bookingUrl ? { target: '_blank', rel: 'noopener' } : {}}
         >
-          {SITE.bookingUrl ? 'Избери час в календара' : 'Предложи удобен час'}
+          {SITE.bookingUrl ? 'Избери час в календара' : 'Предложи час за разговор'}
         </a>
       </div>
 
       <div class="panel">
         <p class="panel__address">
-          {SITE.name}<br />{SITE.location}<br />Работим и дистанционно из цялата страна.
+          {SITE.name} е базирано в София.<br />Работя дистанционно с клиенти от цялата страна.
         </p>
       </div>
     </aside>
@@ -110,25 +128,28 @@ import { SITE } from '../data/site.mjs';
     word-break: break-word;
   }
 
-  .panel__link + .panel__link {
-    margin-top: 10px;
-  }
-
   .panel__link:hover {
     color: var(--accent-soft);
     text-decoration: underline;
   }
 
-  .panel__hint {
-    font-size: 13.5px;
-    color: rgba(255, 255, 255, 0.72);
-    margin: 14px 0 0;
+  .panel__label {
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 14px 0 4px;
   }
 
-  .panel__hint a {
-    color: #fff;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  .panel__label:first-of-type {
+    margin-top: 0;
+  }
+
+  .panel__link--secondary {
+    margin-top: 14px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
   }
 
   .panel__text {

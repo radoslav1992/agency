@@ -3,44 +3,59 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 import { PROJECTS } from '../data/projects.ts';
+
+/**
+ * Примери за процеси, подходящи за пилотната програма. При първия завършен
+ * външен проект: върни „Казуси“ в навигацията, добави казуса тук и премести
+ * пилотната програма по-надолу (или я махни).
+ */
+const PILOT_EXAMPLES = [
+  'обработка на документи и входящи заявки',
+  'търсене във фирмени договори, процедури и инструкции',
+  'автоматично подготвяне на справки и отчети',
+  'прехвърляне на информация между различни системи',
+  'вътрешен портал вместо работа с таблици и имейли',
+];
 ---
 
 <BaseLayout
-  title="Казуси и продукти"
-  description="Клиентски казуси и собствени продукти на Кова студио (Kova Labs). Всичко работи в момента — отвори което и да е и виж сам."
+  title="Проекти"
+  description="Продукти, разработени от Кова студио — от първоначалната идея до пускането и поддръжката. Всеки от тях работи в момента и може да бъде изпробван."
   canonical="/projects/"
 >
   <div class="container wrap">
-    <p class="eyebrow">Казуси</p>
-    <h1 class="title">Казуси и продукти</h1>
+    <p class="eyebrow">Проекти</p>
+    <h1 class="title">Продукти, които можеш да изпробваш</h1>
     <p class="lead">
-      Разделени честно на две: работа за външни клиенти и собствени продукти на студиото. Всичко
-      тук работи в момента — отвори което и да е и виж сам.
+      Тук показвам продукти, които съм разработил от първоначалната идея до пускането и
+      поддръжката. Всеки от тях работи в момента и може да бъде отворен и изпробван.
     </p>
 
-    <section class="block" aria-labelledby="client-cases">
-      <h2 class="block__title" id="client-cases">Клиентски казуси</h2>
-      <div class="pilot">
-        <p class="pilot__lead">
-          Тук ще стоят подробни казуси от външни проекти — с проблем, решение, срок, архитектура и
-          измерим резултат.
-        </p>
-        <p class="pilot__body">
-          В момента отварям <strong>три места</strong> за компании, които искат да проверят дали
-          конкретен процес може да бъде автоматизиран. Пилотният проект е с 20% по-ниска цена
-          срещу възможността резултатите да бъдат представени като публичен казус — след
-          предварително одобрение от теб. Платен пилот, реален ангажимент и от двете страни.
-        </p>
-        <a class="btn btn--primary" href="/contact/">Кандидатствай за пилотен проект</a>
-      </div>
+    <section class="pilot" id="pilot" aria-labelledby="pilot-title">
+      <h2 class="pilot__title" id="pilot-title">Пилотна програма за компании</h2>
+      <p class="pilot__body">
+        В момента отварям три места за компании, които искат да проверят дали конкретен
+        повтарящ се процес може да бъде автоматизиран.
+      </p>
+      <p class="pilot__body">Подходящи примери са:</p>
+      <ul class="pilot__list">
+        {PILOT_EXAMPLES.map((example) => <li>{example}</li>)}
+      </ul>
+      <p class="pilot__body">
+        Пилотът е платен, с ограничен обхват и предварително определена цел. В рамките на
+        програмата предлагам 20% по-ниска цена. След приключването можем да публикуваме
+        резултатите като клиентски казус, но само след твоето изрично одобрение.
+      </p>
+      <a class="btn btn--primary" href="/contact/">Разкажи ми за процеса</a>
     </section>
 
     <section class="block" aria-labelledby="kova-labs">
-      <h2 class="block__title" id="kova-labs">Kova Labs — собствени продукти</h2>
+      <h2 class="block__title" id="kova-labs">Kova Labs</h2>
       <p class="block__note">
-        Не само разработвам за клиенти — създавам, пускам и поддържам собствени продукти. Те
-        доказват, че мога да изградя и пусна работещ продукт от нулата: продуктова архитектура,
-        AI обработка, интерфейс и поддръжка.
+        В Kova Labs създавам и поддържам собствени продукти — от архитектурата и интерфейса до
+        пускането и ежедневната работа на системата. Проектите по-долу показват практическия ми
+        опит с AI обработка, интеграции, работа с външни източници, генериране на документи и
+        поддръжка на приложения с реални потребители.
       </p>
       <div class="grid">
         {PROJECTS.map((project) => <ProjectCard project={project} />)}
@@ -69,8 +84,41 @@ import { PROJECTS } from '../data/projects.ts';
     margin: 0 0 48px;
   }
 
-  .block + .block {
-    margin-top: 56px;
+  .pilot {
+    background: var(--bg-sand);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 32px;
+    max-width: 760px;
+    margin-bottom: 56px;
+  }
+
+  .pilot__title {
+    font-size: clamp(20px, 3vw, 24px);
+    letter-spacing: -0.025em;
+    margin: 0 0 14px;
+  }
+
+  .pilot__body {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 0 0 12px;
+  }
+
+  .pilot__list {
+    margin: 0 0 14px;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-body);
+  }
+
+  .pilot .btn {
+    margin-top: 8px;
   }
 
   .block__title {
@@ -85,27 +133,6 @@ import { PROJECTS } from '../data/projects.ts';
     color: var(--ink-muted);
     max-width: 680px;
     margin: 0 0 28px;
-  }
-
-  .pilot {
-    background: var(--bg-sand);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    padding: 32px;
-    max-width: 760px;
-  }
-
-  .pilot__lead {
-    font-size: 17px;
-    font-weight: 600;
-    margin: 0 0 12px;
-  }
-
-  .pilot__body {
-    font-size: 15.5px;
-    line-height: 1.6;
-    color: var(--ink-body);
-    margin: 0 0 20px;
   }
 
   .grid {
