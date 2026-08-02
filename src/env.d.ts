@@ -5,6 +5,11 @@ interface SendEmailBinding {
   send(message: unknown): Promise<void>;
 }
 
+/** Static-assets binding (wrangler.jsonc → `assets.binding`). */
+interface AssetsBinding {
+  fetch(request: Request): Promise<Response>;
+}
+
 interface Env {
   /** Bound in wrangler.jsonc → `send_email`. Delivers to verified destinations. */
   SEND_EMAIL?: SendEmailBinding;
@@ -12,6 +17,8 @@ interface Env {
   CONTACT_TO?: string;
   /** Sender address on a zone with Email Routing enabled, e.g. `hi@kova.bg`. */
   CONTACT_FROM?: string;
+  /** The site's static build — lets the Worker serve its own pages to the analyzer. */
+  ASSETS?: AssetsBinding;
 }
 
 declare module 'cloudflare:email' {

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { analyzeSite, assertSafeRemoteUrl, sanitizeUrl } from '../../lib/analyzer';
+import { analyzeSite, assertSafeRemoteUrl, configureSelfFetch, sanitizeUrl } from '../../lib/analyzer';
 
 /** Работи на Cloudflare Worker-а, не се пререндерира. */
 export const prerender = false;
@@ -18,7 +18,17 @@ function normalizeInput(raw: string): string {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  // Worker не може да прави fetch към собствения си хост (Cloudflare блокира
+  // рекурсията), затова заявките към нашия домейн минават през ASSETS binding-а.
+  try {
+    const selfHost = new URL(request.url).hostname.toLowerCase();
+    const bare = selfHost.replace(/^www\./, '');
+    configureSelfFetch([bare, `www.${bare}`], locals.runtime?.env?.ASSETS);
+  } catch {
+    /* без конфигурация — анализът на чужди сайтове работи както досега */
+  }
+
   let body: { url?: unknown };
   try {
     body = (await request.json()) as { url?: unknown };
