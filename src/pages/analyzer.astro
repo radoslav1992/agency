@@ -12,9 +12,9 @@ import CtaBanner from '../components/CtaBanner.astro';
     <p class="eyebrow">Безплатен инструмент</p>
     <h1 class="title">Анализатор на сайтове</h1>
     <p class="lead">
-      Въведи адрес и получи пълен технически разбор — хостинг и геолокация, домейн, технологии,
-      SEO, сигурност, достъпност, DNS, бисквитки и структура. Показваме всички събрани данни
-      директно при теб — без AI обобщения, без регистрация и без да пазим резултата.
+      Въведи адрес и получи пълен технически разбор — технологии, SEO, GEO (видимост пред AI
+      търсачки), сигурност, достъпност, хостинг, домейн, DNS и бисквитки. Показваме всички
+      събрани данни директно при теб — без AI обобщения, без регистрация и без да пазим резултата.
     </p>
 
     <form class="scan" data-analyzer-form novalidate>
@@ -622,6 +622,56 @@ import CtaBanner from '../components/CtaBanner.astro';
     return section('SEO и мета данни', ...cards);
   }
 
+  function renderGeo(r: any): HTMLElement {
+    const g = r.geo;
+
+    const grade = el('div', 'grade');
+    const letter = el('div', 'grade__letter', g.grade);
+    letter.dataset.grade = g.grade;
+    grade.appendChild(letter);
+    grade.appendChild(
+      el('p', 'grade__score', `${g.score} от 100 за видимост пред AI търсачки (ChatGPT, Perplexity, Google AI Overviews, Gemini, Claude)`),
+    );
+
+    const statusToBadge = (status: string): HTMLSpanElement =>
+      status === 'pass' ? badge('Покрито', 'ok') : status === 'warn' ? badge('Частично', 'warn') : badge('Липсва', 'bad');
+
+    const rows: [string, KvValue][] = g.signals.map(
+      (s: any) => [`${s.label} (${s.points}/${s.max})`, statusToBadge(s.status)] as [string, KvValue],
+    );
+
+    const nodes: Node[] = [grade, kvTable(rows)];
+
+    // Детайли и препоръки по сигнал
+    const details = el('ul', 'list');
+    for (const s of g.signals) {
+      const li = el('li');
+      li.appendChild(el('strong', undefined, `${s.label}: `));
+      li.appendChild(document.createTextNode(s.detail));
+      if (s.recommendation) {
+        const rec = el('div', 'muted');
+        rec.style.marginTop = '2px';
+        rec.textContent = `→ ${s.recommendation}`;
+        li.appendChild(rec);
+      }
+      details.appendChild(li);
+    }
+    nodes.push(detailsBlock('Подробности и препоръки по сигнал', details));
+
+    // Достъп на конкретните AI ботове
+    const blocked = g.aiCrawlers.filter((c: any) => !c.allowed);
+    const crawlerList = el('ul', 'list');
+    for (const c of g.aiCrawlers) {
+      const li = el('li');
+      li.appendChild(document.createTextNode(`${c.name}: `));
+      li.appendChild(c.allowed ? badge('допуснат', 'ok') : badge('забранен', 'bad'));
+      crawlerList.appendChild(li);
+    }
+    nodes.push(detailsBlock(`Достъп на AI ботове до сайта (${blocked.length} забранени)`, crawlerList));
+
+    return section('GEO — оптимизация за AI търсачки', card(...nodes));
+  }
+
   function renderSharing(r: any): HTMLElement {
     const og = Object.entries(r.seo.ogTags) as [string, string][];
     const tw = Object.entries(r.seo.twitterTags) as [string, string][];
@@ -1068,6 +1118,7 @@ import CtaBanner from '../components/CtaBanner.astro';
       renderSubdomains(r),
       renderTech(r),
       renderSeo(r),
+      renderGeo(r),
       renderSharing(r),
       renderContent(r),
       renderLinks(r),
