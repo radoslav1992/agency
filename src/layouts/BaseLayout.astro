@@ -35,6 +35,33 @@ const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Google tag (gtag.js) — Consent Mode v2: тръгва с отказани бисквитки,
+        а банерът за съгласие (CookieConsent) вдига analytics_storage при
+        „Приемам“. Така тагът присъства на всяка страница, но не поставя
+        бисквитки без съгласие. */}
+    {
+      SITE.gaId && (
+        <>
+          <script is:inline define:vars={{ gaId: SITE.gaId }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            window.gtag = gtag;
+            gtag('consent', 'default', {
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              analytics_storage: 'denied',
+            });
+            gtag('js', new Date());
+            gtag('config', gaId);
+          </script>
+          <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${SITE.gaId}`} />
+        </>
+      )
+    }
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
