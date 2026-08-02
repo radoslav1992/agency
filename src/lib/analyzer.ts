@@ -1508,6 +1508,219 @@ export function analyzeCookies(html: string, setCookies: string[]): CookieInfo {
 }
 
 /* ------------------------------------------------------------------ */
+/* GEO — оптимизация за генеративни (AI) търсачки                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * GEO (Generative Engine Optimisation) е спътникът на SEO: вместо класиране в
+ * десетте сини връзки, целта е сайтът да бъде *намерен, разчетен и цитиран* от
+ * AI отговарящите машини (ChatGPT, Perplexity, Google AI Overviews, Gemini,
+ * Claude). Оценяваме сигналите, на които тези машини разчитат. Функциите са
+ * чисто евристични — не се вика никакъв AI модел.
+ */
+
+const KEY_AI_CRAWLERS = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'PerplexityBot', 'Google-Extended'];
+const ALL_AI_CRAWLERS = [
+  ...KEY_AI_CRAWLERS,
+  'anthropic-ai', 'Claude-Web', 'CCBot', 'Applebot-Extended', 'Amazonbot', 'Bytespider', 'cohere-ai', 'Meta-ExternalAgent',
+];
+const AI_FRIENDLY_SCHEMA_TYPES = [
+  'Organization', 'WebSite', 'FAQPage', 'QAPage', 'Article', 'NewsArticle', 'BlogPosting', 'Product', 'BreadcrumbList', 'HowTo', 'Person',
+];
+
+export type GeoSignalStatus = 'pass' | 'warn' | 'fail';
+
+export interface GeoSignal {
+  label: string;
+  status: GeoSignalStatus;
+  points: number;
+  max: number;
+  detail: string;
+  recommendation?: string;
+}
+
+export interface GeoAuditResult {
+  score: number;
+  grade: string;
+  signals: GeoSignal[];
+  aiCrawlers: { name: string; allowed: boolean }[];
+  llmsTxt: boolean;
+}
+
+/** Проверява дали robots.txt изцяло забранява (`Disallow: /`) даден бот. */
+function isAgentBlocked(robots: RobotsInfo, agent: string): boolean {
+  if (!robots.found || robots.rules.length === 0) return false;
+  const fullyDisallows = (rule: RobotsInfo['rules'][number]) =>
+    rule.directives.some((d) => /^disallow:\s*\/\s*$/i.test(d.trim()));
+  const specific = robots.rules.find((r) => r.userAgent.toLowerCase() === agent.toLowerCase());
+  if (specific) return fullyDisallows(specific);
+  const wildcard = robots.rules.find((r) => r.userAgent === '*');
+  return wildcard ? fullyDisallows(wildcard) : false;
+}
+
+/** Проверява за `/llms.txt` манифест. Връща false при грешка или HTML страница. */
+export async function fetchLlmsTxt(origin: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${origin}/llms.txt`, {
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+      headers: { 'User-Agent': USER_AGENT },
+      redirect: 'follow',
+    });
+    if (!res.ok) return false;
+    const text = await res.text();
+    if (text.trim().length === 0) return false;
+    if (/<!doctype html|<html[\s>]/i.test(text.slice(0, 400))) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const geoGrade = (score: number): string =>
+  score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 55 ? 'C' : score >= 35 ? 'D' : 'F';
+
+export function runGeoAudit(
+  html: string,
+  seo: SeoAudit,
+  structuredData: StructuredData,
+  robots: RobotsInfo,
+  llmsTxt: boolean,
+): GeoAuditResult {
+  const signals: GeoSignal[] = [];
+  const lower = html.toLowerCase();
+  const schemaTypes = [...structuredData.jsonLdTypes, ...structuredData.microdataTypes];
+
+  // 1. Достъп за AI ботове (30 т.)
+  const aiCrawlers = ALL_AI_CRAWLERS.map((name) => ({ name, allowed: !isAgentBlocked(robots, name) }));
+  const blockedKey = KEY_AI_CRAWLERS.filter((name) => isAgentBlocked(robots, name));
+  const crawlerPoints = Math.round(((KEY_AI_CRAWLERS.length - blockedKey.length) / KEY_AI_CRAWLERS.length) * 30);
+  signals.push({
+    label: 'Достъп за AI ботове',
+    status: crawlerPoints === 30 ? 'pass' : crawlerPoints === 0 ? 'fail' : 'warn',
+    points: crawlerPoints,
+    max: 30,
+    detail:
+      blockedKey.length === 0
+        ? 'Всички основни AI ботове (GPTBot, ClaudeBot, PerplexityBot, Google-Extended…) са допуснати.'
+        : `Забранени в robots.txt: ${blockedKey.join(', ')}.`,
+    recommendation:
+      blockedKey.length > 0
+        ? `Разреши AI ботовете в robots.txt, за да могат отговарящите машини да те индексират и цитират: ${blockedKey.join(', ')}.`
+        : undefined,
+  });
+
+  // 2. llms.txt манифест (10 т.)
+  signals.push({
+    label: 'llms.txt манифест',
+    status: llmsTxt ? 'pass' : 'fail',
+    points: llmsTxt ? 10 : 0,
+    max: 10,
+    detail: llmsTxt ? 'Открит е /llms.txt, който насочва AI моделите към ключовото съдържание.' : 'Няма /llms.txt.',
+    recommendation: llmsTxt ? undefined : 'Публикувай /llms.txt със списък на най-важните страници, за да ги намират лесно AI моделите.',
+  });
+
+  // 3. Структурирани данни (20 т.)
+  const hasAiFriendly = schemaTypes.some((t) => AI_FRIENDLY_SCHEMA_TYPES.includes(t));
+  const schemaPoints = schemaTypes.length > 0 ? (hasAiFriendly ? 20 : 12) : 0;
+  signals.push({
+    label: 'Структурирани данни (schema.org)',
+    status: schemaPoints === 20 ? 'pass' : schemaPoints > 0 ? 'warn' : 'fail',
+    points: schemaPoints,
+    max: 20,
+    detail: schemaTypes.length > 0 ? `Открити схеми: ${schemaTypes.slice(0, 8).join(', ')}.` : 'Няма schema.org структурирани данни.',
+    recommendation:
+      schemaPoints === 20
+        ? undefined
+        : schemaTypes.length === 0
+          ? 'Добави schema.org JSON-LD (Organization, Article, FAQPage…), за да извличат AI машините факти и същности.'
+          : 'Добави богати на същности схеми (Organization, FAQPage, Article) — сегашните нямат AI-приятелски типове.',
+  });
+
+  // 4. Семантично основно съдържание (10 т.)
+  const hasMain = /<main[\s>]/.test(lower) || /<article[\s>]/.test(lower) || /role=["']main["']/.test(lower);
+  signals.push({
+    label: 'Семантично основно съдържание',
+    status: hasMain ? 'pass' : 'fail',
+    points: hasMain ? 10 : 0,
+    max: 10,
+    detail: hasMain ? 'Използва <main>/<article> ориентири за извличане на съдържанието.' : 'Няма <main> или <article> ориентир.',
+    recommendation: hasMain ? undefined : 'Обгради основното съдържание в <main> или <article>, за да го отделят AI парсерите от менюта и реклами.',
+  });
+
+  // 5. Йерархия на заглавията (10 т.)
+  const h1 = seo.headingCounts.H1;
+  const h2 = seo.headingCounts.H2;
+  let headingPoints = 0;
+  if (h1 === 1) headingPoints += 7;
+  if (h2 >= 1) headingPoints += 3;
+  signals.push({
+    label: 'Йерархия на заглавията',
+    status: headingPoints === 10 ? 'pass' : headingPoints > 0 ? 'warn' : 'fail',
+    points: headingPoints,
+    max: 10,
+    detail: `${h1} × H1, ${h2} × H2.`,
+    recommendation:
+      headingPoints === 10
+        ? undefined
+        : h1 !== 1
+          ? 'Използвай точно едно H1 и описателни H2 — AI машините свързват отговорите с плана от заглавия.'
+          : 'Добави H2 подзаглавия, за да разделиш страницата на цитируеми секции.',
+  });
+
+  // 6. Въпроси и отговори / FAQ (8 т.)
+  const hasFaqSchema = schemaTypes.includes('FAQPage') || schemaTypes.includes('QAPage');
+  const questionHeadings = (html.match(/<h[2-4][^>]*>[^<]*\?\s*<\/h[2-4]>/gi) ?? []).length;
+  const faqPoints = hasFaqSchema ? 8 : questionHeadings >= 2 ? 4 : 0;
+  signals.push({
+    label: 'Съдържание тип въпрос/отговор (FAQ)',
+    status: faqPoints === 8 ? 'pass' : faqPoints > 0 ? 'warn' : 'fail',
+    points: faqPoints,
+    max: 8,
+    detail: hasFaqSchema
+      ? 'Има FAQ/QA схема — идеална за отговарящите машини.'
+      : questionHeadings >= 2
+        ? `${questionHeadings} заглавия във формата на въпрос.`
+        : 'Няма FAQ схема или съдържание тип въпрос.',
+    recommendation: faqPoints === 8 ? undefined : 'Добави FAQ секция със схема FAQPage — отговарящите машини цитират директно двойките въпрос/отговор.',
+  });
+
+  // 7. Сигнали за авторитет: автор и дати (7 т.)
+  const hasAuthor = /<meta[^>]+name=["']author["']/i.test(html) || /rel=["']author["']/i.test(html) || /"author"\s*:/.test(html);
+  const hasDate = /<meta[^>]+property=["']article:published_time["']/i.test(html) || /"datepublished"\s*:/i.test(html) || /<time[\s>]/i.test(lower);
+  let authorityPoints = 0;
+  if (hasAuthor) authorityPoints += 4;
+  if (hasDate) authorityPoints += 3;
+  signals.push({
+    label: 'Сигнали за авторитет (автор и дати)',
+    status: authorityPoints === 7 ? 'pass' : authorityPoints > 0 ? 'warn' : 'fail',
+    points: authorityPoints,
+    max: 7,
+    detail: `${hasAuthor ? 'Има информация за автор' : 'Няма автор'}; ${hasDate ? 'има дати на публикуване/обновяване' : 'няма дати'}.`,
+    recommendation: authorityPoints === 7 ? undefined : 'Покажи автор и дати на публикуване/промяна (meta тагове или схема) — AI машините предпочитат датирани и приписуеми източници.',
+  });
+
+  // 8. Готово за отговор мета описание (5 т.)
+  const descLen = seo.metaDescriptionLength;
+  const metaPoints = descLen >= 50 && descLen <= 160 ? 5 : descLen > 0 ? 3 : 0;
+  signals.push({
+    label: 'Готово за отговор мета описание',
+    status: metaPoints === 5 ? 'pass' : metaPoints > 0 ? 'warn' : 'fail',
+    points: metaPoints,
+    max: 5,
+    detail: descLen > 0 ? `Мета описанието е ${descLen} знака.` : 'Няма мета описание.',
+    recommendation:
+      metaPoints === 5
+        ? undefined
+        : descLen === 0
+          ? 'Добави мета описание 50–160 знака — машините го ползват като готов кратък отговор.'
+          : 'Настрой мета описанието към 50–160 знака за чист откъс-отговор.',
+  });
+
+  const score = Math.max(0, Math.min(100, signals.reduce((sum, s) => sum + s.points, 0)));
+  return { score, grade: geoGrade(score), signals, aiCrawlers, llmsTxt };
+}
+
+/* ------------------------------------------------------------------ */
 /* Пълен анализ                                                        */
 /* ------------------------------------------------------------------ */
 
@@ -1531,6 +1744,7 @@ export interface AnalysisResult {
   subdomains: string[];
   seo: SeoAudit;
   seoIssues: SeoIssues;
+  geo: GeoAuditResult;
   content: ContentStats;
   links: LinkStats;
   structuredData: StructuredData;
@@ -1559,7 +1773,7 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
   const origin = urlObj.origin;
 
   // Партида 1: неща, които не зависят от HTML на страницата.
-  const [pageResult, redirectsResult, robotsResult, dnsResult, domainInfoResult, subdomainsResult] =
+  const [pageResult, redirectsResult, robotsResult, dnsResult, domainInfoResult, subdomainsResult, llmsResult] =
     await Promise.allSettled([
       fetchPage(safeUrl),
       followRedirects(safeUrl),
@@ -1567,6 +1781,7 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
       collectDns(domain),
       fetchDomainInfo(domain),
       enumerateSubdomains(domain),
+      fetchLlmsTxt(origin),
     ]);
 
   if (pageResult.status === 'rejected') {
@@ -1589,8 +1804,10 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
   ]);
 
   const seo = auditSeo(html);
+  const structuredData = extractStructuredData(html);
   const libraries = detectLibraryVersions(html);
   const cspHeader = page.headers['content-security-policy'] ?? null;
+  const llmsTxt = llmsResult.status === 'fulfilled' ? llmsResult.value : false;
 
   return {
     url: safeUrl,
@@ -1612,9 +1829,10 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
     subdomains: subdomainsResult.status === 'fulfilled' ? subdomainsResult.value : [],
     seo,
     seoIssues: checkSeoIssues(seo),
+    geo: runGeoAudit(html, seo, structuredData, robots, llmsTxt),
     content: analyzeContent(html),
     links: analyzeLinks(html, page.finalUrl),
-    structuredData: extractStructuredData(html),
+    structuredData,
     schemaValidation: validateSchemas(html),
     socialProfiles: extractSocialProfiles(html),
     contacts: extractContacts(html),
