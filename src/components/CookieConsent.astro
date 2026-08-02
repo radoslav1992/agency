@@ -2,12 +2,13 @@
 import { SITE } from '../data/site.mjs';
 
 /**
- * Банер за съгласие + Google Analytics.
+ * Банер за съгласие за бисквитки (Google Consent Mode v2).
  *
- * Политиката за бисквитки обещава, че аналитични бисквитки се поставят само
- * след съгласие — затова gtag.js изобщо не се зарежда, преди посетителят да
- * натисне „Приемам“. Изборът се помни в localStorage и може да се промени от
- * бутона на /cookies/ (или от всеки елемент с `data-cookie-reset`).
+ * Самият Google tag се зарежда в <head> от BaseLayout с consent default
+ * „denied“ — без бисквитки и идентификатори. Този банер само вдига
+ * `analytics_storage` при „Приемам“. Изборът се помни в localStorage и може
+ * да се промени от бутона на /cookies/ (или от всеки елемент с
+ * `data-cookie-reset`).
  */
 const gaId = SITE.gaId;
 ---
@@ -31,23 +32,17 @@ const gaId = SITE.gaId;
         </div>
       </div>
 
-      <script is:inline define:vars={{ gaId }}>
+      <script is:inline>
         (function () {
           var KEY = 'kova-cookie-consent';
           var banner = document.querySelector('[data-cookie-banner]');
           if (!banner) return;
 
-          function loadGa() {
-            window.dataLayer = window.dataLayer || [];
-            window.gtag = function gtag() {
-              window.dataLayer.push(arguments);
-            };
-            window.gtag('js', new Date());
-            window.gtag('config', gaId);
-            var script = document.createElement('script');
-            script.async = true;
-            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
-            document.head.appendChild(script);
+          /* Тагът вече е зареден с consent default „denied“ — тук само го вдигаме. */
+          function grantAnalytics() {
+            if (window.gtag) {
+              window.gtag('consent', 'update', { analytics_storage: 'granted' });
+            }
           }
 
           function read() {
@@ -65,11 +60,11 @@ const gaId = SITE.gaId;
               /* частен режим без localStorage — изборът важи за тази страница */
             }
             banner.hidden = true;
-            if (value === 'granted') loadGa();
+            if (value === 'granted') grantAnalytics();
           }
 
           var choice = read();
-          if (choice === 'granted') loadGa();
+          if (choice === 'granted') grantAnalytics();
           else if (choice !== 'denied') banner.hidden = false;
 
           banner
