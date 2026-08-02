@@ -8,12 +8,12 @@ const cases = [...CASES].sort((a, b) => Number(a.own) - Number(b.own)).slice(0, 
 <section id="cases" class="cases container">
   <header class="head">
     <div>
-      <p class="eyebrow">Казуси</p>
-      <h2 class="section-title">Какво доказват продуктите</h2>
+      <p class="eyebrow">Продукти</p>
+      <h2 class="section-title">Работещи продукти, които можеш да изпробваш</h2>
     </div>
     <p class="head__note">
-      Без измислени отзиви — вместо това: какъв проблем решава всеки продукт, какво е изградено и
-      кое е сложното. Всичко е на живо, отвори и провери сам.
+      Не разчитам само на обещания и технически термини. Всеки от показаните продукти работи в
+      момента и можеш да го отвориш и изпробваш.
     </p>
   </header>
 
@@ -30,15 +30,15 @@ const cases = [...CASES].sort((a, b) => Number(a.own) - Number(b.own)).slice(0, 
 
           <dl class="case__rows">
             <div class="case__row">
-              <dt>Проблем</dt>
+              <dt>Проблемът</dt>
               <dd>{item.problem}</dd>
             </div>
             <div class="case__row">
-              <dt>Решение</dt>
+              <dt>Решението</dt>
               <dd>{item.solution}</dd>
             </div>
             <div class="case__row">
-              <dt>Сложната част</dt>
+              <dt>Какво стои зад продукта</dt>
               <dd>{item.hardPart}</dd>
             </div>
           </dl>
@@ -53,10 +53,20 @@ const cases = [...CASES].sort((a, b) => Number(a.own) - Number(b.own)).slice(0, 
     }
   </div>
 
-  <p class="foot">
-    Търся и първите три външни пилотни проекта — с отстъпка срещу право да публикувам казуса.
-    <a href="/projects/">Виж всички казуси и продукти →</a>
-  </p>
+  <aside class="pilot">
+    <div>
+      <h3 class="pilot__title">Пилотна програма</h3>
+      <p class="pilot__text">
+        В момента отварям три места за компании, които искат да проверят дали конкретен процес
+        може да бъде автоматизиран. Пилотният проект е с 20% по-ниска цена срещу възможността
+        резултатите да бъдат представени като публичен казус след предварително одобрение от
+        клиента.
+      </p>
+    </div>
+    <a class="btn btn--outline pilot__cta" href="/projects/#client-cases">
+      Разгледай пилотната програма
+    </a>
+  </aside>
 </section>
 
 <style>
@@ -164,15 +174,35 @@ const cases = [...CASES].sort((a, b) => Number(a.own) - Number(b.own)).slice(0, 
     color: var(--success, #34a853);
   }
 
-  .foot {
-    margin: 26px 0 0;
-    font-size: 14.5px;
-    color: var(--ink-muted);
+  .pilot {
+    margin-top: 26px;
+    background: var(--bg-sand);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 26px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
   }
 
-  .foot a {
-    color: var(--accent);
-    font-weight: 600;
+  .pilot__title {
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+
+  .pilot__text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 0;
+    max-width: 640px;
+  }
+
+  .pilot__cta {
+    flex: none;
   }
 
   @media (max-width: 980px) {

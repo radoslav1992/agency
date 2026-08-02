@@ -6,11 +6,11 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
   <header class="head">
     <div>
       <p class="eyebrow">Услуги</p>
-      <h2 class="section-title">Три неща, които правя най-добре</h2>
+      <h2 class="section-title">С какво мога да помогна</h2>
     </div>
     <p class="head__note">
-      Не продавам „технологии“, а по-малко ръчна работа, по-бърза обработка и по-малко грешки.
-      Помагам ти да избереш точно това, от което процесът ти има нужда.
+      Целта не е да добавим още една технология към бизнеса ти. Целта е да намалим ръчната работа
+      и да направим процеса по-бърз и предвидим.
     </p>
   </header>
 
@@ -27,6 +27,13 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
           <p class="service__number">{service.number}</p>
           <h3 class="service__title">{service.title}</h3>
           <p class="service__body">{service.body}</p>
+          {service.points && service.points.length > 0 && (
+            <ul class="service__points">
+              {service.points.map((point) => (
+                <li>{point}</li>
+              ))}
+            </ul>
+          )}
           {service.tags && service.tags.length > 0 && (
             <ul class="service__tags">
               {service.tags.map((tag) => (
@@ -179,6 +186,26 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
     margin: 18px 0 0;
     padding: 0;
     list-style: none;
+  }
+
+  .service__points {
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+
+  .service__points li::before {
+    content: '✓ ';
+    color: var(--success, #34a853);
+  }
+
+  .service--dark .service__points {
+    color: var(--dark-ink-muted);
   }
 
   .service--dark .pill {

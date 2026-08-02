@@ -46,4 +46,4 @@ export const NAV = [
   { label: 'Блог', href: '/blog/' },
 ];
 
-export const CTA = { label: 'Опиши ми процеса', href: '/contact/' };
+export const CTA = { label: 'Разкажи ми за процеса', href: '/contact/' };
