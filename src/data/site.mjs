@@ -6,8 +6,8 @@ export const SITE = {
   name: 'Кова студио',
   shortName: 'Кова',
   suffix: 'студио',
-  /** Change this to the production domain before the first deploy. */
-  url: 'https://kova.studio',
+  /** The production domain — drives the sitemap, canonical and og:url адресите. */
+  url: 'https://kova.bg',
   lang: 'bg',
   locale: 'bg_BG',
   title: 'Кова студио — AI решения, вътрешни приложения и автоматизации',
