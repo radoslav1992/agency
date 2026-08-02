@@ -193,6 +193,7 @@ export interface PageFetch {
   htmlTruncated: boolean;
   contentType: string | null;
   headers: Record<string, string>;
+  setCookies: string[];
   html: string;
 }
 
@@ -215,6 +216,8 @@ export async function fetchPage(url: string): Promise<PageFetch> {
     headers[key.toLowerCase()] = value;
   });
 
+  const setCookies = typeof res.headers.getSetCookie === 'function' ? res.headers.getSetCookie() : [];
+
   return {
     finalUrl: res.url || url,
     status: res.status,
@@ -224,6 +227,7 @@ export async function fetchPage(url: string): Promise<PageFetch> {
     htmlTruncated: raw.length > MAX_HTML_CHARS,
     contentType: res.headers.get('content-type'),
     headers,
+    setCookies,
     html: raw.slice(0, MAX_HTML_CHARS),
   };
 }
@@ -626,6 +630,30 @@ const TECH_SIGNATURES: TechSignature[] = [
   { name: 'ASP.NET', category: 'Език / Runtime', header: { name: 'x-powered-by', value: /asp\.net/i } },
 ];
 
+/** Библиотеки, за които улавяме версия от HTML — нужно за проверката за уязвимости. */
+// Търсим „<библиотека><разделител><версия>“ в URL-и на скриптове (cdnjs, jsDelivr,
+// unpkg, локални файлове). Разделителят може да е `-`, `.`, `/`, `@` или `v`.
+const VERSIONED_LIBRARIES: { name: string; regex: RegExp }[] = [
+  { name: 'jQuery', regex: /jquery(?:\.min)?[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)|jquery[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+  { name: 'Bootstrap', regex: /bootstrap[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+  { name: 'Angular', regex: /ng-version=["']([0-9.]+)["']|angular[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+  { name: 'React', regex: /react(?:-dom)?[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+  { name: 'Vue.js', regex: /vue[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+  { name: 'Lodash', regex: /lodash[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+  { name: 'Moment.js', regex: /moment[.\-@/]v?([0-9]+\.[0-9]+(?:\.[0-9]+)?)/i },
+];
+
+/** Улавя версиите на познати библиотеки — за кръстосване с базата от уязвимости. */
+export function detectLibraryVersions(html: string): { name: string; version: string }[] {
+  const out: { name: string; version: string }[] = [];
+  for (const { name, regex } of VERSIONED_LIBRARIES) {
+    const match = regex.exec(html);
+    const version = match?.[1] ?? match?.[2];
+    if (version && !out.some((v) => v.name === name)) out.push({ name, version });
+  }
+  return out;
+}
+
 export function detectTechnologies(html: string, headers: Record<string, string>): Technology[] {
   const found = new Map<string, Technology>();
 
@@ -881,6 +909,605 @@ export function analyzeArchitecture(page: PageFetch): ArchitectureInfo {
 }
 
 /* ------------------------------------------------------------------ */
+/* Хостинг и геолокация (IP → ASN → доставчик)                         */
+/* ------------------------------------------------------------------ */
+
+const HOSTING_PROVIDERS: { keyword: string; name: string; tier: string }[] = [
+  { keyword: 'cloudflare', name: 'Cloudflare', tier: 'CDN / Edge' },
+  { keyword: 'amazon', name: 'Amazon Web Services', tier: 'Enterprise Cloud' },
+  { keyword: 'aws', name: 'Amazon Web Services', tier: 'Enterprise Cloud' },
+  { keyword: 'google', name: 'Google Cloud', tier: 'Enterprise Cloud' },
+  { keyword: 'microsoft', name: 'Microsoft Azure', tier: 'Enterprise Cloud' },
+  { keyword: 'azure', name: 'Microsoft Azure', tier: 'Enterprise Cloud' },
+  { keyword: 'fastly', name: 'Fastly', tier: 'CDN / Edge' },
+  { keyword: 'akamai', name: 'Akamai', tier: 'Корпоративен CDN' },
+  { keyword: 'digitalocean', name: 'DigitalOcean', tier: 'Облачен VPS' },
+  { keyword: 'linode', name: 'Linode (Akamai)', tier: 'Облачен VPS' },
+  { keyword: 'vultr', name: 'Vultr', tier: 'Облачен VPS' },
+  { keyword: 'hetzner', name: 'Hetzner', tier: 'Бюджетен облак' },
+  { keyword: 'ovh', name: 'OVHcloud', tier: 'Бюджетен облак' },
+  { keyword: 'vercel', name: 'Vercel', tier: 'Serverless' },
+  { keyword: 'netlify', name: 'Netlify', tier: 'Serverless' },
+  { keyword: 'heroku', name: 'Heroku', tier: 'PaaS' },
+  { keyword: 'godaddy', name: 'GoDaddy', tier: 'Споделен хостинг' },
+  { keyword: 'siteground', name: 'SiteGround', tier: 'Споделен хостинг' },
+  { keyword: 'superhosting', name: 'SuperHosting.BG', tier: 'Български хостинг' },
+  { keyword: 'icn.bg', name: 'ICN.Bg', tier: 'Български хостинг' },
+  { keyword: 'neterra', name: 'Neterra', tier: 'Български дейта център' },
+  { keyword: 'wpengine', name: 'WP Engine', tier: 'Managed WordPress' },
+  { keyword: 'shopify', name: 'Shopify', tier: 'Платформа за магазини' },
+  { keyword: 'squarespace', name: 'Squarespace', tier: 'Уебсайт билдър' },
+  { keyword: 'wix', name: 'Wix', tier: 'Уебсайт билдър' },
+  { keyword: 'oracle', name: 'Oracle Cloud', tier: 'Enterprise Cloud' },
+  { keyword: 'alibaba', name: 'Alibaba Cloud', tier: 'Enterprise Cloud' },
+];
+
+export interface HostingInfo {
+  ip: string;
+  isp: string | null;
+  org: string | null;
+  asn: string | null;
+  country: string | null;
+  countryCode: string | null;
+  region: string | null;
+  city: string | null;
+  provider: { name: string; tier: string } | null;
+}
+
+/** Геолокация и доставчик на хостинг чрез безплатния ip-api.com. Връща null при неуспех. */
+export async function fetchHostingInfo(ip: string): Promise<HostingInfo | null> {
+  if (!ip || ip.includes(':')) {
+    // ip-api безплатният план не поддържа IPv6 добре; пропускаме.
+    if (!ip) return null;
+  }
+  try {
+    const res = await fetch(
+      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,isp,org,as,asname,country,countryCode,regionName,city&lang=en`,
+      { signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as Record<string, string>;
+    if (data.status !== 'success') return null;
+
+    const haystack = `${data.isp} ${data.org} ${data.asname} ${data.as}`.toLowerCase();
+    const match = HOSTING_PROVIDERS.find((p) => haystack.includes(p.keyword));
+
+    return {
+      ip,
+      isp: data.isp || null,
+      org: data.org || null,
+      asn: data.as || null,
+      country: data.country || null,
+      countryCode: data.countryCode || null,
+      region: data.regionName || null,
+      city: data.city || null,
+      provider: match ? { name: match.name, tier: match.tier } : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Домейн (регистрация чрез RDAP — публичен WHOIS)                      */
+/* ------------------------------------------------------------------ */
+
+export interface DomainInfo {
+  registrar: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  expiresAt: string | null;
+  ageYears: number | null;
+  nameservers: string[];
+  statuses: string[];
+}
+
+export async function fetchDomainInfo(domain: string): Promise<DomainInfo | null> {
+  const parts = domain.replace(/^www\./, '').split('.');
+  const root = parts.length > 2 ? parts.slice(-2).join('.') : parts.join('.');
+
+  try {
+    const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(root)}`, {
+      headers: { Accept: 'application/rdap+json' },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as any;
+
+    const eventDate = (action: string): string | null =>
+      (data.events ?? []).find((e: any) => e.eventAction === action)?.eventDate ?? null;
+
+    const registrarEntity = (data.entities ?? []).find(
+      (e: any) => Array.isArray(e.roles) && e.roles.includes('registrar'),
+    );
+    let registrar: string | null = null;
+    const vcard = registrarEntity?.vcardArray?.[1];
+    if (Array.isArray(vcard)) {
+      registrar = vcard.find((entry: any[]) => entry[0] === 'fn')?.[3] ?? null;
+    }
+
+    const createdAt = eventDate('registration');
+    let ageYears: number | null = null;
+    if (createdAt) {
+      const created = new Date(createdAt).getTime();
+      if (!Number.isNaN(created)) {
+        ageYears = Math.floor((Date.now() - created) / (1000 * 60 * 60 * 24 * 365.25));
+      }
+    }
+
+    const nameservers = (data.nameservers ?? [])
+      .map((ns: any) => (typeof ns.ldhName === 'string' ? ns.ldhName.toLowerCase() : null))
+      .filter((n: string | null): n is string => !!n);
+
+    const statuses = Array.isArray(data.status) ? data.status.slice(0, 8) : [];
+
+    if (!createdAt && !registrar && nameservers.length === 0) return null;
+    return {
+      registrar,
+      createdAt,
+      updatedAt: eventDate('last changed') ?? eventDate('last update of RDAP database'),
+      expiresAt: eventDate('expiration'),
+      ageYears,
+      nameservers,
+      statuses,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Поддомейни (по речник, чрез DNS-over-HTTPS)                          */
+/* ------------------------------------------------------------------ */
+
+const COMMON_SUBDOMAINS = [
+  'www', 'mail', 'webmail', 'blog', 'shop', 'store', 'api', 'app', 'admin', 'portal',
+  'dev', 'staging', 'test', 'cdn', 'static', 'assets', 'img', 'support', 'help', 'docs',
+  'status', 'vpn', 'remote', 'ns1', 'ns2', 'smtp', 'm', 'news', 'forum', 'account',
+];
+
+export async function enumerateSubdomains(domain: string): Promise<string[]> {
+  const base = domain.replace(/^www\./, '');
+  const found: string[] = [];
+  const chunkSize = 10;
+
+  for (let i = 0; i < COMMON_SUBDOMAINS.length; i += chunkSize) {
+    const chunk = COMMON_SUBDOMAINS.slice(i, i + chunkSize);
+    const checks = await Promise.allSettled(
+      chunk.map(async (sub) => {
+        const target = `${sub}.${base}`;
+        const [a, cname] = await Promise.all([resolveDns(target, 'A'), resolveDns(target, 'CNAME')]);
+        return a.length > 0 || cname.length > 0 ? target : null;
+      }),
+    );
+    for (const result of checks) {
+      if (result.status === 'fulfilled' && result.value) found.push(result.value);
+    }
+  }
+
+  return found;
+}
+
+/* ------------------------------------------------------------------ */
+/* Достъпност (WCAG евристики)                                          */
+/* ------------------------------------------------------------------ */
+
+export interface AccessibilityIssue {
+  severity: 'критично' | 'сериозно' | 'средно' | 'леко';
+  message: string;
+  count: number;
+}
+
+export interface AccessibilityAudit {
+  score: number;
+  grade: string;
+  issues: AccessibilityIssue[];
+  passed: string[];
+}
+
+export function auditAccessibility(html: string): AccessibilityAudit {
+  const issues: AccessibilityIssue[] = [];
+  const passed: string[] = [];
+
+  const imgs = html.match(/<img[^>]*>/gi) ?? [];
+  const missingAlt = imgs.filter((i) => !/alt=/i.test(i) || /alt=["']\s*["']/i.test(i)).length;
+  if (missingAlt > 0) issues.push({ severity: 'сериозно', message: `${missingAlt} изображения без alt текст`, count: missingAlt });
+  else if (imgs.length > 0) passed.push(`Всички ${imgs.length} изображения имат alt текст`);
+
+  const inputs = html.match(/<input[^>]*>/gi) ?? [];
+  const formInputs = inputs.filter((i) => !/type=["'](hidden|submit|button|reset|image)["']/i.test(i));
+  const unlabeled = formInputs.filter((i) => {
+    const idMatch = i.match(/id=["']([^"']+)["']/i);
+    if (/aria-label/i.test(i)) return false;
+    if (!idMatch) return true;
+    return !new RegExp(`for=["']${idMatch[1]}["']`, 'i').test(html);
+  }).length;
+  if (unlabeled > 0) issues.push({ severity: 'сериозно', message: `${unlabeled} полета във форма без свързан етикет (label)`, count: unlabeled });
+  else if (formInputs.length > 0) passed.push('Всички полета във формите имат етикети');
+
+  if (!/<html[^>]+lang=["'][^"']+["']/i.test(html)) issues.push({ severity: 'сериозно', message: 'Липсва lang атрибут на <html> — екранните четци не знаят езика', count: 1 });
+  else passed.push('Езикът на документа е зададен');
+
+  if (!/<title[^>]*>[^<]+<\/title>/i.test(html)) issues.push({ severity: 'сериозно', message: 'Липсва <title> на страницата', count: 1 });
+  else passed.push('Страницата има заглавие');
+
+  const hasMain = /<main[\s>]/i.test(html) || /role=["']main["']/i.test(html);
+  if (!hasMain) issues.push({ severity: 'средно', message: 'Няма <main> ориентир за основното съдържание', count: 1 });
+  else passed.push('Има <main> ориентир');
+
+  if (!(/<nav[\s>]/i.test(html) || /role=["']navigation["']/i.test(html))) issues.push({ severity: 'леко', message: 'Няма <nav> ориентир за навигацията', count: 1 });
+  else passed.push('Има <nav> ориентир');
+
+  const headingLevels = (html.match(/<h([1-6])[^>]*>/gi) ?? []).map((h) => parseInt(h.match(/<h([1-6])/i)?.[1] ?? '0', 10));
+  if (headingLevels.length > 0 && headingLevels[0] !== 1) issues.push({ severity: 'средно', message: 'Първото заглавие не е H1 — нарушена йерархия', count: 1 });
+  else if (headingLevels.length > 0) passed.push('Йерархията на заглавията започва с H1');
+  let skipped = 0;
+  for (let i = 1; i < headingLevels.length; i++) if (headingLevels[i] > headingLevels[i - 1] + 1) skipped++;
+  if (skipped > 0) issues.push({ severity: 'средно', message: `Йерархията на заглавията прескача ${skipped} ниво(а)`, count: skipped });
+
+  const emptyButtons = (html.match(/<button[^>]*>\s*<\/button>/gi) ?? []).filter((b) => !/aria-label|title=/i.test(b)).length;
+  if (emptyButtons > 0) issues.push({ severity: 'сериозно', message: `${emptyButtons} празни бутона без достъпно име`, count: emptyButtons });
+
+  const genericLinks = (html.match(/<a[^>]*>\s*(?:натисни тук|виж повече|прочети повече|тук|повече|click here|read more|more)\s*<\/a>/gi) ?? []).length;
+  if (genericLinks > 0) issues.push({ severity: 'леко', message: `${genericLinks} връзки с общ текст като „виж повече“`, count: genericLinks });
+
+  const viewportMeta = html.match(/<meta[^>]+name=["']viewport["'][^>]+content=["']([^"']+)["']/i);
+  if (viewportMeta && /user-scalable\s*=\s*(no|0)/i.test(viewportMeta[1])) issues.push({ severity: 'критично', message: 'Мащабирането е забранено (user-scalable=no)', count: 1 });
+  else passed.push('Мащабирането от потребителя е разрешено');
+
+  const positiveTabindex = (html.match(/tabindex=["'][1-9]/gi) ?? []).length;
+  if (positiveTabindex > 0) issues.push({ severity: 'леко', message: `${positiveTabindex} елемента с положителен tabindex (нарушава реда на фокуса)`, count: positiveTabindex });
+
+  const total = issues.length + passed.length;
+  const score = total > 0 ? Math.round((passed.length / total) * 100) : 0;
+  const grade = score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 55 ? 'C' : score >= 35 ? 'D' : 'F';
+
+  const severityOrder = { критично: 0, сериозно: 1, средно: 2, леко: 3 } as const;
+  issues.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+
+  return { score, grade, issues, passed };
+}
+
+/* ------------------------------------------------------------------ */
+/* Разширен SEO (schema валидиране, тегло, дублирано съдържание)        */
+/* ------------------------------------------------------------------ */
+
+export interface SchemaValidation {
+  schemas: { type: string; isValid: boolean; issues: string[] }[];
+  richResultsEligible: string[];
+}
+
+const RICH_RESULT_TYPES = ['Article', 'Product', 'FAQPage', 'HowTo', 'Recipe', 'Event', 'LocalBusiness', 'Organization', 'BreadcrumbList', 'Review', 'JobPosting', 'Course', 'VideoObject'];
+const SCHEMA_REQUIRED_FIELDS: Record<string, string[]> = {
+  Article: ['headline', 'author', 'datePublished'],
+  Product: ['name', 'image', 'offers'],
+  FAQPage: ['mainEntity'],
+  Event: ['name', 'startDate', 'location'],
+  LocalBusiness: ['name', 'address', 'telephone'],
+  Organization: ['name', 'url'],
+  BreadcrumbList: ['itemListElement'],
+  JobPosting: ['title', 'description', 'datePosted', 'hiringOrganization'],
+};
+
+export function validateSchemas(html: string): SchemaValidation {
+  const schemas: SchemaValidation['schemas'] = [];
+  const richResultsEligible: string[] = [];
+  const jsonLdRegex = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = jsonLdRegex.exec(html)) !== null) {
+    try {
+      const parsed = JSON.parse(match[1].trim());
+      const items = Array.isArray(parsed) ? parsed : parsed['@graph'] ?? [parsed];
+      for (const item of Array.isArray(items) ? items : [items]) {
+        if (!item || typeof item !== 'object') continue;
+        const type = typeof item['@type'] === 'string' ? item['@type'] : Array.isArray(item['@type']) ? item['@type'][0] : 'Unknown';
+        const issues: string[] = [];
+        for (const field of SCHEMA_REQUIRED_FIELDS[type] ?? []) {
+          if (!item[field]) issues.push(`Липсва задължително поле: ${field}`);
+        }
+        const isValid = issues.length === 0;
+        schemas.push({ type, isValid, issues });
+        if (isValid && RICH_RESULT_TYPES.includes(type) && !richResultsEligible.includes(type)) {
+          richResultsEligible.push(type);
+        }
+      }
+    } catch {
+      schemas.push({ type: 'Невалиден JSON-LD', isValid: false, issues: ['Грешка при разчитане на JSON'] });
+    }
+  }
+
+  return { schemas, richResultsEligible };
+}
+
+export interface PageWeight {
+  totalKB: number;
+  grade: string;
+  breakdown: { type: string; kb: number; count: number }[];
+  recommendations: string[];
+}
+
+export function analyzePageWeight(html: string, htmlBytes: number): PageWeight {
+  const breakdown: { type: string; kb: number; count: number }[] = [];
+  const recommendations: string[] = [];
+
+  breakdown.push({ type: 'HTML документ', kb: Math.round(htmlBytes / 1024), count: 1 });
+
+  const extScripts = (html.match(/<script[^>]+src=["'][^"']+["']/gi) ?? []).length;
+  const inlineScripts = html.match(/<script[^>]*>[\s\S]*?<\/script>/gi) ?? [];
+  breakdown.push({ type: 'Външни скриптове (оценка)', kb: extScripts * 45, count: extScripts });
+  breakdown.push({ type: 'Вградени скриптове', kb: Math.round(inlineScripts.reduce((t, s) => t + s.length, 0) / 1024), count: inlineScripts.length });
+
+  const stylesheets = (html.match(/<link[^>]+rel=["']stylesheet["']/gi) ?? []).length;
+  breakdown.push({ type: 'Външни стилове (оценка)', kb: stylesheets * 25, count: stylesheets });
+
+  const images = (html.match(/<img[^>]+src=["'][^"']+["']/gi) ?? []).length;
+  breakdown.push({ type: 'Изображения (оценка)', kb: images * 80, count: images });
+
+  const fonts = (html.match(/url\([^)]*\.(?:woff2?|ttf|otf|eot)/gi) ?? []).length;
+  if (fonts > 0) breakdown.push({ type: 'Шрифтове (оценка)', kb: fonts * 35, count: fonts });
+
+  const iframes = (html.match(/<iframe/gi) ?? []).length;
+  if (iframes > 0) breakdown.push({ type: 'Iframe рамки (оценка)', kb: iframes * 200, count: iframes });
+
+  const totalKB = breakdown.reduce((sum, b) => sum + b.kb, 0);
+  const grade = totalKB < 500 ? 'A' : totalKB < 1000 ? 'B' : totalKB < 2000 ? 'C' : totalKB < 4000 ? 'D' : 'F';
+
+  if (extScripts > 15) recommendations.push(`Много външни скриптове (${extScripts}) — обедини или премахни неизползваните.`);
+  if (images > 20) recommendations.push(`Много изображения (${images}) — ползвай lazy loading и WebP/AVIF формат.`);
+  if (fonts > 4) recommendations.push(`Много шрифтове (${fonts}) — ограничи до 2–3 файла.`);
+  if (iframes > 3) recommendations.push(`Много iframe рамки (${iframes}) — всяка зарежда цял отделен документ.`);
+
+  return { totalKB, grade, breakdown: breakdown.filter((b) => b.count > 0), recommendations };
+}
+
+export interface SeoIssues {
+  issues: string[];
+}
+
+export function checkSeoIssues(seo: SeoAudit): SeoIssues {
+  const issues: string[] = [];
+  if (!seo.title) issues.push('Липсва <title> — критично за SEO.');
+  else if (seo.titleLength > 60) issues.push(`Заглавието е ${seo.titleLength} знака (препоръчително ≤60).`);
+  else if (seo.titleLength < 10) issues.push('Заглавието е твърде кратко — направи го описателно.');
+
+  if (!seo.metaDescription) issues.push('Липсва мета описание — влияе на кликовете от търсачките.');
+  else if (seo.metaDescriptionLength > 160) issues.push(`Мета описанието е ${seo.metaDescriptionLength} знака (препоръчително ≤160).`);
+  else if (seo.metaDescriptionLength < 50) issues.push('Мета описанието е твърде кратко — цели 120–160 знака.');
+
+  if (!seo.canonical) issues.push('Липсва canonical адрес — риск от дублирано съдържание.');
+  if (seo.headingCounts.H1 === 0) issues.push('Липсва H1 заглавие — важно за SEO.');
+  else if (seo.headingCounts.H1 > 1) issues.push(`Повече от едно H1 (${seo.headingCounts.H1}) — трябва да е точно едно.`);
+  if (!seo.viewport) issues.push('Липсва viewport meta — сайтът няма да е удобен на мобилни.');
+  if (Object.keys(seo.ogTags).length === 0) issues.push('Липсват Open Graph тагове — лошо изглежда при споделяне.');
+
+  return { issues };
+}
+
+/* ------------------------------------------------------------------ */
+/* Дълбока сигурност (CSP, mixed content, SRI, рискове, уязвимости)     */
+/* ------------------------------------------------------------------ */
+
+const KNOWN_VULNERABILITIES: Record<string, { severity: string; cve: string; description: string; fixedIn: string }[]> = {
+  jQuery: [
+    { severity: 'средно', cve: 'CVE-2020-11022', description: 'XSS при HTML, подаден към DOM методи', fixedIn: '3.5.0' },
+    { severity: 'ниско', cve: 'CVE-2019-11358', description: 'Prototype pollution в extend()', fixedIn: '3.4.0' },
+  ],
+  Bootstrap: [
+    { severity: 'средно', cve: 'CVE-2019-8331', description: 'XSS в tooltip/popover data-template', fixedIn: '4.3.1' },
+    { severity: 'средно', cve: 'CVE-2024-6531', description: 'XSS в carousel компонента', fixedIn: '5.3.3' },
+  ],
+  Angular: [{ severity: 'високо', cve: 'CVE-2022-25869', description: 'XSS през angular.copy в стари версии', fixedIn: '1.8.3' }],
+  Lodash: [{ severity: 'високо', cve: 'CVE-2021-23337', description: 'Command injection през template()', fixedIn: '4.17.21' }],
+  'Moment.js': [{ severity: 'високо', cve: 'CVE-2022-31129', description: 'ReDoS при разчитане на дати', fixedIn: '2.29.4' }],
+  React: [{ severity: 'средно', cve: 'CVE-2018-6341', description: 'XSS при SSR с потребителски вход в атрибути', fixedIn: '16.4.2' }],
+  'Vue.js': [{ severity: 'средно', cve: 'CVE-2024-6783', description: 'XSS през v-bind с определени атрибути', fixedIn: '3.4.6' }],
+};
+
+function versionLessThan(a: string, b: string): boolean {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const x = pa[i] ?? 0;
+    const y = pb[i] ?? 0;
+    if (x !== y) return x < y;
+  }
+  return false;
+}
+
+const HIGH_RISK_THIRD_PARTIES: Record<string, { risk: string; category: string; concern: string }> = {
+  'doubleclick.net': { risk: 'висок', category: 'Реклами', concern: 'Рекламна мрежа на Google — тежко проследяване' },
+  'google-analytics.com': { risk: 'среден', category: 'Аналитика', concern: 'Проследяване на поведение — изисква GDPR съгласие' },
+  'googletagmanager.com': { risk: 'среден', category: 'Тагове', concern: 'Може да зарежда произволни скриптове' },
+  'hotjar.com': { risk: 'висок', category: 'Записи на сесии', concern: 'Записва сесии, включително въведеното във формите' },
+  'clarity.ms': { risk: 'висок', category: 'Записи на сесии', concern: 'Microsoft Clarity записва потребителски сесии' },
+  'facebook.net': { risk: 'среден', category: 'Проследяване', concern: 'Крос-сайт проследяване, GDPR последици' },
+  'tiktok.com': { risk: 'висок', category: 'Проследяване', concern: 'TikTok пиксел — данни към ByteDance' },
+  'snap.licdn.com': { risk: 'среден', category: 'Проследяване', concern: 'LinkedIn проследяващ пиксел' },
+  'unpkg.com': { risk: 'среден', category: 'CDN', concern: 'npm CDN — риск във веригата на доставки' },
+  'cdn.jsdelivr.net': { risk: 'нисък', category: 'CDN', concern: 'Публичен CDN — риск при компрометиране' },
+};
+
+export interface DeepSecurity {
+  vulnerabilities: { technology: string; version: string; severity: string; cve: string; description: string; fixedIn: string }[];
+  csp: { present: boolean; issues: { severity: string; message: string }[] };
+  mixedContent: { count: number; resources: { type: string; url: string }[] };
+  sri: { totalExternal: number; withIntegrity: number; coveragePercent: number };
+  thirdParties: { domain: string; risk: string; category: string; concern: string }[];
+  riskLevel: string;
+}
+
+export function runDeepSecurity(
+  html: string,
+  pageUrl: string,
+  domain: string,
+  cspHeader: string | null,
+  libraries: { name: string; version: string }[],
+): DeepSecurity {
+  // Уязвимости по версия
+  const vulnerabilities: DeepSecurity['vulnerabilities'] = [];
+  for (const lib of libraries) {
+    for (const v of KNOWN_VULNERABILITIES[lib.name] ?? []) {
+      if (versionLessThan(lib.version, v.fixedIn)) {
+        vulnerabilities.push({ technology: lib.name, version: lib.version, ...v });
+      }
+    }
+  }
+  const sevOrder = { критично: 0, високо: 1, средно: 2, ниско: 3 } as Record<string, number>;
+  vulnerabilities.sort((a, b) => (sevOrder[a.severity] ?? 4) - (sevOrder[b.severity] ?? 4));
+
+  // CSP
+  const cspIssues: { severity: string; message: string }[] = [];
+  if (!cspHeader) {
+    cspIssues.push({ severity: 'високо', message: 'Няма Content-Security-Policy — сайтът е уязвим на XSS и инжектиране.' });
+  } else {
+    const directives = new Map<string, string[]>();
+    for (const part of cspHeader.split(';')) {
+      const [name, ...values] = part.trim().split(/\s+/);
+      if (name) directives.set(name.toLowerCase(), values);
+    }
+    const scriptSrc = directives.get('script-src') ?? directives.get('default-src') ?? [];
+    if (scriptSrc.includes("'unsafe-inline'")) cspIssues.push({ severity: 'високо', message: "'unsafe-inline' в script-src позволява вградени скриптове — основен XSS вектор." });
+    if (scriptSrc.includes("'unsafe-eval'")) cspIssues.push({ severity: 'високо', message: "'unsafe-eval' в script-src позволява eval() — риск от инжектиране на код." });
+    if (scriptSrc.includes('*')) cspIssues.push({ severity: 'високо', message: "Заместващ знак '*' позволява скриптове от всякакъв източник." });
+    if (!directives.has('frame-ancestors')) cspIssues.push({ severity: 'средно', message: "Липсва 'frame-ancestors' — риск от clickjacking." });
+    if (!directives.has('base-uri')) cspIssues.push({ severity: 'средно', message: "Липсва 'base-uri' — възможна е инжекция на <base>." });
+  }
+
+  // Mixed content
+  const mixedResources: { type: string; url: string }[] = [];
+  if (pageUrl.startsWith('https://')) {
+    const patterns: { type: string; regex: RegExp }[] = [
+      { type: 'скрипт', regex: /<script[^>]+src=["'](http:\/\/[^"']+)["']/gi },
+      { type: 'стил', regex: /<link[^>]+href=["'](http:\/\/[^"']+)["'][^>]*rel=["']stylesheet["']/gi },
+      { type: 'изображение', regex: /<img[^>]+src=["'](http:\/\/[^"']+)["']/gi },
+      { type: 'iframe', regex: /<iframe[^>]+src=["'](http:\/\/[^"']+)["']/gi },
+    ];
+    const seen = new Set<string>();
+    for (const { type, regex } of patterns) {
+      let m: RegExpExecArray | null;
+      while ((m = regex.exec(html)) !== null) {
+        if (!seen.has(m[1])) {
+          seen.add(m[1]);
+          if (mixedResources.length < 20) mixedResources.push({ type, url: m[1].slice(0, 160) });
+        }
+      }
+    }
+  }
+
+  // SRI покритие
+  let totalExternal = 0;
+  let withIntegrity = 0;
+  const sriPatterns = [
+    /<script\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/gi,
+    /<link\b[^>]*\brel\s*=\s*["']stylesheet["'][^>]*\bhref\s*=\s*["']([^"']+)["'][^>]*>/gi,
+  ];
+  for (const regex of sriPatterns) {
+    let m: RegExpExecArray | null;
+    const fresh = new RegExp(regex.source, regex.flags);
+    while ((m = fresh.exec(html)) !== null) {
+      const src = m[1];
+      const isExternal = /^https?:\/\//i.test(src) || src.startsWith('//');
+      if (!isExternal) continue;
+      try {
+        const host = new URL(src.startsWith('//') ? `https:${src}` : src).hostname.toLowerCase();
+        if (host.endsWith(domain.toLowerCase())) continue;
+      } catch {
+        continue;
+      }
+      totalExternal++;
+      if (/\bintegrity\s*=\s*["'][^"']+["']/i.test(m[0])) withIntegrity++;
+    }
+  }
+  const coveragePercent = totalExternal > 0 ? Math.round((withIntegrity / totalExternal) * 100) : 100;
+
+  // Трети страни
+  const externalDomains = new Set<string>();
+  const urlRegex = /(?:src|href|action)=["']https?:\/\/([^/"']+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = urlRegex.exec(html)) !== null) {
+    const host = match[1].toLowerCase();
+    if (!host.endsWith(domain.toLowerCase())) externalDomains.add(host);
+  }
+  const thirdParties: DeepSecurity['thirdParties'] = [];
+  for (const host of externalDomains) {
+    const known = Object.entries(HIGH_RISK_THIRD_PARTIES).find(([key]) => host.includes(key));
+    if (known) thirdParties.push({ domain: host, ...known[1] });
+  }
+  const riskRank = { висок: 0, среден: 1, нисък: 2 } as Record<string, number>;
+  thirdParties.sort((a, b) => (riskRank[a.risk] ?? 3) - (riskRank[b.risk] ?? 3));
+
+  // Обща оценка на риска
+  let riskScore = 0;
+  riskScore += vulnerabilities.filter((v) => v.severity === 'критично').length * 20;
+  riskScore += vulnerabilities.filter((v) => v.severity === 'високо').length * 12;
+  riskScore += vulnerabilities.filter((v) => v.severity === 'средно').length * 5;
+  riskScore += cspIssues.filter((i) => i.severity === 'високо').length * 10;
+  riskScore += mixedResources.length * 8;
+  riskScore += thirdParties.filter((t) => t.risk === 'висок').length * 6;
+  if (totalExternal > 0) riskScore += Math.round((100 - coveragePercent) * 0.05);
+  riskScore = Math.min(100, riskScore);
+  const riskLevel = riskScore >= 70 ? 'Критичен' : riskScore >= 45 ? 'Висок' : riskScore >= 25 ? 'Среден' : riskScore >= 10 ? 'Нисък' : 'Минимален';
+
+  return {
+    vulnerabilities,
+    csp: { present: !!cspHeader, issues: cspIssues },
+    mixedContent: { count: mixedResources.length, resources: mixedResources },
+    sri: { totalExternal, withIntegrity, coveragePercent },
+    thirdParties: thirdParties.slice(0, 30),
+    riskLevel,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Бисквитки и GDPR                                                    */
+/* ------------------------------------------------------------------ */
+
+const CONSENT_PROVIDERS: { name: string; pattern: RegExp }[] = [
+  { name: 'OneTrust', pattern: /onetrust|optanon/i },
+  { name: 'CookieBot', pattern: /cookiebot|CookieDeclaration/i },
+  { name: 'CookieYes', pattern: /cookie-law-info|cookieyes/i },
+  { name: 'Osano', pattern: /osano\.com/i },
+  { name: 'iubenda', pattern: /iubenda/i },
+  { name: 'Didomi', pattern: /didomi/i },
+  { name: 'Quantcast', pattern: /quantcast.*choice|__cmpapi/i },
+  { name: 'Cookie Notice', pattern: /cookie-notice|cookie-consent|gdpr-cookie/i },
+];
+
+export interface CookieInfo {
+  cookies: { name: string; secure: boolean; httpOnly: boolean; sameSite: string }[];
+  consentProvider: string | null;
+  issues: string[];
+}
+
+export function analyzeCookies(html: string, setCookies: string[]): CookieInfo {
+  const cookies: CookieInfo['cookies'] = [];
+  const issues: string[] = [];
+
+  for (const header of setCookies) {
+    const parts = header.split(';').map((p) => p.trim());
+    const name = parts[0]?.split('=')[0]?.trim() ?? '';
+    if (!name) continue;
+    const secure = parts.some((p) => p.toLowerCase() === 'secure');
+    const httpOnly = parts.some((p) => p.toLowerCase() === 'httponly');
+    const sameSite = parts.find((p) => p.toLowerCase().startsWith('samesite='))?.split('=')[1] ?? 'Не е зададено';
+    cookies.push({ name, secure, httpOnly, sameSite });
+    if (!secure) issues.push(`Бисквитката „${name}“ е без флаг Secure.`);
+  }
+
+  let consentProvider: string | null = null;
+  for (const provider of CONSENT_PROVIDERS) {
+    if (provider.pattern.test(html)) {
+      consentProvider = provider.name;
+      break;
+    }
+  }
+  if (!consentProvider) issues.push('Не е открит банер за съгласие за бисквитки — възможно нарушение на GDPR.');
+
+  return { cookies, consentProvider, issues };
+}
+
+/* ------------------------------------------------------------------ */
 /* Пълен анализ                                                        */
 /* ------------------------------------------------------------------ */
 
@@ -899,20 +1526,31 @@ export interface AnalysisResult {
     htmlTruncated: boolean;
   };
   redirects: RedirectHop[];
+  hosting: HostingInfo | null;
+  domainInfo: DomainInfo | null;
+  subdomains: string[];
   seo: SeoAudit;
+  seoIssues: SeoIssues;
   content: ContentStats;
   links: LinkStats;
   structuredData: StructuredData;
+  schemaValidation: SchemaValidation;
   socialProfiles: SocialProfile[];
   contacts: PageContacts;
   technologies: Technology[];
   trackers: Tracker[];
   security: SecurityInfo;
+  deepSecurity: DeepSecurity;
+  accessibility: AccessibilityAudit;
+  cookies: CookieInfo;
   dns: DnsInfo;
   robots: RobotsInfo;
   sitemap: SitemapInfo;
   architecture: ArchitectureInfo;
+  pageWeight: PageWeight;
 }
+
+const EMPTY_DNS: DnsInfo = { a: [], aaaa: [], mx: [], ns: [], txt: [], spf: null, dmarc: null };
 
 /** Изпълнява пълния анализ. Хвърля грешка само ако страницата не може да се изтегли. */
 export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
@@ -920,24 +1558,39 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
   const domain = urlObj.hostname;
   const origin = urlObj.origin;
 
-  const [pageResult, redirectsResult, robotsResult, dnsResult] = await Promise.allSettled([
-    fetchPage(safeUrl),
-    followRedirects(safeUrl),
-    fetchRobotsTxt(origin),
-    collectDns(domain),
-  ]);
+  // Партида 1: неща, които не зависят от HTML на страницата.
+  const [pageResult, redirectsResult, robotsResult, dnsResult, domainInfoResult, subdomainsResult] =
+    await Promise.allSettled([
+      fetchPage(safeUrl),
+      followRedirects(safeUrl),
+      fetchRobotsTxt(origin),
+      collectDns(domain),
+      fetchDomainInfo(domain),
+      enumerateSubdomains(domain),
+    ]);
 
   if (pageResult.status === 'rejected') {
     throw new Error('fetch-failed');
   }
   const page = pageResult.value;
+  const html = page.html;
 
   const robots =
     robotsResult.status === 'fulfilled'
       ? robotsResult.value
       : { found: false, sitemaps: [], rules: [], raw: '' };
+  const dns = dnsResult.status === 'fulfilled' ? dnsResult.value : EMPTY_DNS;
 
-  const sitemap = await fetchSitemap(origin, robots.sitemaps);
+  // Партида 2: неща, зависещи от партида 1 (sitemap от robots, геолокация от DNS).
+  const firstIp = dns.a[0] ?? null;
+  const [sitemap, hosting] = await Promise.all([
+    fetchSitemap(origin, robots.sitemaps),
+    firstIp ? fetchHostingInfo(firstIp) : Promise.resolve(null),
+  ]);
+
+  const seo = auditSeo(html);
+  const libraries = detectLibraryVersions(html);
+  const cspHeader = page.headers['content-security-policy'] ?? null;
 
   return {
     url: safeUrl,
@@ -954,21 +1607,27 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
       htmlTruncated: page.htmlTruncated,
     },
     redirects: redirectsResult.status === 'fulfilled' ? redirectsResult.value : [],
-    seo: auditSeo(page.html),
-    content: analyzeContent(page.html),
-    links: analyzeLinks(page.html, page.finalUrl),
-    structuredData: extractStructuredData(page.html),
-    socialProfiles: extractSocialProfiles(page.html),
-    contacts: extractContacts(page.html),
-    technologies: detectTechnologies(page.html, page.headers),
-    trackers: detectTrackers(page.html),
+    hosting,
+    domainInfo: domainInfoResult.status === 'fulfilled' ? domainInfoResult.value : null,
+    subdomains: subdomainsResult.status === 'fulfilled' ? subdomainsResult.value : [],
+    seo,
+    seoIssues: checkSeoIssues(seo),
+    content: analyzeContent(html),
+    links: analyzeLinks(html, page.finalUrl),
+    structuredData: extractStructuredData(html),
+    schemaValidation: validateSchemas(html),
+    socialProfiles: extractSocialProfiles(html),
+    contacts: extractContacts(html),
+    technologies: detectTechnologies(html, page.headers),
+    trackers: detectTrackers(html),
     security: analyzeSecurity(page.finalUrl, page.headers),
-    dns:
-      dnsResult.status === 'fulfilled'
-        ? dnsResult.value
-        : { a: [], aaaa: [], mx: [], ns: [], txt: [], spf: null, dmarc: null },
+    deepSecurity: runDeepSecurity(html, page.finalUrl, domain, cspHeader, libraries),
+    accessibility: auditAccessibility(html),
+    cookies: analyzeCookies(html, page.setCookies),
+    dns,
     robots,
     sitemap,
     architecture: analyzeArchitecture(page),
+    pageWeight: analyzePageWeight(html, page.htmlBytes),
   };
 }
