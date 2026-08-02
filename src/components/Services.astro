@@ -1,16 +1,16 @@
 ---
-import { SERVICES } from '../data/content.ts';
+import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
 ---
 
 <section id="services" class="services container">
   <header class="head">
     <div>
       <p class="eyebrow">Услуги</p>
-      <h2 class="section-title">Решения, в които сме най-добри</h2>
+      <h2 class="section-title">Три неща, които правя най-добре</h2>
     </div>
     <p class="head__note">
-      Без сложен жаргон и излишни услуги. Помагаме ти да избереш точно това, от което бизнесът ти
-      има нужда — и ти спестяваме разходите за всичко останало.
+      Не продавам „технологии“, а по-малко ръчна работа, по-бърза обработка и по-малко грешки.
+      Помагам ти да избереш точно това, от което процесът ти има нужда.
     </p>
   </header>
 
@@ -24,6 +24,26 @@ import { SERVICES } from '../data/content.ts';
             service.variant === 'wide' && 'service--wide',
           ]}
         >
+          <p class="service__number">{service.number}</p>
+          <h3 class="service__title">{service.title}</h3>
+          <p class="service__body">{service.body}</p>
+          {service.tags && service.tags.length > 0 && (
+            <ul class="service__tags">
+              {service.tags.map((tag) => (
+                <li class="pill">{tag}</li>
+              ))}
+            </ul>
+          )}
+        </article>
+      ))
+    }
+  </div>
+
+  <p class="secondary-label">Освен това, като отделни услуги:</p>
+  <div class="grid grid--secondary">
+    {
+      SECONDARY_SERVICES.map((service) => (
+        <article class="service service--secondary">
           <p class="service__number">{service.number}</p>
           <h3 class="service__title">{service.title}</h3>
           <p class="service__body">{service.body}</p>
@@ -81,6 +101,32 @@ import { SERVICES } from '../data/content.ts';
 
   .service--wide {
     grid-column: span 2;
+  }
+
+  .secondary-label {
+    margin: 32px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-subtle);
+  }
+
+  .grid--secondary {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 14px;
+  }
+
+  /* По-тихи карти — сайтовете и обученията не са първото послание. */
+  .service--secondary {
+    background: var(--bg-sand);
+    padding: 22px 24px;
+  }
+
+  .service--secondary .service__title {
+    font-size: 18px;
+  }
+
+  .service--secondary .service__body {
+    font-size: 14.5px;
   }
 
   .service--dark {
@@ -143,6 +189,10 @@ import { SERVICES } from '../data/content.ts';
   @media (max-width: 980px) {
     .grid {
       grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid--secondary {
+      grid-template-columns: 1fr;
     }
   }
 

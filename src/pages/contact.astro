@@ -6,7 +6,7 @@ import { SITE } from '../data/site.mjs';
 
 <BaseLayout
   title="Контакти"
-  description="Пиши на Кова студио — сайт, уеб приложение, AI агент или обучение. Отговарям лично, обикновено до 24 часа."
+  description="Пиши на Кова студио — AI асистент, автоматизация, вътрешно приложение, бизнес сайт или обучение. Отговарям лично, обикновено до 24 часа."
   canonical="/contact/"
 >
   <div class="container wrap">
@@ -26,6 +26,7 @@ import { SITE } from '../data/site.mjs';
         <a class="panel__link" href={SITE.owner.linkedin} target="_blank" rel="noopener">
           {SITE.owner.linkedinLabel}
         </a>
+        <p class="panel__hint">Общи запитвания: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
       </div>
 
       <div class="panel">
@@ -116,6 +117,18 @@ import { SITE } from '../data/site.mjs';
   .panel__link:hover {
     color: var(--accent-soft);
     text-decoration: underline;
+  }
+
+  .panel__hint {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.72);
+    margin: 14px 0 0;
+  }
+
+  .panel__hint a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .panel__text {

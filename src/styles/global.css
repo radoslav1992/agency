@@ -281,3 +281,53 @@ p {
     --gutter: 20px;
   }
 }
+
+/* Правни страници — общи условия, поверителност, бисквитки. */
+.legal {
+  padding-block: 76px 96px;
+  max-width: 760px;
+}
+
+.legal h1 {
+  font-size: clamp(32px, 5.5vw, 44px);
+  letter-spacing: -0.035em;
+  margin: 12px 0 6px;
+}
+
+.legal .updated {
+  font-size: 14px;
+  color: var(--ink-subtle);
+  margin: 0 0 36px;
+}
+
+.legal h2 {
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  margin: 34px 0 10px;
+}
+
+.legal p,
+.legal li {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink-body);
+}
+
+.legal p {
+  margin: 0 0 14px;
+}
+
+.legal ul {
+  padding-left: 22px;
+  margin: 0 0 14px;
+}
+
+.legal li + li {
+  margin-top: 8px;
+}
+
+.legal a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

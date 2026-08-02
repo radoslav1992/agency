@@ -5,20 +5,44 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container inner">
-    <div class="brand">
-      <span class="brand__mark" aria-hidden="true">К</span>
-      <span class="brand__text">© {year} {SITE.name} · {SITE.owner.name}</span>
+  <div class="container grid">
+    <div class="col col--brand">
+      <p class="brand">
+        <span class="brand__mark" aria-hidden="true">К</span>
+        <span class="brand__name">{SITE.name}</span>
+      </p>
+      <p class="muted">{SITE.legalName}</p>
+      <p class="muted">{SITE.location} · работя дистанционно с клиенти от цялата страна</p>
+      <p class="muted">Основано {SITE.founded} г.</p>
     </div>
-    <nav class="links" aria-label="Долна навигация">
+
+    <div class="col">
+      <p class="col__title">Контакт</p>
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      <a href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>
+      <a href={SITE.owner.linkedin} rel="me noopener" target="_blank">LinkedIn</a>
+    </div>
+
+    <nav class="col" aria-label="Долна навигация">
+      <p class="col__title">Навигация</p>
       <a href="/#services">Услуги</a>
-      <a href="/projects/">Проекти</a>
+      <a href="/projects/">Казуси</a>
+      <a href="/analyzer/">Анализатор</a>
       <a href="/blog/">Блог</a>
       <a href="/contact/">Контакти</a>
-      <a href={SITE.owner.linkedin} class="links__accent" rel="me noopener" target="_blank">
-        LinkedIn
-      </a>
     </nav>
+
+    <div class="col">
+      <p class="col__title">Условия</p>
+      <a href="/terms/">Общи условия</a>
+      <a href="/privacy/">Политика за поверителност</a>
+      <a href="/cookies/">Политика за бисквитки</a>
+      <p class="muted">Всеки проект — с писмена оферта, договор и фактура.</p>
+    </div>
+  </div>
+
+  <div class="container bottom">
+    <p class="muted">© {year} {SITE.name}. Всички права запазени.</p>
   </div>
 </footer>
 
@@ -28,19 +52,44 @@ const year = new Date().getFullYear();
     background: var(--bg-sand);
   }
 
-  .inner {
-    padding-block: 44px;
+  .grid {
+    padding-block: 48px 28px;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 1.2fr;
+    gap: 32px;
+  }
+
+  .col {
     display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 14px;
+  }
+
+  .col__title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+
+  .col a {
+    color: var(--ink-muted);
+    transition: color 0.16s ease;
+  }
+
+  .col a:hover {
+    color: var(--ink);
   }
 
   .brand {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: 0 0 4px;
   }
 
   .brand__mark {
@@ -57,32 +106,35 @@ const year = new Date().getFullYear();
     flex: none;
   }
 
-  .brand__text {
-    font-size: 14px;
-    color: var(--ink-muted);
+  .brand__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
   }
 
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 22px;
-    font-size: 14px;
+  .muted {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-subtle);
+    margin: 0;
   }
 
-  .links a {
-    color: var(--ink-muted);
-    transition: color 0.16s ease;
+  .bottom {
+    border-top: 1px solid var(--line);
+    padding-block: 18px;
   }
 
-  .links a:hover {
-    color: var(--ink);
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      padding-block: 40px 24px;
+    }
   }
 
-  .links a.links__accent {
-    color: var(--accent);
-  }
-
-  .links a.links__accent:hover {
-    color: var(--accent-darker);
+  @media (max-width: 560px) {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
   }
 </style>

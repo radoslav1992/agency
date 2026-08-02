@@ -13,8 +13,8 @@ import CtaBanner from '../components/CtaBanner.astro';
     <h1 class="title">Анализатор на сайтове</h1>
     <p class="lead">
       Въведи адрес и получи пълен технически разбор — технологии, SEO, GEO (видимост пред AI
-      търсачки), сигурност, достъпност, хостинг, домейн, DNS и бисквитки. Показваме всички
-      събрани данни директно при теб — без AI обобщения, без регистрация и без да пазим резултата.
+      търсачки), сигурност, достъпност, хостинг, домейн, DNS и бисквитки. Всички събрани данни се
+      показват директно при теб — без AI обобщения, без регистрация и без да пазим резултата.
     </p>
 
     <form class="scan" data-analyzer-form novalidate>
@@ -46,6 +46,39 @@ import CtaBanner from '../components/CtaBanner.astro';
       Всички данни са събрани в реално време от нашия сървър в момента на проверката — без AI
       обработка, без съкращения и без съхранение на резултата.
     </p>
+  </section>
+
+  {/* Естественият следващ ход след безплатния резултат — трите нива. */}
+  <section class="container next-wrap" data-next-steps hidden>
+    <h2 class="next__title">Какво следва от тук?</h2>
+    <div class="next">
+      <article class="next__card">
+        <p class="next__level">1 · Безплатно</p>
+        <h3>Пълният резултат</h3>
+        <p>
+          Всичко по-горе е твое — без регистрация и без уловки. Сподели линка към анализатора с
+          когото искаш.
+        </p>
+      </article>
+      <article class="next__card">
+        <p class="next__level">2 · Безплатно</p>
+        <h3>Персонална препоръка</h3>
+        <p>
+          Не си сигурен кое от всичко това е важно? Изпрати ми адреса на сайта и ще ти върна трите
+          най-важни действия — лично, не автоматично.
+        </p>
+        <a class="btn btn--outline" href="/contact/" data-next-recommend>Поискай препоръка</a>
+      </article>
+      <article class="next__card next__card--accent">
+        <p class="next__level">3 · Платено</p>
+        <h3>Одит или изпълнение</h3>
+        <p>
+          Мога да подготвя приоритизиран план с бюджет за всяка поправка — или директно да
+          отстраня проблемите вместо теб.
+        </p>
+        <a class="btn btn--primary" href="/contact/" data-next-offer>Поискай оферта за поправките</a>
+      </article>
+    </div>
   </section>
 
   <CtaBanner />
@@ -146,7 +179,7 @@ import CtaBanner from '../components/CtaBanner.astro';
   }
 
   .note-wrap {
-    padding-block: 0 72px;
+    padding-block: 0 8px;
   }
 
   .note {
@@ -154,6 +187,73 @@ import CtaBanner from '../components/CtaBanner.astro';
     font-size: 13.5px;
     color: var(--ink-subtle);
     line-height: 1.6;
+  }
+
+  .next-wrap {
+    padding-block: 40px 72px;
+  }
+
+  .next-wrap[hidden] {
+    display: none;
+  }
+
+  .next__title {
+    font-size: clamp(22px, 3.5vw, 28px);
+    letter-spacing: -0.025em;
+    margin: 0 0 20px;
+  }
+
+  .next {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .next__card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .next__card--accent {
+    border-color: var(--accent);
+  }
+
+  .next__level {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .next__card h3 {
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .next__card p:not(.next__level) {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  .next__card .btn {
+    margin-top: auto;
+  }
+
+  @media (max-width: 900px) {
+    .next {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* ---- рендерирани от скрипта елементи ---- */
@@ -346,6 +446,7 @@ import CtaBanner from '../components/CtaBanner.astro';
   const status = document.querySelector<HTMLParagraphElement>('[data-scan-status]');
   const results = document.querySelector<HTMLElement>('[data-results]');
   const resultsNote = document.querySelector<HTMLElement>('[data-results-note]');
+  const nextSteps = document.querySelector<HTMLElement>('[data-next-steps]');
 
   /* ---------- малки помощници за DOM ---------- */
 
@@ -1134,7 +1235,17 @@ import CtaBanner from '../components/CtaBanner.astro';
     );
     results.hidden = false;
     resultsNote.hidden = false;
+    if (nextSteps) nextSteps.hidden = false;
     results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /** Носи анализирания адрес към формата за контакт, за да не го пишеш пак. */
+  function pointNextStepsTo(url: string) {
+    const query = `?about=${encodeURIComponent(url)}`;
+    for (const selector of ['[data-next-recommend]', '[data-next-offer]']) {
+      const link = document.querySelector<HTMLAnchorElement>(selector);
+      if (link) link.href = `/contact/${query}`;
+    }
   }
 
   // Предварително попълване от ?url= (без автоматично стартиране).
@@ -1157,6 +1268,7 @@ import CtaBanner from '../components/CtaBanner.astro';
       hideStatus();
       if (results) results.hidden = true;
       if (resultsNote) resultsNote.hidden = true;
+      if (nextSteps) nextSteps.hidden = true;
       submit?.setAttribute('disabled', '');
       const original = submit?.textContent ?? '';
       if (submit) submit.textContent = 'Анализирам…';
@@ -1176,6 +1288,7 @@ import CtaBanner from '../components/CtaBanner.astro';
 
         if (response.ok && data.ok && data.result) {
           hideStatus();
+          pointNextStepsTo(url);
           renderAll(data.result);
           return;
         }
