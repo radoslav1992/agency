@@ -9,7 +9,8 @@
 const FETCH_TIMEOUT_MS = 8_000;
 const PROBE_TIMEOUT_MS = 4_000;
 const DNS_TIMEOUT_MS = 4_000;
-const MAX_REDIRECT_HOPS = 10;
+/* Worker-ът има бюджет от 50 подзаявки на безплатния план — пестим ги. */
+const MAX_REDIRECT_HOPS = 5;
 /** Груба защита на CPU времето — regex анализът спира дотук. */
 const MAX_HTML_CHARS = 1_500_000;
 const MAX_SITEMAP_URLS = 20;
@@ -28,6 +29,44 @@ const COMMON_SITEMAP_PATHS = [
   '/sitemap1.xml',
   '/wp-sitemap.xml',
 ];
+
+/* ------------------------------------------------------------------ */
+/* Fetch, който умее да заявява и собствения хост на Worker-а           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Cloudflare блокира `fetch()` от Worker към собствения му хост (заявката би
+ * влязла рекурсивно в същия Worker). Затова API маршрутът регистрира тук
+ * ASSETS binding-а: заявките към хоста на самия сайт се обслужват директно от
+ * статичния билд, а всичко останало минава през обикновен `fetch`.
+ * Конфигурацията е еднаква за всички заявки в един Worker, така че
+ * module-level състоянието е безопасно при паралелни анализи.
+ */
+interface SelfAssets {
+  fetch(request: Request): Promise<Response>;
+}
+
+let selfHosts = new Set<string>();
+let selfAssets: SelfAssets | null = null;
+
+export function configureSelfFetch(hosts: string[], assets: SelfAssets | null | undefined): void {
+  selfHosts = new Set(hosts.map((host) => host.toLowerCase()));
+  selfAssets = assets ?? null;
+}
+
+/** За всички HTTP заявки към анализирания сайт — вместо директен `fetch`. */
+function httpFetch(url: string, init?: RequestInit): Promise<Response> {
+  if (selfAssets) {
+    try {
+      if (selfHosts.has(new URL(url).hostname.toLowerCase())) {
+        return selfAssets.fetch(new Request(url, init));
+      }
+    } catch {
+      /* невалиден URL — оставяме обикновения fetch да върне грешката */
+    }
+  }
+  return fetch(url, init);
+}
 
 /* ------------------------------------------------------------------ */
 /* Безопасност на адреса (защита от SSRF)                              */
@@ -199,7 +238,7 @@ export interface PageFetch {
 
 export async function fetchPage(url: string): Promise<PageFetch> {
   const started = Date.now();
-  const res = await fetch(url, {
+  const res = await httpFetch(url, {
     redirect: 'follow',
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     headers: {
@@ -244,7 +283,7 @@ export async function followRedirects(url: string): Promise<RedirectHop[]> {
   for (let i = 0; current && i < MAX_REDIRECT_HOPS; i++) {
     const hopUrl: string = current;
     try {
-      const res = await fetch(hopUrl, {
+      const res = await httpFetch(hopUrl, {
         redirect: 'manual',
         signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
         headers: { 'User-Agent': USER_AGENT },
@@ -781,7 +820,7 @@ export interface RobotsInfo {
 
 export async function fetchRobotsTxt(origin: string): Promise<RobotsInfo> {
   try {
-    const res = await fetch(`${origin}/robots.txt`, {
+    const res = await httpFetch(`${origin}/robots.txt`, {
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
       headers: { 'User-Agent': USER_AGENT },
     });
@@ -836,7 +875,7 @@ function extractLocs(xml: string): string[] {
 
 async function tryFetchSitemapText(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url, {
+    const res = await httpFetch(url, {
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
       headers: { 'User-Agent': USER_AGENT },
       redirect: 'follow',
@@ -851,7 +890,8 @@ async function tryFetchSitemapText(url: string): Promise<string | null> {
 }
 
 export async function fetchSitemap(origin: string, declared: string[]): Promise<SitemapInfo> {
-  const candidates = [...declared, ...COMMON_SITEMAP_PATHS.map((p) => `${origin}${p}`)];
+  // Най-много 5 кандидата + 2 вложени — иначе подзаявките изяждат бюджета.
+  const candidates = [...declared, ...COMMON_SITEMAP_PATHS.map((p) => `${origin}${p}`)].slice(0, 5);
 
   for (const candidate of candidates) {
     const text = await tryFetchSitemapText(candidate);
@@ -859,7 +899,7 @@ export async function fetchSitemap(origin: string, declared: string[]): Promise<
 
     let urls: string[];
     if (/<sitemapindex[\s>]/i.test(text)) {
-      const nested = extractLocs(text).slice(0, 3);
+      const nested = extractLocs(text).slice(0, 2);
       const nestedTexts = await Promise.all(nested.map(tryFetchSitemapText));
       urls = nestedTexts.filter((t): t is string => t !== null).flatMap(extractLocs);
     } else {
@@ -1060,24 +1100,29 @@ export async function fetchDomainInfo(domain: string): Promise<DomainInfo | null
 /* Поддомейни (по речник, чрез DNS-over-HTTPS)                          */
 /* ------------------------------------------------------------------ */
 
+/**
+ * 18 имена × 1 DNS заявка — списъкът е подрязан заради бюджета от 50
+ * подзаявки на Worker заявка (безплатния план на Cloudflare).
+ */
 const COMMON_SUBDOMAINS = [
-  'www', 'mail', 'webmail', 'blog', 'shop', 'store', 'api', 'app', 'admin', 'portal',
-  'dev', 'staging', 'test', 'cdn', 'static', 'assets', 'img', 'support', 'help', 'docs',
-  'status', 'vpn', 'remote', 'ns1', 'ns2', 'smtp', 'm', 'news', 'forum', 'account',
+  'www', 'mail', 'blog', 'shop', 'store', 'api', 'app', 'admin', 'portal',
+  'dev', 'staging', 'test', 'cdn', 'docs', 'support', 'status', 'news', 'account',
 ];
 
 export async function enumerateSubdomains(domain: string): Promise<string[]> {
   const base = domain.replace(/^www\./, '');
   const found: string[] = [];
-  const chunkSize = 10;
+  const chunkSize = 9;
 
   for (let i = 0; i < COMMON_SUBDOMAINS.length; i += chunkSize) {
     const chunk = COMMON_SUBDOMAINS.slice(i, i + chunkSize);
     const checks = await Promise.allSettled(
       chunk.map(async (sub) => {
         const target = `${sub}.${base}`;
-        const [a, cname] = await Promise.all([resolveDns(target, 'A'), resolveDns(target, 'CNAME')]);
-        return a.length > 0 || cname.length > 0 ? target : null;
+        // Една A заявка стига: DNS-over-HTTPS следва CNAME веригата и връща
+        // и двата типа записи в отговора.
+        const a = await resolveDns(target, 'A');
+        return a.length > 0 ? target : null;
       }),
     );
     for (const result of checks) {
@@ -1561,7 +1606,7 @@ function isAgentBlocked(robots: RobotsInfo, agent: string): boolean {
 /** Проверява за `/llms.txt` манифест. Връща false при грешка или HTML страница. */
 export async function fetchLlmsTxt(origin: string): Promise<boolean> {
   try {
-    const res = await fetch(`${origin}/llms.txt`, {
+    const res = await httpFetch(`${origin}/llms.txt`, {
       signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
       headers: { 'User-Agent': USER_AGENT },
       redirect: 'follow',
@@ -1772,15 +1817,15 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
   const domain = urlObj.hostname;
   const origin = urlObj.origin;
 
-  // Партида 1: неща, които не зависят от HTML на страницата.
-  const [pageResult, redirectsResult, robotsResult, dnsResult, domainInfoResult, subdomainsResult, llmsResult] =
+  // Партида 1: страницата и леките проверки. Тежките изброявания са нарочно
+  // във втората партида — иначе се надпреварват с fetch-а на страницата за
+  // бюджета от подзаявки и той може да пропадне по средата на redirect.
+  const [pageResult, redirectsResult, robotsResult, dnsResult, llmsResult] =
     await Promise.allSettled([
       fetchPage(safeUrl),
       followRedirects(safeUrl),
       fetchRobotsTxt(origin),
       collectDns(domain),
-      fetchDomainInfo(domain),
-      enumerateSubdomains(domain),
       fetchLlmsTxt(origin),
     ]);
 
@@ -1796,12 +1841,21 @@ export async function analyzeSite(safeUrl: string): Promise<AnalysisResult> {
       : { found: false, sitemaps: [], rules: [], raw: '' };
   const dns = dnsResult.status === 'fulfilled' ? dnsResult.value : EMPTY_DNS;
 
-  // Партида 2: неща, зависещи от партида 1 (sitemap от robots, геолокация от DNS).
+  // Партида 2: sitemap (от robots), геолокация (от DNS) и обемните проверки.
   const firstIp = dns.a[0] ?? null;
-  const [sitemap, hosting] = await Promise.all([
-    fetchSitemap(origin, robots.sitemaps),
-    firstIp ? fetchHostingInfo(firstIp) : Promise.resolve(null),
-  ]);
+  const [sitemapResult, hostingResult, domainInfoResult, subdomainsResult] =
+    await Promise.allSettled([
+      fetchSitemap(origin, robots.sitemaps),
+      firstIp ? fetchHostingInfo(firstIp) : Promise.resolve(null),
+      fetchDomainInfo(domain),
+      enumerateSubdomains(domain),
+    ]);
+
+  const sitemap =
+    sitemapResult.status === 'fulfilled'
+      ? sitemapResult.value
+      : { found: false, url: null, urlCount: 0, sampleUrls: [] };
+  const hosting = hostingResult.status === 'fulfilled' ? hostingResult.value : null;
 
   const seo = auditSeo(html);
   const structuredData = extractStructuredData(html);
