@@ -1,14 +1,122 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaBanner from '../components/CtaBanner.astro';
+import { SITE } from '../data/site.mjs';
+
+const pageUrl = new URL('/analyzer/', SITE.url).href;
+
+/** Какво проверява инструментът — статично съдържание за търсачки и AI машини. */
+const checks = [
+  {
+    title: 'Технологии и стек',
+    text: 'CMS, фреймуъркове, хостинг платформа, CDN, аналитика и проследяващи кодове, включително версиите на познати библиотеки.',
+  },
+  {
+    title: 'SEO и мета данни',
+    text: 'Заглавие, мета описание, canonical, език, viewport, йерархия на заглавията, alt текстове и списък с конкретни SEO пропуски.',
+  },
+  {
+    title: 'GEO за AI търсачки',
+    text: 'Видимост и цитируемост пред ChatGPT, Perplexity, Google AI Overviews, Gemini и Claude — достъп на AI ботове, llms.txt, схеми и структура на съдържанието.',
+  },
+  {
+    title: 'Сигурност',
+    text: 'Защитни HTTP хедъри с оценка A–F, CSP анализ, mixed content, SRI покритие, рискови външни услуги и уязвимости по версия на библиотека.',
+  },
+  {
+    title: 'Достъпност (WCAG)',
+    text: 'Оценка A–F по достъпност — alt текстове, етикети на форми, ориентири, йерархия на заглавията и контрол на фокуса.',
+  },
+  {
+    title: 'Хостинг и домейн',
+    text: 'Хостинг доставчик, ASN и местоположение на сървъра, възраст на домейна, регистратор, name сървъри и поддомейни.',
+  },
+  {
+    title: 'DNS и имейл',
+    text: 'A, AAAA, NS, MX и TXT записи, както и SPF и DMARC защита срещу подправяне на имейли.',
+  },
+  {
+    title: 'Съдържание и структура',
+    text: 'Брой думи, най-чести ключови думи, вътрешни и външни връзки, структурирани данни (schema.org), robots.txt, sitemap и тегло на страницата.',
+  },
+];
+
+/** Често задавани въпроси — видими на страницата и в schema.org (FAQPage). */
+const faqs = [
+  {
+    q: 'Безплатен ли е анализаторът на сайтове?',
+    a: 'Да, инструментът е напълно безплатен и без регистрация. Просто въвеждаш адрес и получаваш пълния технически разбор веднага.',
+  },
+  {
+    q: 'Какво е GEO (оптимизация за генеративни търсачки)?',
+    a: 'GEO (Generative Engine Optimisation) е спътникът на SEO: вместо класиране в класическите резултати, целта е сайтът да бъде намиран, разчитан и цитиран от AI отговарящите машини като ChatGPT, Perplexity, Google AI Overviews, Gemini и Claude. Анализаторът оценява точно тези сигнали.',
+  },
+  {
+    q: 'Използвате ли AI, за да обработите резултата?',
+    a: 'Не. Показваме всички събрани данни директно, без AI обобщения. Всичко е обективна информация, извлечена от самата страница и от публични източници в момента на проверката.',
+  },
+  {
+    q: 'Пазите ли резултатите от анализа?',
+    a: 'Не. Анализът се изпълнява в реално време при заявката и нищо не се съхранява. Не създаваме профил и не проследяваме кои сайтове проверяваш.',
+  },
+  {
+    q: 'Колко време отнема анализът?',
+    a: 'Обикновено между 5 и 15 секунди, в зависимост от това колко бързо отговаря проверяваният сайт.',
+  },
+  {
+    q: 'Кои данни събирате за един сайт?',
+    a: 'Технологичен стек, SEO и GEO готовност, сигурност, достъпност, хостинг и геолокация, домейн и регистрация, DNS и имейл записи, съдържание, връзки, структурирани данни, бисквитки и още — общо 19 секции.',
+  },
+];
+
+const softwareSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Анализатор на сайтове',
+  url: pageUrl,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Web',
+  inLanguage: 'bg',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'BGN' },
+  description:
+    'Безплатен анализатор на сайтове на български: SEO, GEO за AI търсачки, технологии, сигурност, достъпност, хостинг, домейн и DNS. Всички данни директно при теб, без AI обобщения и без регистрация.',
+  featureList: checks.map((c) => c.title),
+  provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Начало', item: SITE.url },
+    { '@type': 'ListItem', position: 2, name: 'Анализатор на сайтове', item: pageUrl },
+  ],
+};
 ---
 
 <BaseLayout
   title="Анализатор на сайтове"
-  description="Безплатен анализатор на сайтове на български — SEO, сигурност, технологии, DNS и съдържание. Всички данни директно при теб, без AI обработка и без регистрация."
+  description="Безплатен анализатор на сайтове: SEO, GEO за AI търсачки, технологии, сигурност, хостинг и DNS — всички данни директно при теб, без AI обобщения и без регистрация."
   canonical="/analyzer/"
 >
-  <section class="container hero">
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(softwareSchema)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+  </Fragment>
+
+  <article class="container hero">
     <p class="eyebrow">Безплатен инструмент</p>
     <h1 class="title">Анализатор на сайтове</h1>
     <p class="lead">
@@ -37,7 +145,7 @@ import CtaBanner from '../components/CtaBanner.astro';
       <p class="scan__hint">Например: kova.studio или https://example.bg — анализът отнема 5–15 секунди.</p>
       <p class="scan__status" role="status" data-scan-status hidden></p>
     </form>
-  </section>
+  </article>
 
   <section class="container results" data-results hidden aria-live="polite"></section>
 
@@ -46,6 +154,38 @@ import CtaBanner from '../components/CtaBanner.astro';
       Всички данни са събрани в реално време от нашия сървър в момента на проверката — без AI
       обработка, без съкращения и без съхранение на резултата.
     </p>
+  </section>
+
+  <section class="container info">
+    <h2 class="info__title">Какво проверява анализаторът</h2>
+    <p class="info__lead">
+      Един адрес, 19 секции с обективни данни за техническото състояние на сайта — от
+      технологичния стек до готовността за търсачки и AI отговарящи машини.
+    </p>
+    <div class="checks">
+      {
+        checks.map((check) => (
+          <div class="checks__item">
+            <h3 class="checks__name">{check.title}</h3>
+            <p class="checks__text">{check.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="container faq">
+    <h2 class="faq__title">Често задавани въпроси</h2>
+    <div class="faq__list">
+      {
+        faqs.map((faq) => (
+          <details class="faq__item">
+            <summary class="faq__q">{faq.q}</summary>
+            <p class="faq__a">{faq.a}</p>
+          </details>
+        ))
+      }
+    </div>
   </section>
 
   <CtaBanner />
@@ -146,7 +286,7 @@ import CtaBanner from '../components/CtaBanner.astro';
   }
 
   .note-wrap {
-    padding-block: 0 72px;
+    padding-block: 0 24px;
   }
 
   .note {
@@ -154,6 +294,115 @@ import CtaBanner from '../components/CtaBanner.astro';
     font-size: 13.5px;
     color: var(--ink-subtle);
     line-height: 1.6;
+  }
+
+  /* ---- „Какво проверява“ ---- */
+
+  .info {
+    padding-block: 40px 8px;
+  }
+
+  .info__title {
+    font-size: clamp(24px, 4vw, 32px);
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  .info__lead {
+    font-size: 17px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    margin: 12px 0 28px;
+    max-width: 640px;
+  }
+
+  .checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .checks__item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px;
+  }
+
+  .checks__name {
+    font-size: 17px;
+    margin: 0 0 8px;
+  }
+
+  .checks__text {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  /* ---- FAQ ---- */
+
+  .faq {
+    padding-block: 56px 72px;
+    max-width: 820px;
+  }
+
+  .faq__title {
+    font-size: clamp(24px, 4vw, 32px);
+    line-height: 1.15;
+    margin: 0 0 22px;
+  }
+
+  .faq__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .faq__item {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px 22px;
+  }
+
+  .faq__q {
+    font-family: var(--font-display);
+    font-size: 16.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+    padding-right: 28px;
+  }
+
+  .faq__q::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq__q::after {
+    content: '+';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .faq__item[open] .faq__q::after {
+    content: '–';
+  }
+
+  .faq__a {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--ink-muted);
+    margin: 12px 0 0;
   }
 
   /* ---- рендерирани от скрипта елементи ---- */
