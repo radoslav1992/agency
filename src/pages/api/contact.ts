@@ -10,6 +10,8 @@ type Submission = {
   message: string;
   needs: string[];
   website: string;
+  /** Текстовият отчет от анализатора — празен при обикновено запитване. */
+  report: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -51,6 +53,7 @@ async function readSubmission(request: Request): Promise<{ data: Submission; isJ
       email: clean(raw.email, 180),
       message: clean(raw.message, 4000),
       website: clean(raw.website, 100),
+      report: clean(raw.report, 28000),
       // Only keep options the form actually offers.
       needs: needs.filter((need) => NEEDS.includes(need)).slice(0, NEEDS.length),
     },
@@ -105,22 +108,30 @@ async function sendEmail(env: Env, data: Submission): Promise<void> {
 
   const needs = data.needs.length > 0 ? data.needs.join(', ') : '—';
   const name = headerSafe(data.name);
+  const isReview = data.report.length > 0;
+
+  const bodyLines = [`Име: ${data.name}`, `Имейл: ${data.email}`, `Нужди: ${needs}`, '', data.message];
+  if (isReview) {
+    bodyLines.push('', '--- Отчет от анализатора ---', '', data.report.replace(/\r?\n/g, '\r\n'));
+  }
 
   const msg = createMimeMessage();
   msg.setSender({ name: 'Кова студио', addr: from });
   msg.setRecipient(to);
-  msg.setSubject(headerSafe(`Запитване от ${name}${data.needs.length ? ` — ${needs}` : ''}`));
+  msg.setSubject(
+    headerSafe(
+      isReview
+        ? `Отчет за личен преглед от ${name}`
+        : `Запитване от ${name}${data.needs.length ? ` — ${needs}` : ''}`,
+    ),
+  );
   // Lets you hit reply and answer the person directly. A Mailbox (not a plain
   // string) is required here — it also base64-encodes the Cyrillic display name.
   msg.setHeader('Reply-To', new Mailbox({ name, addr: data.email }));
   msg.addMessage({
     contentType: 'text/plain',
     encoding: 'base64',
-    data: toBase64Body(
-      [`Име: ${data.name}`, `Имейл: ${data.email}`, `Нужди: ${needs}`, '', data.message].join(
-        '\r\n',
-      ),
-    ),
+    data: toBase64Body(bodyLines.join('\r\n')),
   });
 
   await env.SEND_EMAIL.send(new EmailMessage(from, to, msg.asRaw()));
