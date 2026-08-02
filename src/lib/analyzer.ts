@@ -18,7 +18,7 @@ const MAX_OUTBOUND_DOMAINS = 30;
 const MAX_KEYWORDS = 12;
 
 const USER_AGENT =
-  'Mozilla/5.0 (compatible; KovaStudioAnalyzer/1.0; +https://kova.studio/analyzer/)';
+  'Mozilla/5.0 (compatible; KovaStudioAnalyzer/1.0; +https://kova.bg/analyzer/)';
 
 const COMMON_SITEMAP_PATHS = [
   '/sitemap.xml',

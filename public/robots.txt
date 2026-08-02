@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kova.studio/sitemap-index.xml
+Sitemap: https://kova.bg/sitemap-index.xml
