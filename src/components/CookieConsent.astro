@@ -1,0 +1,188 @@
+---
+import { SITE } from '../data/site.mjs';
+
+/**
+ * Банер за съгласие + Google Analytics.
+ *
+ * Политиката за бисквитки обещава, че аналитични бисквитки се поставят само
+ * след съгласие — затова gtag.js изобщо не се зарежда, преди посетителят да
+ * натисне „Приемам“. Изборът се помни в localStorage и може да се промени от
+ * бутона на /cookies/ (или от всеки елемент с `data-cookie-reset`).
+ */
+const gaId = SITE.gaId;
+---
+
+{
+  gaId && (
+    <>
+      <div class="cookie" data-cookie-banner hidden role="region" aria-label="Съгласие за бисквитки">
+        <p class="cookie__text">
+          Използвам Google Analytics, за да разбирам кои страници са полезни. Аналитични бисквитки
+          се поставят само със съгласието ти —
+          <a href="/cookies/">виж политиката за бисквитки</a>.
+        </p>
+        <div class="cookie__actions">
+          <button class="cookie__btn cookie__btn--accept" type="button" data-cookie-accept>
+            Приемам
+          </button>
+          <button class="cookie__btn cookie__btn--decline" type="button" data-cookie-decline>
+            Отказвам
+          </button>
+        </div>
+      </div>
+
+      <script is:inline define:vars={{ gaId }}>
+        (function () {
+          var KEY = 'kova-cookie-consent';
+          var banner = document.querySelector('[data-cookie-banner]');
+          if (!banner) return;
+
+          function loadGa() {
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function gtag() {
+              window.dataLayer.push(arguments);
+            };
+            window.gtag('js', new Date());
+            window.gtag('config', gaId);
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+            document.head.appendChild(script);
+          }
+
+          function read() {
+            try {
+              return localStorage.getItem(KEY);
+            } catch (e) {
+              return null;
+            }
+          }
+
+          function choose(value) {
+            try {
+              localStorage.setItem(KEY, value);
+            } catch (e) {
+              /* частен режим без localStorage — изборът важи за тази страница */
+            }
+            banner.hidden = true;
+            if (value === 'granted') loadGa();
+          }
+
+          var choice = read();
+          if (choice === 'granted') loadGa();
+          else if (choice !== 'denied') banner.hidden = false;
+
+          banner
+            .querySelector('[data-cookie-accept]')
+            .addEventListener('click', function () {
+              choose('granted');
+            });
+          banner
+            .querySelector('[data-cookie-decline]')
+            .addEventListener('click', function () {
+              choose('denied');
+            });
+
+          // „Промени избора си“ — напр. бутонът на /cookies/.
+          document.querySelectorAll('[data-cookie-reset]').forEach(function (el) {
+            el.addEventListener('click', function () {
+              try {
+                localStorage.removeItem(KEY);
+              } catch (e) {
+                /* няма какво да чистим */
+              }
+              banner.hidden = false;
+              banner.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            });
+          });
+        })();
+      </script>
+    </>
+  )
+}
+
+<style>
+  .cookie {
+    position: fixed;
+    inset-inline: 16px;
+    bottom: 16px;
+    z-index: 90;
+    margin-inline: auto;
+    max-width: 680px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow-card);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cookie[hidden] {
+    display: none;
+  }
+
+  .cookie__text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-body);
+    max-width: 420px;
+  }
+
+  .cookie__text a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .cookie__actions {
+    display: flex;
+    gap: 8px;
+    flex: none;
+  }
+
+  .cookie__btn {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition:
+      background-color 0.16s ease,
+      color 0.16s ease,
+      border-color 0.16s ease;
+  }
+
+  .cookie__btn--accept {
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    color: #fff;
+  }
+
+  .cookie__btn--accept:hover {
+    background: #000;
+  }
+
+  .cookie__btn--decline {
+    background: transparent;
+    border: 1px solid var(--line-field);
+    color: var(--ink-body);
+  }
+
+  .cookie__btn--decline:hover {
+    border-color: var(--ink);
+  }
+
+  @media (max-width: 560px) {
+    .cookie {
+      inset-inline: 10px;
+      bottom: 10px;
+      padding: 16px;
+    }
+  }
+</style>
