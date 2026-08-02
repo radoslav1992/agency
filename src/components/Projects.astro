@@ -10,8 +10,12 @@ const linkLabel = hasMore ? `Всички ${PROJECTS.length} проекта →`
 <section id="projects" class="projects container">
   <header class="head">
     <div>
-      <p class="eyebrow">Проекти</p>
-      <h2 class="section-title">Неща, които сме пуснали</h2>
+      <p class="eyebrow">Kova Labs</p>
+      <h2 class="section-title">Собствени продукти в реална експлоатация</h2>
+      <p class="head__note">
+        Не само разработвам за клиенти — създавам, пускам и поддържам собствени продукти. Всички
+        работят в момента.
+      </p>
     </div>
     <a class="head__link" href="/projects/">{linkLabel}</a>
   </header>
@@ -33,6 +37,13 @@ const linkLabel = hasMore ? `Всички ${PROJECTS.length} проекта →`
     gap: 20px;
     flex-wrap: wrap;
     margin-bottom: 36px;
+  }
+
+  .head__note {
+    font-size: 15px;
+    color: var(--ink-muted);
+    max-width: 560px;
+    margin: 10px 0 0;
   }
 
   .head__link {

@@ -1,0 +1,189 @@
+---
+import { CASES } from '../data/cases.ts';
+
+/** Външните клиентски казуси (ако има) излизат преди собствените продукти. */
+const cases = [...CASES].sort((a, b) => Number(a.own) - Number(b.own)).slice(0, 3);
+---
+
+<section id="cases" class="cases container">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Казуси</p>
+      <h2 class="section-title">Какво доказват продуктите</h2>
+    </div>
+    <p class="head__note">
+      Без измислени отзиви — вместо това: какъв проблем решава всеки продукт, какво е изградено и
+      кое е сложното. Всичко е на живо, отвори и провери сам.
+    </p>
+  </header>
+
+  <div class="grid">
+    {
+      cases.map((item) => (
+        <article class="case">
+          <div class="case__top">
+            <a class="case__name" href={item.url} target="_blank" rel="noopener">
+              {item.name} ↗
+            </a>
+            {item.own && <span class="case__own">Kova Labs · собствен продукт</span>}
+          </div>
+
+          <dl class="case__rows">
+            <div class="case__row">
+              <dt>Проблем</dt>
+              <dd>{item.problem}</dd>
+            </div>
+            <div class="case__row">
+              <dt>Решение</dt>
+              <dd>{item.solution}</dd>
+            </div>
+            <div class="case__row">
+              <dt>Сложната част</dt>
+              <dd>{item.hardPart}</dd>
+            </div>
+          </dl>
+
+          <ul class="case__facts">
+            {item.facts.map((fact) => (
+              <li>{fact}</li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
+  </div>
+
+  <p class="foot">
+    Търся и първите три външни пилотни проекта — с отстъпка срещу право да публикувам казуса.
+    <a href="/projects/">Виж всички казуси и продукти →</a>
+  </p>
+</section>
+
+<style>
+  .cases {
+    padding-block: 88px 0;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .head__note {
+    font-size: 16px;
+    color: var(--ink-muted);
+    max-width: 420px;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 36px;
+  }
+
+  .case {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .case__top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .case__name {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .case__name:hover {
+    color: var(--accent);
+  }
+
+  /* Казва открито, че продуктът е наш — без това картата чете като клиентска поръчка. */
+  .case__own {
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--ink-subtle);
+    background: var(--chip);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+
+  .case__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+  }
+
+  .case__row dt {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .case__row dd {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-body);
+    margin: 4px 0 0;
+  }
+
+  .case__facts {
+    margin: auto 0 0;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+  }
+
+  .case__facts li::before {
+    content: '✓ ';
+    color: var(--success, #34a853);
+  }
+
+  .foot {
+    margin: 26px 0 0;
+    font-size: 14.5px;
+    color: var(--ink-muted);
+  }
+
+  .foot a {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  @media (max-width: 980px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .cases {
+      padding-block: 56px 0;
+    }
+  }
+</style>

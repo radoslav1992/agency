@@ -6,21 +6,45 @@ import { PROJECTS } from '../data/projects.ts';
 ---
 
 <BaseLayout
-  title="Проекти"
-  description="Сайтове, приложения и AI продукти, пуснати от Кова студио. Всички работят в момента — отвори който и да е и виж сам."
+  title="Казуси и продукти"
+  description="Клиентски казуси и собствени продукти на Кова студио (Kova Labs). Всичко работи в момента — отвори което и да е и виж сам."
   canonical="/projects/"
 >
   <div class="container wrap">
-    <p class="eyebrow">Проекти</p>
-    <h1 class="title">Неща, които сме пуснали</h1>
+    <p class="eyebrow">Казуси</p>
+    <h1 class="title">Казуси и продукти</h1>
     <p class="lead">
-      Продукти, сайтове и AI инструменти — повечето тръгнаха от собствена идея и всички работят в
-      момента. Отвори който и да е и виж сам.
+      Разделени честно на две: работа за външни клиенти и собствени продукти на студиото. Всичко
+      тук работи в момента — отвори което и да е и виж сам.
     </p>
 
-    <div class="grid">
-      {PROJECTS.map((project) => <ProjectCard project={project} />)}
-    </div>
+    <section class="block" aria-labelledby="client-cases">
+      <h2 class="block__title" id="client-cases">Клиентски казуси</h2>
+      <div class="pilot">
+        <p class="pilot__lead">
+          Тук ще стоят подробни казуси от външни проекти — с проблем, решение, срок, архитектура и
+          измерим резултат.
+        </p>
+        <p class="pilot__body">
+          В момента набирам <strong>три пилотни проекта</strong> за компании, които искат да
+          автоматизират конкретен процес — с 20% отстъпка срещу правото да публикувам казуса с
+          измерими резултати. Платен пилот, реален ангажимент и от двете страни.
+        </p>
+        <a class="btn btn--primary" href="/contact/">Кандидатствай за пилотен проект</a>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="kova-labs">
+      <h2 class="block__title" id="kova-labs">Kova Labs — собствени продукти</h2>
+      <p class="block__note">
+        Не само разработвам за клиенти — създавам, пускам и поддържам собствени продукти. Те
+        доказват, че мога да изградя и пусна работещ продукт от нулата: продуктова архитектура,
+        AI обработка, интерфейс и поддръжка.
+      </p>
+      <div class="grid">
+        {PROJECTS.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
   </div>
 
   <CtaBanner />
@@ -44,6 +68,45 @@ import { PROJECTS } from '../data/projects.ts';
     margin: 0 0 48px;
   }
 
+  .block + .block {
+    margin-top: 56px;
+  }
+
+  .block__title {
+    font-size: clamp(22px, 3.5vw, 28px);
+    letter-spacing: -0.025em;
+    margin: 0 0 16px;
+  }
+
+  .block__note {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    max-width: 680px;
+    margin: 0 0 28px;
+  }
+
+  .pilot {
+    background: var(--bg-sand);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 32px;
+    max-width: 760px;
+  }
+
+  .pilot__lead {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  .pilot__body {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 0 0 20px;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -63,6 +126,10 @@ import { PROJECTS } from '../data/projects.ts';
 
     .grid {
       grid-template-columns: 1fr;
+    }
+
+    .pilot {
+      padding: 24px 20px;
     }
   }
 </style>

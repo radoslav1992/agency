@@ -67,7 +67,7 @@ import { SITE } from '../data/site.mjs';
 
   <p class="status" role="status" data-form-status hidden></p>
   <p class="fallback">
-    Или просто ми пиши на <a href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>.
+    Или просто ми пиши на <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
   </p>
 </form>
 
@@ -256,6 +256,15 @@ import { SITE } from '../data/site.mjs';
 
   // Redirect target for the no-JS flow — also covers a reload after submit.
   const params = new URLSearchParams(location.search);
+
+  // Идване от анализатора (`/contact/?about=<url>`) — започнатото съобщение
+  // носи адреса на сайта, за да не го пише човекът втори път.
+  const about = params.get('about');
+  const messageField = form?.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
+  if (about && messageField && !messageField.value) {
+    messageField.value = `Анализирах ${about} с анализатора. Кои са трите най-важни неща, които да подобря?`;
+  }
+
   if (params.get('sent') === '1') {
     show(SUCCESS, 'success');
     history.replaceState({}, '', location.pathname);

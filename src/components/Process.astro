@@ -1,11 +1,11 @@
 ---
-import { PROCESS } from '../data/content.ts';
+import { PROCESS, TERMS } from '../data/content.ts';
 ---
 
 <section class="process container">
   <header class="head">
     <p class="eyebrow">Процес</p>
-    <h2 class="section-title">Как работим</h2>
+    <h2 class="section-title">Как работя</h2>
   </header>
 
   <ol class="steps">
@@ -19,6 +19,20 @@ import { PROCESS } from '../data/content.ts';
       ))
     }
   </ol>
+
+  <div class="terms">
+    <h3 class="terms__title">Ясните условия, преди да ги попиташ</h3>
+    <dl class="terms__grid">
+      {
+        TERMS.map((term) => (
+          <div class="term">
+            <dt>{term.title}</dt>
+            <dd>{term.body}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
 </section>
 
 <style>
@@ -70,8 +84,48 @@ import { PROCESS } from '../data/content.ts';
     margin: 0;
   }
 
+  .terms {
+    margin-top: 44px;
+    background: var(--bg-sand);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 28px;
+  }
+
+  .terms__title {
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: normal;
+    margin: 0 0 20px;
+  }
+
+  .terms__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 24px;
+    margin: 0;
+  }
+
+  .term dt {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .term dd {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 6px 0 0;
+  }
+
   @media (max-width: 900px) {
     .steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .terms__grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
@@ -83,6 +137,14 @@ import { PROCESS } from '../data/content.ts';
 
     .steps {
       grid-template-columns: 1fr;
+    }
+
+    .terms__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .terms {
+      padding: 22px 20px;
     }
   }
 </style>

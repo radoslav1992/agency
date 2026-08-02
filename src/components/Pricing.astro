@@ -1,13 +1,14 @@
 ---
-import { PLANS, PRICING_PROMO } from '../data/content.ts';
+import { PLANS, PRICING_EXTRAS, PRICING_PROMO } from '../data/content.ts';
 ---
 
 <section class="pricing">
   <div class="container inner">
-    <p class="eyebrow">Пакети</p>
-    <h2 class="section-title">Ориентировъчни цени</h2>
+    <p class="eyebrow">Типични бюджети</p>
+    <h2 class="section-title">Прозрачни цени</h2>
     <p class="lead">
-      Всеки проект е различен, но за да имаш представа още преди да пишеш — ето откъде тръгваме.
+      Всеки проект е различен, но за да имаш представа още преди да пишеш — ето типичните бюджети,
+      от които тръгваме.
     </p>
 
     {
@@ -38,12 +39,24 @@ import { PLANS, PRICING_PROMO } from '../data/content.ts';
       }
     </div>
 
+    <ul class="extras">
+      {
+        PRICING_EXTRAS.map((extra) => (
+          <li>
+            <span class="extras__name">{extra.name}</span>
+            <span class="extras__price">{extra.price}</span>
+          </li>
+        ))
+      }
+    </ul>
+
     <p class="footnote">
-      Срокът зависи от обхвата и го фиксирам заедно с цената — в
+      AI пилотът е точно това — пилот, който доказва дали идеята работи, а не завършена
+      корпоративна система. Срокът зависи от обхвата и го фиксирам заедно с цената — в
       <a href="/blog/oferta-na-edna-stranica/">оферта на една страница</a>, преди да започнем.
-      Визитките се хостват безплатно и плащаш само домейна, около 10–20 € на година. При
-      приложенията и AI решенията има месечни разходи за сървър и модели — казвам ти ги в същата
-      оферта, не след нея.
+      При бизнес сайтовете управляваният хостинг за първата година е включен, плащаш само домейна
+      (около 10–20 € на година). При приложенията и AI решенията има месечни разходи за сървър и
+      модели — казвам ти ги в същата оферта, не след нея.
     </p>
   </div>
 </section>
@@ -146,6 +159,36 @@ import { PLANS, PRICING_PROMO } from '../data/content.ts';
     font-size: 30px;
     margin: 22px 0 4px;
     color: #fff;
+  }
+
+  .extras {
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 620px;
+  }
+
+  .extras li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 1px solid var(--dark-line);
+    padding-top: 10px;
+    font-size: 14.5px;
+  }
+
+  .extras__name {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .extras__price {
+    color: var(--dark-ink-subtle);
   }
 
   .footnote {
