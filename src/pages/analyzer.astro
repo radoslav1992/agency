@@ -12,9 +12,9 @@ import CtaBanner from '../components/CtaBanner.astro';
     <p class="eyebrow">Безплатен инструмент</p>
     <h1 class="title">Анализатор на сайтове</h1>
     <p class="lead">
-      Въведи адрес и получи пълен технически разбор — SEO, сигурност, технологии, DNS, съдържание
-      и структура. Показваме всички събрани данни директно при теб — без AI обобщения, без
-      регистрация и без да пазим резултата.
+      Въведи адрес и получи пълен технически разбор — хостинг и геолокация, домейн, технологии,
+      SEO, сигурност, достъпност, DNS, бисквитки и структура. Показваме всички събрани данни
+      директно при теб — без AI обобщения, без регистрация и без да пазим резултата.
     </p>
 
     <form class="scan" data-analyzer-form novalidate>
@@ -470,6 +470,81 @@ import CtaBanner from '../components/CtaBanner.astro';
     return section('Обзор', card(...nodes));
   }
 
+  function renderHosting(r: any): HTMLElement {
+    const h = r.hosting;
+    const nodes: Node[] = [];
+
+    if (!h) {
+      nodes.push(el('p', 'muted', 'Не успяхме да определим хостинга и местоположението за този IP адрес.'));
+    } else {
+      const location = [h.city, h.region, h.country].filter(Boolean).join(', ');
+      const rows: [string, KvValue][] = [
+        ['IP адрес', h.ip],
+        [
+          'Хостинг доставчик',
+          h.provider ? [h.provider.name, badge(h.provider.tier, 'ok')] : (h.org ?? h.isp),
+        ],
+        ['Организация (ASN)', h.org],
+        ['ISP', h.isp],
+        ['ASN', h.asn],
+        ['Местоположение на сървъра', location || null],
+      ];
+      nodes.push(kvTable(rows));
+    }
+
+    return section('Хостинг и геолокация', card(...nodes));
+  }
+
+  function renderDomain(r: any): HTMLElement {
+    const d = r.domainInfo;
+    const nodes: Node[] = [];
+
+    if (!d) {
+      nodes.push(el('p', 'muted', 'Няма публична регистрационна информация (WHOIS/RDAP) за този домейн.'));
+    } else {
+      const fmtDate = (iso: string | null) => {
+        if (!iso) return null;
+        const date = new Date(iso);
+        return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString('bg-BG');
+      };
+      const rows: [string, KvValue][] = [
+        [
+          'Възраст на домейна',
+          d.ageYears !== null
+            ? [`${d.ageYears} ${d.ageYears === 1 ? 'година' : 'години'}`, badge(d.ageYears >= 2 ? 'Утвърден' : 'Нов', d.ageYears >= 2 ? 'ok' : 'warn')]
+            : null,
+        ],
+        ['Регистриран на', fmtDate(d.createdAt)],
+        ['Последна промяна', fmtDate(d.updatedAt)],
+        ['Изтича на', fmtDate(d.expiresAt)],
+        ['Регистратор', d.registrar],
+        ['Name сървъри', d.nameservers.length > 0 ? d.nameservers.join('\n') : null],
+      ];
+      nodes.push(kvTable(rows));
+      if (d.statuses.length > 0) {
+        nodes.push(detailsBlock('Статуси на домейна', pills(d.statuses)));
+      }
+    }
+
+    return section('Домейн и регистрация', card(...nodes));
+  }
+
+  function renderSubdomains(r: any): HTMLElement {
+    const subs: string[] = r.subdomains;
+    const nodes: Node[] = [];
+    if (subs.length === 0) {
+      nodes.push(el('p', 'muted', 'Не са открити поддомейни от списъка с най-често срещаните.'));
+    } else {
+      nodes.push(
+        el('p', 'muted', `Открити ${subs.length} поддомейна (от проверка на често срещани имена):`),
+      );
+      const list = el('ul', 'list');
+      for (const s of subs) list.appendChild(el('li', undefined, s));
+      nodes.push(list);
+    }
+    return section('Поддомейни', card(...nodes));
+  }
+
   function renderSeo(r: any): HTMLElement {
     const s = r.seo;
     const titleTone: Tone = s.titleLength >= 30 && s.titleLength <= 60 ? 'ok' : 'warn';
@@ -534,7 +609,17 @@ import CtaBanner from '../components/CtaBanner.astro';
       headingNodes.push(detailsBlock(`Всички заглавия на страницата (${s.headings.length})`, list));
     }
 
-    return section('SEO и мета данни', card(kvTable(metaRows)), card(...headingNodes));
+    const cards: Node[] = [card(kvTable(metaRows)), card(...headingNodes)];
+
+    if (r.seoIssues.issues.length > 0) {
+      const list = el('ul', 'list');
+      for (const issue of r.seoIssues.issues) list.appendChild(el('li', undefined, issue));
+      cards.push(card(el('h3', undefined, `Забелязани SEO проблеми (${r.seoIssues.issues.length})`), list));
+    } else {
+      cards.push(card(el('p', 'muted', 'Не са открити основни SEO пропуски по проверените показатели.')));
+    }
+
+    return section('SEO и мета данни', ...cards);
   }
 
   function renderSharing(r: any): HTMLElement {
@@ -625,7 +710,29 @@ import CtaBanner from '../components/CtaBanner.astro';
       );
     }
 
-    return section('Структурирани данни', card(...nodes));
+    const cards: Node[] = [card(...nodes)];
+
+    const sv = r.schemaValidation;
+    if (sv.schemas.length > 0) {
+      const validNodes: Node[] = [];
+      if (sv.richResultsEligible.length > 0) {
+        validNodes.push(el('h3', undefined, 'Подходящи за rich results в Google'));
+        validNodes.push(pills(sv.richResultsEligible));
+      }
+      const rows: [string, KvValue][] = sv.schemas.map(
+        (s: any) =>
+          [
+            s.type,
+            s.isValid
+              ? badge('Валидна', 'ok')
+              : [badge('Проблеми', 'warn'), ' ', el('span', 'muted', s.issues.join('; '))],
+          ] as [string, KvValue],
+      );
+      validNodes.push(kvTable(rows));
+      cards.push(card(el('h3', undefined, 'Проверка на schema.org данните'), ...validNodes));
+    }
+
+    return section('Структурирани данни', ...cards);
   }
 
   function renderTech(r: any): HTMLElement {
@@ -764,7 +871,165 @@ import CtaBanner from '../components/CtaBanner.astro';
       ['Компресия при пренос', a.compression ?? muted('Не е отчетена')],
     ];
 
-    return section('Архитектура на страницата', card(kvTable(rows)));
+    const cards: Node[] = [card(kvTable(rows))];
+
+    const w = r.pageWeight;
+    const weightNodes: Node[] = [];
+    const grade = el('div', 'grade');
+    const letter = el('div', 'grade__letter', w.grade);
+    letter.dataset.grade = w.grade;
+    grade.appendChild(letter);
+    grade.appendChild(el('p', 'grade__score', `Приблизително тегло на страницата: ${num(w.totalKB)} KB`));
+    weightNodes.push(grade);
+    const weightRows: [string, KvValue][] = w.breakdown.map(
+      (b: any) => [`${b.type}${b.count > 1 ? ` (${b.count})` : ''}`, `${num(b.kb)} KB`] as [string, KvValue],
+    );
+    weightNodes.push(kvTable(weightRows));
+    if (w.recommendations.length > 0) {
+      const list = el('ul', 'list');
+      for (const rec of w.recommendations) list.appendChild(el('li', undefined, rec));
+      weightNodes.push(detailsBlock(`Препоръки за тегло (${w.recommendations.length})`, list));
+    }
+    cards.push(card(el('h3', undefined, 'Тегло на страницата (оценка)'), ...weightNodes));
+
+    return section('Архитектура на страницата', ...cards);
+  }
+
+  function renderAccessibility(r: any): HTMLElement {
+    const a = r.accessibility;
+
+    const grade = el('div', 'grade');
+    const letter = el('div', 'grade__letter', a.grade);
+    letter.dataset.grade = a.grade;
+    grade.appendChild(letter);
+    grade.appendChild(el('p', 'grade__score', `${a.score} от 100 · ${a.passed.length} преминати проверки, ${a.issues.length} проблема`));
+
+    const nodes: Node[] = [grade];
+
+    if (a.issues.length > 0) {
+      const toneFor = (sev: string): Tone => (sev === 'критично' || sev === 'сериозно' ? 'bad' : sev === 'средно' ? 'warn' : 'warn');
+      const rows: [string, KvValue][] = a.issues.map(
+        (i: any) => [i.message, badge(i.severity, toneFor(i.severity))] as [string, KvValue],
+      );
+      nodes.push(kvTable(rows));
+    }
+    if (a.passed.length > 0) {
+      const list = el('ul', 'list');
+      for (const p of a.passed) list.appendChild(el('li', undefined, p));
+      nodes.push(detailsBlock(`Преминати проверки (${a.passed.length})`, list));
+    }
+
+    return section('Достъпност (WCAG)', card(...nodes));
+  }
+
+  function renderDeepSecurity(r: any): HTMLElement {
+    const d = r.deepSecurity;
+    const cards: Node[] = [];
+
+    const riskTone: Tone =
+      d.riskLevel === 'Критичен' || d.riskLevel === 'Висок' ? 'bad' : d.riskLevel === 'Среден' ? 'warn' : 'ok';
+    const summary = card(
+      kvTable([
+        ['Общо ниво на риск', badge(d.riskLevel, riskTone)],
+        [
+          'Content-Security-Policy',
+          d.csp.present ? badge('Има', 'ok') : badge('Липсва', 'bad'),
+        ],
+        [
+          'Mixed content (HTTP на HTTPS)',
+          d.mixedContent.count === 0 ? badge('Няма', 'ok') : badge(`${d.mixedContent.count} ресурса`, 'bad'),
+        ],
+        [
+          'SRI покритие на външни ресурси',
+          d.sri.totalExternal === 0
+            ? muted('Няма външни скриптове/стилове')
+            : [`${d.sri.coveragePercent}% (${d.sri.withIntegrity}/${d.sri.totalExternal})`, badge(d.sri.coveragePercent === 100 ? 'Пълно' : 'Непълно', d.sri.coveragePercent === 100 ? 'ok' : 'warn')],
+        ],
+      ]),
+    );
+    cards.push(summary);
+
+    if (d.vulnerabilities.length > 0) {
+      const rows: [string, KvValue][] = d.vulnerabilities.map(
+        (v: any) =>
+          [
+            `${v.technology} ${v.version}`,
+            [
+              badge(v.severity, v.severity === 'високо' || v.severity === 'критично' ? 'bad' : 'warn'),
+              ' ',
+              el('span', 'muted', `${v.cve}: ${v.description} — поправено в ${v.fixedIn}`),
+            ],
+          ] as [string, KvValue],
+      );
+      cards.push(card(el('h3', undefined, `Познати уязвимости в библиотеки (${d.vulnerabilities.length})`), kvTable(rows)));
+    }
+
+    if (d.csp.issues.length > 0) {
+      const list = el('ul', 'list');
+      for (const issue of d.csp.issues) list.appendChild(el('li', undefined, `[${issue.severity}] ${issue.message}`));
+      cards.push(card(el('h3', undefined, 'Анализ на Content-Security-Policy'), list));
+    }
+
+    if (d.mixedContent.count > 0) {
+      const list = el('ul', 'list');
+      for (const res of d.mixedContent.resources) list.appendChild(el('li', undefined, `${res.type}: ${res.url}`));
+      cards.push(card(el('h3', undefined, 'Mixed content ресурси'), list));
+    }
+
+    if (d.thirdParties.length > 0) {
+      const rows: [string, KvValue][] = d.thirdParties.map(
+        (t: any) =>
+          [
+            t.domain,
+            [badge(t.risk, t.risk === 'висок' ? 'bad' : t.risk === 'среден' ? 'warn' : 'ok'), ' ', el('span', 'muted', `${t.category} — ${t.concern}`)],
+          ] as [string, KvValue],
+      );
+      cards.push(
+        card(el('h3', undefined, `Външни услуги с риск за поверителност (${d.thirdParties.length})`), kvTable(rows)),
+      );
+    }
+
+    return section('Дълбока сигурност', ...cards);
+  }
+
+  function renderCookies(r: any): HTMLElement {
+    const c = r.cookies;
+    const nodes: Node[] = [];
+
+    nodes.push(
+      kvTable([
+        [
+          'Банер за съгласие',
+          c.consentProvider ? [badge('Открит', 'ok'), ' ', el('span', 'muted', c.consentProvider)] : badge('Не е открит', 'warn'),
+        ],
+        ['Бисквитки при първо зареждане', c.cookies.length > 0 ? num(c.cookies.length) : badge('Няма', 'ok')],
+      ]),
+    );
+
+    if (c.cookies.length > 0) {
+      const rows: [string, KvValue][] = c.cookies.map(
+        (cookie: any) =>
+          [
+            cookie.name,
+            [
+              cookie.secure ? badge('Secure', 'ok') : badge('без Secure', 'bad'),
+              ' ',
+              cookie.httpOnly ? badge('HttpOnly', 'ok') : badge('без HttpOnly', 'warn'),
+              ' ',
+              el('span', 'muted', `SameSite: ${cookie.sameSite}`),
+            ],
+          ] as [string, KvValue],
+      );
+      nodes.push(detailsBlock(`Подробности за бисквитките (${c.cookies.length})`, kvTable(rows)));
+    }
+
+    if (c.issues.length > 0) {
+      const list = el('ul', 'list');
+      for (const issue of c.issues) list.appendChild(el('li', undefined, issue));
+      nodes.push(detailsBlock(`Забележки за GDPR (${c.issues.length})`, list));
+    }
+
+    return section('Бисквитки и GDPR', card(...nodes));
   }
 
   function renderContacts(r: any): HTMLElement {
@@ -798,13 +1063,19 @@ import CtaBanner from '../components/CtaBanner.astro';
     if (!results || !resultsNote) return;
     results.replaceChildren(
       renderOverview(r),
+      renderHosting(r),
+      renderDomain(r),
+      renderSubdomains(r),
+      renderTech(r),
       renderSeo(r),
       renderSharing(r),
       renderContent(r),
       renderLinks(r),
       renderStructuredData(r),
-      renderTech(r),
       renderSecurity(r),
+      renderDeepSecurity(r),
+      renderAccessibility(r),
+      renderCookies(r),
       renderDns(r),
       renderIndexing(r),
       renderArchitecture(r),
