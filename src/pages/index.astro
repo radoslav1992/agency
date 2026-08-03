@@ -2,11 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
 import ExperienceBar from '../components/ExperienceBar.astro';
-import CaseStudies from '../components/CaseStudies.astro';
 import Services from '../components/Services.astro';
+import AnalyzerStrip from '../components/AnalyzerStrip.astro';
 import Process from '../components/Process.astro';
 import About from '../components/About.astro';
-import Projects from '../components/Projects.astro';
+import Products from '../components/Products.astro';
+import PilotProgram from '../components/PilotProgram.astro';
 import Pricing from '../components/Pricing.astro';
 import BlogPreview from '../components/BlogPreview.astro';
 import CtaBanner from '../components/CtaBanner.astro';
@@ -45,14 +46,16 @@ const structuredData = {
     />
   </Fragment>
 
-  {/* Редът следва плана: обещание → доказателства → казуси → услуги → процес. */}
+  {/* Редът следва финалното копие: hero → услуги (+ лентата на анализатора
+      до „Бизнес сайтове“) → процес → за мен → продукти → пилот → цени. */}
   <Hero />
   <ExperienceBar />
-  <CaseStudies />
   <Services />
+  <AnalyzerStrip />
   <Process />
   <About />
-  <Projects />
+  <Products />
+  <PilotProgram />
   {SHOW_PRICING && <Pricing />}
   <BlogPreview limit={4} />
   <CtaBanner />

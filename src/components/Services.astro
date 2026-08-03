@@ -9,8 +9,8 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
       <h2 class="section-title">С какво мога да помогна</h2>
     </div>
     <p class="head__note">
-      Технологията е само средство. Важното е процесът да стане по-бърз, по-предвидим и по-лесен
-      за управление.
+      Технологията е средство. Целта е процесът да стане по-бърз и да не зависи от това кой е на
+      работа днес.
     </p>
   </header>
 
@@ -26,7 +26,25 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
         >
           <p class="service__number">{service.number}</p>
           <h3 class="service__title">{service.title}</h3>
-          <p class="service__body">{service.body}</p>
+          {service.body && <p class="service__body">{service.body}</p>}
+          {service.problem && (
+            <dl class="service__rows">
+              <div class="service__row">
+                <dt>Проблемът</dt>
+                <dd>{service.problem}</dd>
+              </div>
+              <div class="service__row">
+                <dt>Решението</dt>
+                <dd>{service.solution}</dd>
+              </div>
+              {service.change && (
+                <div class="service__row">
+                  <dt>Какво се променя</dt>
+                  <dd set:html={service.change} />
+                </div>
+              )}
+            </dl>
+          )}
           {service.points && service.points.length > 0 && (
             <ul class="service__points">
               {service.points.map((point) => (
@@ -53,11 +71,29 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
         <article class="service service--secondary">
           <p class="service__number">{service.number}</p>
           <h3 class="service__title">{service.title}</h3>
-          <p class="service__body">{service.body}</p>
-          {service.tags && service.tags.length > 0 && (
-            <ul class="service__tags">
-              {service.tags.map((tag) => (
-                <li class="pill">{tag}</li>
+          {service.body && <p class="service__body">{service.body}</p>}
+          {service.problem && (
+            <dl class="service__rows">
+              <div class="service__row">
+                <dt>Проблемът</dt>
+                <dd>{service.problem}</dd>
+              </div>
+              <div class="service__row">
+                <dt>Решението</dt>
+                <dd>{service.solution}</dd>
+              </div>
+              {service.change && (
+                <div class="service__row">
+                  <dt>Какво се променя</dt>
+                  <dd set:html={service.change} />
+                </div>
+              )}
+            </dl>
+          )}
+          {service.points && service.points.length > 0 && (
+            <ul class="service__points">
+              {service.points.map((point) => (
+                <li>{point}</li>
               ))}
             </ul>
           )}
@@ -186,6 +222,38 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
     margin: 18px 0 0;
     padding: 0;
     list-style: none;
+  }
+
+  .service__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 14px 0 0;
+  }
+
+  .service__row dt {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .service__row dd {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-body);
+    margin: 3px 0 0;
+  }
+
+  .service__row dd :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .service--dark .service__row dd {
+    color: var(--dark-ink-muted);
   }
 
   .service__points {

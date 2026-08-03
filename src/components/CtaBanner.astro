@@ -5,15 +5,16 @@ import { SITE } from '../data/site.mjs';
 <section class="cta container">
   <div class="panel">
     <div>
-      <h2 class="panel__title">Имаш процес, който отнема твърде много време?</h2>
+      <h2 class="panel__title">Имаш процес, който яде твърде много време?</h2>
       <p class="panel__lead">
-        Разкажи ми как работи в момента. Ще ти кажа дали може да бъде автоматизиран и какъв би
-        бил разумният първи етап.
+        Разкажи ми как върви в момента. Ще ти кажа дали може да се автоматизира и откъде е
+        разумно да се започне. Ако не съм подходящият човек, ще ти го кажа още в разговора.
       </p>
     </div>
     <div class="panel__actions">
-      <a class="action action--ink" href="/contact/">Разкажи ми за процеса</a>
+      <a class="action action--ink" href="/contact/">Запази безплатен разговор</a>
       <a class="action action--ghost" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      <p class="panel__subnote">30 минути. Не се иска подготовка — покажи ми процеса както си е.</p>
     </div>
   </div>
 </section>
@@ -83,6 +84,14 @@ import { SITE } from '../data/site.mjs';
   .action--ghost:hover {
     background: rgba(255, 255, 255, 0.26);
     color: #fff;
+  }
+
+  .panel__subnote {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--accent-soft);
+    margin: 2px 0 0;
+    text-align: center;
   }
 
   @media (max-width: 860px) {

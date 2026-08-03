@@ -1,0 +1,68 @@
+---
+/** Пилотната програма — една секция, без повторение при цените. */
+---
+
+<section class="pilot-wrap container">
+  <div class="pilot">
+    <div>
+      <p class="eyebrow">Пилотна програма</p>
+      <h2 class="pilot__title">Три свободни места</h2>
+      <p class="pilot__text">
+        Имаш идея за автоматизация, но първо искаш да се увериш, че работи? Отварям три места за
+        компании, които да проверят конкретен процес с реални данни. За пилота цената е с 20%
+        по-ниска.
+      </p>
+      <p class="pilot__text">
+        Накрая получаваш работещ прототип и ясна препоръка — има ли смисъл да се продължава. Ако
+        резултатът стане за казус, го публикувам само с твоето одобрение.
+      </p>
+    </div>
+    <a class="btn btn--primary pilot__cta" href="/contact/">Заяви място в пилотната програма →</a>
+  </div>
+</section>
+
+<style>
+  .pilot-wrap {
+    padding-block: 64px 0;
+  }
+
+  .pilot {
+    background: var(--bg-sand);
+    border: 1px solid var(--accent);
+    border-radius: 24px;
+    padding: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .pilot__title {
+    font-size: clamp(24px, 4vw, 32px);
+    letter-spacing: -0.03em;
+    margin: 8px 0 14px;
+  }
+
+  .pilot__text {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 0 0 10px;
+    max-width: 640px;
+  }
+
+  .pilot__cta {
+    flex: none;
+  }
+
+  @media (max-width: 680px) {
+    .pilot-wrap {
+      padding-block: 48px 0;
+    }
+
+    .pilot {
+      padding: 26px 22px;
+    }
+  }
+</style>

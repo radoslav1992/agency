@@ -1,0 +1,164 @@
+---
+import { PRODUCTS_FEATURED } from '../data/cases.ts';
+import { PROJECTS } from '../data/projects.ts';
+
+/** Единствената продуктова секция на началната страница — без дублиране. */
+const allLabel = `Всички ${PROJECTS.length} проекта →`;
+---
+
+<section id="products" class="products container">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Продукти</p>
+      <h2 class="section-title">Собствени продукти</h2>
+    </div>
+    <p class="head__note">
+      Правя и поддържам свои продукти. Всичките са публични и можеш да ги отвориш сега — това е
+      най-прекият начин да видиш как работя.
+    </p>
+  </header>
+
+  <div class="grid">
+    {
+      PRODUCTS_FEATURED.map((item) => (
+        <article class="product">
+          <a class="product__name" href={item.url} target="_blank" rel="noopener">
+            {item.name} <span class="product__domain">· {item.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span> ↗
+          </a>
+
+          <dl class="product__rows">
+            <div class="product__row">
+              <dt>Проблемът</dt>
+              <dd>{item.problem}</dd>
+            </div>
+            <div class="product__row">
+              <dt>Решението</dt>
+              <dd>{item.solution}</dd>
+            </div>
+            <div class="product__row">
+              <dt>Отдолу</dt>
+              <dd>{item.under}</dd>
+            </div>
+          </dl>
+
+          <p class="product__takeaway">{item.takeaway}</p>
+        </article>
+      ))
+    }
+  </div>
+
+  <p class="foot">
+    <a class="foot__link" href="/projects/">{allLabel}</a>
+  </p>
+</section>
+
+<style>
+  .products {
+    padding-block: 88px 0;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .head__note {
+    font-size: 16px;
+    color: var(--ink-muted);
+    max-width: 420px;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 36px;
+  }
+
+  .product {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .product__name {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .product__name:hover {
+    color: var(--accent);
+  }
+
+  .product__domain {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-subtle);
+    letter-spacing: normal;
+  }
+
+  .product__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+  }
+
+  .product__row dt {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .product__row dd {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-body);
+    margin: 4px 0 0;
+  }
+
+  .product__takeaway {
+    margin: auto 0 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    font-style: italic;
+    color: var(--ink-muted);
+  }
+
+  .foot {
+    margin: 26px 0 0;
+  }
+
+  .foot__link {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--accent);
+  }
+
+  @media (max-width: 980px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .products {
+      padding-block: 56px 0;
+    }
+  }
+</style>
