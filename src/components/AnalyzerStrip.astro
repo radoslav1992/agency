@@ -1,0 +1,67 @@
+---
+/**
+ * Лента за анализатора — стои след услугите (до „Бизнес сайтове“), не веднага
+ * след hero-а, за да не размива посланието за автоматизациите.
+ */
+---
+
+<section class="strip-wrap container">
+  <div class="strip">
+    <div>
+      <p class="eyebrow">Безплатен инструмент</p>
+      <h2 class="strip__title">Безплатна проверка на сайта ти</h2>
+      <p class="strip__text">
+        SEO, скорост, сигурност, достъпност, използвани технологии и това дали AI търсачките могат
+        да четат сайта ти. Отнема 15 секунди. Без регистрация, без имейл и без заключени секции —
+        резултатите излизат на екрана и остават твои.
+      </p>
+      <p class="strip__text">
+        Ако не си сигурен кое от намереното е важно, преглеждам отчета лично и ти казвам кои три
+        неща да оправиш първо. Безплатно, до един работен ден.
+      </p>
+    </div>
+    <a class="btn btn--outline strip__cta" href="/analyzer/">Провери сайта си →</a>
+  </div>
+</section>
+
+<style>
+  .strip-wrap {
+    padding-block: 40px 0;
+  }
+
+  .strip {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 32px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .strip__title {
+    font-size: clamp(20px, 3vw, 26px);
+    letter-spacing: -0.025em;
+    margin: 8px 0 12px;
+  }
+
+  .strip__text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 0 0 8px;
+    max-width: 660px;
+  }
+
+  .strip__cta {
+    flex: none;
+  }
+
+  @media (max-width: 680px) {
+    .strip {
+      padding: 24px 20px;
+    }
+  }
+</style>

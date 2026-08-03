@@ -268,7 +268,7 @@ import { SITE } from '../data/site.mjs';
   const about = params.get('about');
   const messageField = form?.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
   if (about && messageField && !messageField.value) {
-    messageField.value = `Проверих ${about} с безплатния анализ. Кои са трите промени, които трябва да направя първо?`;
+    messageField.value = `Проверих ${about} с безплатната проверка на сайтове. Кои три неща да оправя първо?`;
   }
 
   if (params.get('sent') === '1') {

@@ -16,23 +16,31 @@ import { SITE } from '../data/site.mjs';
     }
 
     <h1 class="hero__title">
-      Автоматизирам задачите, които екипът ти все още <span class="accent">върши на ръка</span>.
+      Автоматизирам работата, която екипът ти още <span class="accent">върши на ръка</span>.
     </h1>
 
     <p class="hero__lead">
-      Създавам AI асистенти, вътрешни системи и автоматизации, които спестяват време, намаляват
-      грешките и улесняват ежедневната работа на екипа.
+      Асистент, който отговаря по договорите и наръчниците ви. Система вместо седемте таблици в
+      Excel. Обработка на заявки, която върви, без някой да я бута всеки ден.
     </p>
 
     <div class="hero__actions">
-      <a class="btn btn--primary" href="/contact/">Разкажи ми за процеса</a>
-      <a class="btn btn--outline" href="/#cases">Разгледай проектите</a>
+      <a class="btn btn--primary" href="/contact/">Запази безплатен разговор</a>
+      <a class="btn btn--outline" href="/#products">Виж продуктите</a>
     </div>
+    <p class="hero__subnote">
+      30 минути, без ангажимент. Ако процесът ти не става за автоматизация, ще ти го кажа в
+      разговора.
+    </p>
+
+    <p class="hero__analyzer">
+      Имаш сайт? <a href="/analyzer/">Провери го безплатно за 15 секунди →</a>
+    </p>
 
     <ul class="hero__facts">
-      <li>🤝 Работиш директно с мен — без посредници</li>
-      <li>🧪 Първо проверяваме идеята с малък пилот</li>
-      <li>🎯 Знаеш предварително целта, срока и бюджета</li>
+      <li>🤝 Работиш с мен, не с акаунт мениджър</li>
+      <li>🧪 Тръгваме с малък пилот, преди да влагаш бюджет</li>
+      <li>🎯 Целта, срокът и цената са ясни от офертата</li>
     </ul>
   </div>
 
@@ -111,11 +119,30 @@ import { SITE } from '../data/site.mjs';
     margin-top: 32px;
   }
 
+  .hero__subnote {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-subtle);
+    margin: 12px 0 0;
+    max-width: 460px;
+  }
+
+  .hero__analyzer {
+    font-size: 14.5px;
+    margin: 22px 0 0;
+    color: var(--ink-body);
+  }
+
+  .hero__analyzer a {
+    font-weight: 600;
+    color: var(--accent);
+  }
+
   .hero__facts {
     display: flex;
     flex-wrap: wrap;
     gap: 12px 28px;
-    margin: 40px 0 0;
+    margin: 32px 0 0;
     padding: 0;
     list-style: none;
     font-size: 14px;

@@ -4,17 +4,17 @@ import CtaBanner from '../components/CtaBanner.astro';
 ---
 
 <BaseLayout
-  title="Безплатен анализ на сайт"
-  description="Безплатна техническа проверка на сайт — SEO, сигурност, достъпност, технологии, домейн и готовност за AI търсачки. Без регистрация и без съхранение на резултатите."
+  title="Безплатна проверка на сайт"
+  description="Виж какво Google и AI търсачките виждат в сайта ти — SEO, сигурност, достъпност, технологии и домейн. Безплатно, без регистрация и без запазване на резултатите."
   canonical="/analyzer/"
 >
   <section class="container hero">
-    <p class="eyebrow">Безплатен анализ на сайт</p>
-    <h1 class="title">Провери какво може да се подобри по сайта ти</h1>
+    <p class="eyebrow">Безплатна проверка на сайт</p>
+    <h1 class="title">Виж какво Google и AI търсачките виждат в сайта ти</h1>
     <p class="lead">
-      Въведи адреса на сайта и получи техническа проверка на SEO, сигурността, достъпността,
-      използваните технологии, домейна и готовността за AI търсачки. Проверката е безплатна, не
-      изисква регистрация и не съхранява резултатите.
+      Въведи адреса и получаваш техническа проверка на SEO, сигурността, достъпността,
+      използваните технологии, домейна и това дали AI търсачките могат да те четат. Безплатно,
+      без регистрация и без запазване на резултатите.
     </p>
 
     <form class="scan" data-analyzer-form novalidate>
@@ -35,13 +35,14 @@ import CtaBanner from '../components/CtaBanner.astro';
         <button class="btn btn--primary scan__submit" type="submit">Провери сайта</button>
       </div>
       <p class="scan__hint">
-        Например: kova.bg или https://example.bg — проверката обикновено отнема между 5 и 15
-        секунди.
+        Например kova.bg или https://example.bg. Проверката отнема между 5 и 15 секунди.
       </p>
       <p class="scan__status" role="status" data-scan-status hidden></p>
+      {/* Акцент, не дребен шрифт: „тук не пускам AI“ отличава инструмента от
+          автоматичните SEO чекери. */}
       <p class="scan__note">
-        Данните се събират в момента на анализа от публично достъпни източници. Резултатите не се
-        генерират или обобщават от AI.
+        Данните се събират в момента на анализа от публично достъпни източници.
+        <strong>Резултатите не минават през AI.</strong>
       </p>
     </form>
   </section>
@@ -51,12 +52,10 @@ import CtaBanner from '../components/CtaBanner.astro';
   {/* Показва се след завършен анализ — изпраща отчета директно за личен преглед. */}
   <section class="container review-wrap" id="review-form" data-review hidden>
     <div class="review">
-      <h2 class="review__title">Искаш ли да прегледам резултатите лично?</h2>
+      <h2 class="review__title">Да прегледам ли отчета лично?</h2>
       <p class="review__lead">
-        Изпрати ми отчета и ще ти посоча кои проблеми според мен трябва да бъдат отстранени първо.
-      </p>
-      <p class="review__lead">
-        Ще получиш отговор до един работен ден. Прегледът е безплатен и не те ангажира с поръчка.
+        Изпрати ми го и ще ти кажа кои три неща да оправиш първо. Отговарям до един работен ден.
+        Прегледът е безплатен и не те ангажира с нищо.
       </p>
 
       <form class="review__form" data-review-form novalidate>
@@ -94,7 +93,7 @@ import CtaBanner from '../components/CtaBanner.astro';
             name="concern"
             rows="3"
             maxlength="1000"
-            placeholder="Например: сайтът не се показва добре в Google, зарежда се бавно или не получава достатъчно запитвания."
+            placeholder="Например: сайтът не излиза в Google, зарежда се бавно или не носи запитвания."
           ></textarea>
         </label>
 
@@ -107,12 +106,11 @@ import CtaBanner from '../components/CtaBanner.astro';
         </div>
 
         <p class="review__auto">
-          При изпращането към съобщението автоматично ще бъдат добавени адресът на сайта и
-          резултатите от анализа.
+          Адресът на сайта и резултатите от проверката се прикачват автоматично.
         </p>
 
         <button class="btn btn--primary review__submit" type="submit">
-          Изпрати отчета за преглед
+          Поискай личен преглед
         </button>
 
         <p class="review__status" role="status" data-review-status hidden></p>
@@ -133,25 +131,21 @@ import CtaBanner from '../components/CtaBanner.astro';
       <article class="next__card">
         <h3>Всички резултати веднага</h3>
         <p>
-          Виждаш всички открити технически сигнали директно в браузъра — без регистрация и без
-          заключени платени секции. Можеш да използваш резултатите самостоятелно или да ги
-          изпратиш на човека, който поддържа сайта ти.
+          Виждаш всеки открит технически сигнал направо в браузъра. Без регистрация и без
+          заключени платени секции. Можеш да ползваш резултатите сам или да ги пратиш на човека,
+          който поддържа сайта ти.
         </p>
       </article>
       <article class="next__card">
         <h3>Не си сигурен кое е важно?</h3>
-        <p>
-          Изпрати ми адреса на сайта и ще прегледам резултатите лично. Ще ти посоча трите промени,
-          които според мен трябва да бъдат направени първо, и ще обясня защо са важни.
-        </p>
+        <p>Изпрати ми отчета и ще ти кажа кои три неща да оправиш първо — и защо точно тези.</p>
         <a class="btn btn--outline" href="/contact/" data-next-recommend>Поискай личен преглед</a>
       </article>
       <article class="next__card next__card--accent">
-        <h3>Искаш проблемите да бъдат отстранени?</h3>
+        <h3>Искаш ли да ги оправя?</h3>
         <p>
-          Мога да подготвя конкретен план с приоритети, срок и ориентировъчен бюджет. При желание
-          мога да поема и самото изпълнение — от отделни технически подобрения до цялостно
-          обновяване на сайта.
+          Правя ти конкретен план с приоритети, срок и ориентировъчен бюджет. Ако решиш, поемам и
+          изпълнението — от отделни поправки до нов сайт.
         </p>
         <a class="btn btn--primary" href="/contact/" data-next-offer>Поискай план и оферта</a>
       </article>
@@ -160,9 +154,9 @@ import CtaBanner from '../components/CtaBanner.astro';
     <div class="scope">
       <h3 class="scope__title">Какво не включва проверката?</h3>
       <p class="scope__text">
-        Това е пасивен анализ на публично достъпни технически сигнали. Той не замества тест за
+        Това е пасивен преглед на публично достъпни технически сигнали. Не замества тест за
         проникване, пълен одит за достъпност, юридическа проверка или анализ на системи, които не
-        са публично достъпни.
+        са публични.
       </p>
     </div>
   </section>
@@ -264,11 +258,16 @@ import CtaBanner from '../components/CtaBanner.astro';
     gap: 28px;
   }
 
+  /* Акцент, не бележка под линия — това отличава инструмента от SEO чекерите. */
   .scan__note {
-    margin: 14px 0 0;
-    font-size: 13.5px;
-    color: var(--ink-subtle);
+    margin: 16px 0 0;
+    font-size: 14.5px;
     line-height: 1.6;
+    color: var(--ink-body);
+    border-left: 3px solid var(--accent);
+    padding: 8px 0 8px 14px;
+    background: var(--bg-sand);
+    border-radius: 0 10px 10px 0;
   }
 
   .review-wrap {
@@ -1613,7 +1612,7 @@ import CtaBanner from '../components/CtaBanner.astro';
           const reviewSubmit = reviewForm?.querySelector<HTMLButtonElement>('button[type="submit"]');
           if (reviewSubmit && reviewSubmit.textContent === 'Изпратено ✓') {
             reviewSubmit.removeAttribute('disabled');
-            reviewSubmit.textContent = 'Изпрати отчета за преглед';
+            reviewSubmit.textContent = 'Поискай личен преглед';
           }
           return;
         }
