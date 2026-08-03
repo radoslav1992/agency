@@ -1,3 +1,10 @@
+# Preview хостът на workers.dev е пълен дубликат на kova.bg — да не се
+# индексира и да не се конкурира със собствения сайт. Вариант А (noindex
+# вместо 301), за да остане адресът използваем за преглед на production
+# build-а.
+https://agency.radoslav-dodnikov.workers.dev/*
+  X-Robots-Tag: noindex, nofollow
+
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
