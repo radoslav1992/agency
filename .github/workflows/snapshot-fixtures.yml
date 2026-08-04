@@ -1,0 +1,63 @@
+name: Snapshot test fixtures
+
+# Записва HTML на реалните сайтове от REAL_CASES като fixture файлове и ги
+# предлага с PR. Тегли се веднъж; тестовете после работят офлайн върху
+# записаното, за да не падат, когато чужд сайт се промени.
+on:
+  workflow_dispatch:
+    inputs:
+      domains:
+        description: 'Домейни, разделени с интервал (празно = всички от REAL_CASES)'
+        required: false
+        default: ''
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install workspace deps
+        run: npm ci
+
+      - name: Snapshot the sites
+        run: npm run snapshot -w @kova/crawler -- ${{ inputs.domains }}
+
+      # Показва кои очаквани стойности минават върху записаното.
+      - name: Run known-answer tests
+        run: npm test -w @kova/crawler
+
+      - name: Open a pull request with the fixtures
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain crawler/test/fixtures)" ]; then
+            echo "Няма промени по fixture файловете."
+            exit 0
+          fi
+          branch="fixtures/snapshot-${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add crawler/test/fixtures
+          git commit -m "Record HTML fixtures for the hand-verified sites"
+          git push -u origin "$branch"
+          gh pr create \
+            --title "Record HTML fixtures for the hand-verified sites" \
+            --body "Записано от workflow-а \`Snapshot test fixtures\` (пускане ${{ github.run_id }}).
+
+          Тестовете с известни отговори вече проверяват реалните сайтове, а не само сглобения HTML. Файловете са снимка във времето — тестовете не теглят нищо при пускане.
+
+          Виж лога на пускането за това кои очаквани стойности минават." \
+            --base "${{ github.ref_name }}" \
+            --head "$branch"
