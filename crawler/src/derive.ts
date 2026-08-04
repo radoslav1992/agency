@@ -29,6 +29,7 @@ import {
   deriveFreshness,
   derivePerformance,
   deriveA11y,
+  botAllowed,
 } from '@kova/shared-audit';
 
 type Status = 'passed' | 'failed' | 'not_applicable' | 'not_measurable' | 'error';
@@ -252,10 +253,11 @@ function deriveDomain(db: DatabaseSync, runId: string, domain: string): MetricRo
     out.push({ key: 'content_differs_by_ua', status: 'not_measurable' });
   }
 
-  // --- robots.txt за AI ботове ---
+  // --- robots.txt за AI ботове + за нашия изследователски бот ---
   const robots = art.get('robots_txt:-') ?? '';
   const robotsAi = deriveRobotsAi(robots);
   for (const [key, allowed] of Object.entries(robotsAi)) out.push(check(key, allowed, `${url}robots.txt`));
+  out.push(measuredBool('robots_blocks_research', !botAllowed(robots, 'KovaResearchBot'), `${url}robots.txt`));
   out.push(measuredBool('has_llms_txt', art.has('llms_txt:-'), `${url}llms.txt`));
 
   // --- Поща и TLS ---
