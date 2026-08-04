@@ -48,14 +48,20 @@ npm run export -w @kova/crawler -- --run-id 2026-q3
 повторен `derive` с нова метрика.
 
 Конфигурацията идва изцяло от GitHub secrets/variables (нищо чувствително в
-кода). Добави в **Settings → Secrets and variables → Actions**:
+кода) и живее в environment **`production`** — workflow-ът декларира
+`environment: production`, иначе стойностите не се виждат от job-а.
+Добави ги в **Settings → Environments → production**:
 
 | Вид | Име | Стойност |
 |---|---|---|
 | Variable | `R2_BUCKET` | име на R2 bucket-а |
-| Secret | `R2_ACCOUNT_ID` | Cloudflare account ID |
-| Secret | `R2_ACCESS_KEY_ID` | от R2 API token |
-| Secret | `R2_SECRET_ACCESS_KEY` | от R2 API token |
+| Variable или Secret | `R2_ACCOUNT_ID` | Cloudflare account ID |
+| Variable или Secret | `R2_ACCESS_KEY_ID` | от R2 API token |
+| **Само Secret** | `R2_SECRET_ACCESS_KEY` | от R2 API token |
+
+Тайният ключ задължително е Secret — Variables не се маскират в логовете.
+Ако environment-ът има protection rules (например задължително одобрение),
+пускането ще изчака одобрение, преди да тръгне.
 
 R2 API token се създава от Cloudflare → R2 → *Manage API Tokens* (права за
 четене и запис върху bucket-а). Пускай по едно събиране наведнъж — базата е
