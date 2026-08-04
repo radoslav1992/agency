@@ -55,11 +55,16 @@ CREATE TABLE IF NOT EXISTS fetches (
   PRIMARY KEY (run_id, domain, page_slug, kind, ua_variant)
 );
 
+-- status казва дали измерването е успяло; verdict — как се представя сайтът.
+-- Разделени са нарочно: описателните метрики (cms, languages) нямат добра и
+-- лоша стойност, а слети в едно поле правеха всяка измерена стойност
+-- "passed" и правеха процента провали неизчислим.
 CREATE TABLE IF NOT EXISTS metrics (
   run_id TEXT,
   domain TEXT,
   metric_key TEXT,
-  status TEXT,                      -- passed|failed|not_applicable|not_measurable|error
+  status TEXT,                      -- ok|not_applicable|not_measurable|error
+  verdict TEXT,                     -- pass|fail|neutral
   value_num REAL,
   value_bool INTEGER,
   value_text TEXT,
@@ -81,5 +86,22 @@ export function openDb(): DatabaseSync {
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
   db.exec(SCHEMA);
+  migrate(db);
   return db;
+}
+
+/**
+ * Дребни миграции за бази, създадени с по-ранна схема. Базата в R2 живее
+ * между тримесечията, така че не може просто да се пресъздаде.
+ */
+function migrate(db: DatabaseSync): void {
+  const columns = db.prepare(`PRAGMA table_info(metrics)`).all() as { name: string }[];
+  if (!columns.some((c) => c.name === 'verdict')) {
+    db.exec(`ALTER TABLE metrics ADD COLUMN verdict TEXT`);
+    // Старите редове са с петте слети статуса — привеждаме ги към новия модел.
+    db.exec(`UPDATE metrics SET verdict='pass'    WHERE status='passed'`);
+    db.exec(`UPDATE metrics SET verdict='fail'    WHERE status='failed'`);
+    db.exec(`UPDATE metrics SET verdict='neutral' WHERE verdict IS NULL`);
+    db.exec(`UPDATE metrics SET status='ok' WHERE status IN ('passed','failed')`);
+  }
 }

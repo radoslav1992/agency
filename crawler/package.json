@@ -10,7 +10,8 @@
   "scripts": {
     "crawl": "node --experimental-strip-types src/cli.ts crawl",
     "derive": "node --experimental-strip-types src/cli.ts derive",
-    "export": "node --experimental-strip-types src/cli.ts export"
+    "export": "node --experimental-strip-types src/cli.ts export",
+    "test": "node --experimental-strip-types test/run.mjs"
   },
   "dependencies": {
     "@kova/shared-audit": "*",
