@@ -167,8 +167,10 @@ export function deriveSchema(html: string): SchemaSignals {
  * Store, Dentist…). Изброяването е невъзможно, затова: явен списък от честите
  * за български МСП + суфикси, които почти винаги са LocalBusiness подтип.
  */
+// ⚠️ `Organization` НЕ влиза тук: LocalBusiness е негов подтип, не обратното.
+// Включването му правеше метриката вярна за всеки сайт с Organization схема.
 const LOCAL_BUSINESS_TYPES = new Set([
-  'LocalBusiness', 'Organization', 'Restaurant', 'Bakery', 'CafeOrCoffeeShop', 'BarOrPub',
+  'LocalBusiness', 'Restaurant', 'Bakery', 'CafeOrCoffeeShop', 'BarOrPub',
   'FoodEstablishment', 'ProfessionalService', 'Dentist', 'Physician', 'MedicalClinic',
   'HairSalon', 'BeautySalon', 'DaySpa', 'AutoRepair', 'AutoDealer', 'GasStation',
   'LegalService', 'Notary', 'Attorney', 'AccountingService', 'RealEstateAgent',
@@ -327,15 +329,26 @@ export interface DiscoveredLink {
 export type PageRole = 'home' | 'contact' | 'about' | 'services' | 'pricing' | 'careers' | 'other';
 
 const ROLE_RULES: { role: PageRole; re: RegExp }[] = [
-  { role: 'contact', re: /(контакт|contact|kontakt|свържете)/i },
-  { role: 'careers', re: /(кариер|career|работа|jobs|свободни\s+позиции|вакансии)/i },
+  { role: 'contact', re: /(контакт|contact|kontakt|свържете|за\s*връзка)/i },
+  { role: 'careers', re: /(кариер|career|jobs|свободни\s+позиции|вакансии|работа\s+при\s+нас|стани\s+част)/i },
   { role: 'pricing', re: /(цени|цена|price|pricing|тарифи|прайс)/i },
-  { role: 'about', re: /(за\s*нас|about|za-nas|за\s*компанията|кои\s+сме)/i },
+  { role: 'about', re: /(за\s*нас|about|za-nas|за\s*компанията|кои\s+сме|екип|team)/i },
   { role: 'services', re: /(услуги|services|продукт|products|каталог)/i },
 ];
 
+/** Пътища, които никога не са ролева страница, колкото и да съвпада текстът. */
+const NON_ROLE_PATH = /\/(blog|news|novini|article|post|category|tag)(\/|$)/i;
+
+/**
+ * Ролята се определя по URL пътя и по текста на връзката — но текстът се
+ * гледа само ако е къс като навигационен етикет. Иначе анонс на статия
+ * („…как работата се автоматизира…") вкарва блог постове в „кариери" и
+ * оперативните сигнали се смятат върху грешната страница.
+ */
 export function classifyRole(url: string, text: string): PageRole {
-  const hay = `${url} ${text}`;
+  if (NON_ROLE_PATH.test(url)) return 'other';
+  const label = text.trim();
+  const hay = label.length > 0 && label.length <= 40 ? `${url} ${label}` : url;
   for (const { role, re } of ROLE_RULES) if (re.test(hay)) return role;
   return 'other';
 }
