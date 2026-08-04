@@ -19,8 +19,7 @@ function cell(row: { status: string; value_num: number | null; value_bool: numbe
   if (row.value_text !== null) return String(row.value_text);
   if (row.value_num !== null) return String(row.value_num);
   if (row.value_bool !== null) return row.value_bool ? 'true' : 'false';
-  // булев check без стойност → изведи от статуса
-  return row.status === 'passed' ? 'true' : row.status === 'failed' ? 'false' : '';
+  return '';
 }
 
 function csvEscape(v: string): string {
@@ -64,7 +63,45 @@ export function exportCsv(runId: string): string {
   mkdirSync(EXPORT_DIR, { recursive: true });
   const path = resolve(EXPORT_DIR, `${runId}.csv`);
   writeFileSync(path, lines.join('\n') + '\n', 'utf8');
+
+  writeSummary(db, runId);
   db.close();
   console.log(`[export] ${byDomain.size} домейна × ${keys.length} метрики → ${path}`);
   return path;
+}
+
+/**
+ * Обобщение по метрика: колко сайта минават, колко се провалят и какъв е
+ * процентът провали. Това е входът за доклада — от широката таблица тези
+ * числа трябва да се смятат на ръка.
+ */
+function writeSummary(db: ReturnType<typeof openDb>, runId: string): void {
+  const rows = db
+    .prepare(
+      `SELECT metric_key,
+              SUM(verdict='pass')             AS pass,
+              SUM(verdict='fail')             AS fail,
+              SUM(verdict='neutral')          AS neutral,
+              SUM(status='not_applicable')    AS na,
+              SUM(status='not_measurable')    AS nm,
+              SUM(status='error')             AS err
+       FROM metrics WHERE run_id=? GROUP BY metric_key ORDER BY metric_key`,
+    )
+    .all(runId) as Record<string, string | number>[];
+
+  const lines = ['metric_key,pass,fail,neutral,not_applicable,not_measurable,error,fail_rate'];
+  for (const r of rows) {
+    const pass = Number(r.pass);
+    const fail = Number(r.fail);
+    const judgedTotal = pass + fail;
+    // Празно, а не 0 — метрика без присъда няма процент провали.
+    const failRate = judgedTotal > 0 ? (fail / judgedTotal).toFixed(2) : '';
+    lines.push(
+      [r.metric_key, pass, fail, Number(r.neutral), Number(r.na), Number(r.nm), Number(r.err), failRate].join(','),
+    );
+  }
+
+  const path = resolve(EXPORT_DIR, `${runId}-summary.csv`);
+  writeFileSync(path, lines.join('\n') + '\n', 'utf8');
+  console.log(`[export] обобщение по метрики → ${path}`);
 }

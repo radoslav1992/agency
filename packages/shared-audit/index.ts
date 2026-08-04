@@ -551,6 +551,36 @@ export function deriveA11y(html: string): A11ySignals {
 }
 
 /* ------------------------------------------------------------------ */
+/* Тегло на страницата (не изисква PageSpeed ключ)                     */
+/* ------------------------------------------------------------------ */
+
+export interface WeightSignals {
+  page_weight_kb: number;
+  request_count: number;
+}
+
+/**
+ * Теглото на самия документ и броят подзаявки, които браузърът ще направи
+ * за него (скриптове, стилове, изображения, шрифтове, iframe-ове). Това е
+ * долна граница — не отваря ресурсите, само ги брои — но не иска API ключ
+ * и затова е налично за всички домейни, за разлика от PageSpeed.
+ */
+export function deriveWeight(html: string): WeightSignals {
+  const bytes = new TextEncoder().encode(html).length;
+  const refs = [
+    ...(html.match(/<script[^>]+src\s*=/gi) ?? []),
+    ...(html.match(/<link[^>]+rel\s*=\s*["'](stylesheet|preload)["']/gi) ?? []),
+    ...(html.match(/<img[^>]+src\s*=/gi) ?? []),
+    ...(html.match(/<source[^>]+srcset\s*=/gi) ?? []),
+    ...(html.match(/<iframe[^>]+src\s*=/gi) ?? []),
+  ];
+  return {
+    page_weight_kb: Math.round(bytes / 1024),
+    request_count: refs.length + 1, // + самият документ
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* Свежест на съдържанието (от sitemap lastmod)                        */
 /* ------------------------------------------------------------------ */
 
