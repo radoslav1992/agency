@@ -2,6 +2,12 @@
 dist/
 .astro/
 
+# crawler runtime data — never commit collected artifacts, the db or exports
+crawler/artifacts/
+crawler/exports/
+crawler/*.db
+crawler/*.db-*
+
 # dependencies
 node_modules/
 

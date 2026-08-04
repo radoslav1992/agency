@@ -1,0 +1,4 @@
+domain,company_name,eik,nkid,sector_label,region,size_band,source
+example.com,Example Domain,,,IT,София,micro,sample
+example.org,Example Org,,,IT,София,micro,sample
+,Фирма без сайт ООД,999999999,4321,Търговия,Пловдив,small,sample

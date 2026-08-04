@@ -1,0 +1,19 @@
+{
+  "name": "@kova/crawler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Periodic research crawler over a sample of Bulgarian company sites. Collect (phase 1) is separate from derive (phase 2); SQLite + gzipped artifacts.",
+  "bin": {
+    "kova-crawl": "./src/cli.ts"
+  },
+  "scripts": {
+    "crawl": "node --experimental-strip-types src/cli.ts crawl",
+    "derive": "node --experimental-strip-types src/cli.ts derive",
+    "export": "node --experimental-strip-types src/cli.ts export"
+  },
+  "dependencies": {
+    "@kova/shared-audit": "*",
+    "playwright-core": "^1.62.0"
+  }
+}
