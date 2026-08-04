@@ -88,45 +88,87 @@ export const AI_BOTS = ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'CCBot'] as cons
 export type AiBot = (typeof AI_BOTS)[number];
 
 /**
- * Дали `bot` е допуснат от robots.txt. Правилото за конкретния бот има
- * приоритет пред `*`. Липсващ/празен robots.txt значи разрешено.
+ * Достъпът на бот според robots.txt — три състояния, не булево.
+ *
+ *   allow       — има правило и то пуска бота
+ *   disallow    — има правило и то го спира
+ *   unspecified — няма никакво правило за него (нито изрично, нито през `*`)
+ *
+ * Булевото сливаше „изрично разрешено" и „няма директива" в една стойност,
+ * а те значат различни неща: първото е решение на сайта, второто е
+ * състоянието по подразбиране на уеба.
  */
-export function botAllowed(robotsTxt: string, bot: string): boolean {
-  if (!robotsTxt.trim()) return true;
+export type BotAccess = 'allow' | 'disallow' | 'unspecified';
 
-  const groups: { agents: string[]; disallowAll: boolean }[] = [];
-  let current: { agents: string[]; disallowAll: boolean } | null = null;
+interface RobotsGroup {
+  agents: string[];
+  /** Правилата по ред на поява; интересува ни само коренът `/`. */
+  rules: { allow: boolean; path: string }[];
+}
+
+/**
+ * Разбор по стандарта: последователните `User-agent` редове образуват ЕДНА
+ * група, а първото правило затваря списъка с агенти. (Разделянето им на
+ * отделни групи е честа грешка — тогава `Disallow: /` се приписва само на
+ * последния агент от изброените.)
+ */
+function parseRobotsGroups(robotsTxt: string): RobotsGroup[] {
+  const groups: RobotsGroup[] = [];
+  let current: RobotsGroup | null = null;
+  let collectingAgents = false;
 
   for (const raw of robotsTxt.split('\n')) {
     const line = raw.replace(/#.*$/, '').trim();
     if (!line) continue;
-    const [keyRaw, ...rest] = line.split(':');
-    const key = keyRaw.toLowerCase().trim();
-    const value = rest.join(':').trim();
+    const idx = line.indexOf(':');
+    if (idx < 0) continue;
+    const key = line.slice(0, idx).toLowerCase().trim();
+    const value = line.slice(idx + 1).trim();
 
     if (key === 'user-agent') {
-      if (current && current.agents.length && !groups.includes(current)) groups.push(current);
-      if (!current || current.agents.length === 0 || groups.includes(current)) {
-        current = { agents: [], disallowAll: false };
+      if (!current || !collectingAgents) {
+        current = { agents: [], rules: [] };
+        groups.push(current);
+        collectingAgents = true;
       }
       current.agents.push(value.toLowerCase());
-    } else if (current && key === 'disallow') {
-      if (value === '/') current.disallowAll = true;
-    } else if (current && key === 'allow') {
-      if (value === '/') current.disallowAll = false;
+    } else if (key === 'disallow' || key === 'allow') {
+      if (!current) continue;
+      collectingAgents = false;
+      current.rules.push({ allow: key === 'allow', path: value });
     }
   }
-  if (current && !groups.includes(current)) groups.push(current);
-
-  const forBot = groups.find((g) => g.agents.includes(bot.toLowerCase()));
-  if (forBot) return !forBot.disallowAll;
-  const star = groups.find((g) => g.agents.includes('*'));
-  return star ? !star.disallowAll : true;
+  return groups;
 }
 
-export function deriveRobotsAi(robotsTxt: string): Record<string, boolean> {
-  const out: Record<string, boolean> = {};
-  for (const bot of AI_BOTS) out[`robots_${bot.toLowerCase()}`] = botAllowed(robotsTxt, bot);
+/** Какво казва една група за корена на сайта. */
+function groupAccess(group: RobotsGroup): BotAccess {
+  // `Disallow:` с празна стойност значи „нищо не е забранено".
+  for (const rule of group.rules) {
+    if (!rule.allow && rule.path === '/') return 'disallow';
+    if (rule.allow && rule.path === '/') return 'allow';
+  }
+  return group.rules.length > 0 ? 'allow' : 'unspecified';
+}
+
+export function botAccess(robotsTxt: string, bot: string): BotAccess {
+  if (!robotsTxt.trim()) return 'unspecified';
+  const groups = parseRobotsGroups(robotsTxt);
+  const name = bot.toLowerCase();
+  const forBot = groups.find((g) => g.agents.includes(name));
+  if (forBot) return groupAccess(forBot);
+  const star = groups.find((g) => g.agents.includes('*'));
+  return star ? groupAccess(star) : 'unspecified';
+}
+
+/** Тесен въпрос „може ли да обходим": липсата на правило значи да. */
+export function botAllowed(robotsTxt: string, bot: string): boolean {
+  return botAccess(robotsTxt, bot) !== 'disallow';
+}
+
+export function deriveRobotsAi(robotsTxt: string): Record<string, BotAccess> {
+  const out: Record<string, BotAccess> = {};
+  for (const bot of AI_BOTS) out[`robots_${bot.toLowerCase()}`] = botAccess(robotsTxt, bot);
   return out;
 }
 
@@ -353,8 +395,32 @@ export function classifyRole(url: string, text: string): PageRole {
   return 'other';
 }
 
-/** Вътрешни връзки от началната страница + роля по URL/анкор текст. */
+/** Текстът вътре в `<nav>`, `<header>` и `<footer>` — там етикетите са надеждни. */
+function navigationRegions(html: string): string {
+  const blocks = [
+    ...(html.match(/<nav[\s\S]*?<\/nav>/gi) ?? []),
+    ...(html.match(/<header[\s\S]*?<\/header>/gi) ?? []),
+    ...(html.match(/<footer[\s\S]*?<\/footer>/gi) ?? []),
+  ];
+  return blocks.join('\n');
+}
+
+/**
+ * Вътрешни връзки от началната страница + роля по URL/анкор текст.
+ *
+ * Първо се обхождат навигационните области: там текстът на връзката е
+ * етикет („Контакти"), а не анонс на статия, така че ролята се разпознава
+ * надеждно. Останалите връзки идват след тях и при избора на страница по
+ * роля губят от навигационните.
+ */
 export function discoverInternalLinks(html: string, baseUrl: string): DiscoveredLink[] {
+  const nav = navigationRegions(html);
+  return [...collectLinks(nav, baseUrl), ...collectLinks(html, baseUrl)].filter(
+    (link, i, all) => all.findIndex((x) => x.url === link.url) === i,
+  );
+}
+
+function collectLinks(html: string, baseUrl: string): DiscoveredLink[] {
   let origin = '';
   try {
     origin = new URL(baseUrl).origin;

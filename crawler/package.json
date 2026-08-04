@@ -11,6 +11,7 @@
     "crawl": "node --experimental-strip-types src/cli.ts crawl",
     "derive": "node --experimental-strip-types src/cli.ts derive",
     "export": "node --experimental-strip-types src/cli.ts export",
+    "snapshot": "node --experimental-strip-types test/snapshot.mjs",
     "test": "node --experimental-strip-types test/run.mjs"
   },
   "dependencies": {
