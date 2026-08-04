@@ -221,8 +221,15 @@ export function deriveDomain(db: DatabaseSync, runId: string, domain: string): M
   /* ---------- Достъп за AI ботове ---------- */
   const robots = art.get('robots_txt:-') ?? '';
   const robotsEvidence = `${url}robots.txt`;
-  for (const [key, allowed] of Object.entries(deriveRobotsAi(robots)))
-    out.push(judged(key, { bool: allowed }, allowed, robotsEvidence));
+  for (const [key, access] of Object.entries(deriveRobotsAi(robots))) {
+    // Липсата на директива не е нито заслуга, нито провал — по подразбиране
+    // уебът е отворен, затова `unspecified` е neutral, а не pass.
+    out.push(
+      access === 'unspecified'
+        ? fact(key, { text: access }, robotsEvidence)
+        : judged(key, { text: access }, access === 'allow', robotsEvidence),
+    );
+  }
   // За нашия бот — само констатация, не оценка на сайта.
   out.push(fact('robots_blocks_research', { bool: !botAllowed(robots, 'KovaResearchBot') }, robotsEvidence));
 
@@ -331,19 +338,34 @@ export function deriveDomain(db: DatabaseSync, runId: string, domain: string): M
     out.push(fact('domain_age_years', { num: years }, `RDAP registration ${registered.slice(0, 10)}`));
   } else out.push(notMeasurable('domain_age_years'));
 
+  // Свежест: първо <lastmod> от картата на сайта. Повечето генератори (вкл.
+  // Astro) не го изписват, затова резервният вариант е заглавието
+  // Last-Modified на самата страница — то вече е свалено, без нова заявка.
   const sitemap = art.get('sitemap:-');
-  if (sitemap) {
-    const fresh = deriveFreshness(sitemap, Date.now());
-    if (fresh.last_content_update) {
-      const evidence = `${url}sitemap.xml`;
-      out.push(fact('last_content_update', { text: fresh.last_content_update }, evidence));
-      out.push(
-        judged('content_stale_months', { num: fresh.content_stale_months ?? 0 }, (fresh.content_stale_months ?? 0) <= 12, evidence),
-      );
-    } else {
-      out.push(notMeasurable('last_content_update'));
-      out.push(notMeasurable('content_stale_months'));
+  const fresh = sitemap ? deriveFreshness(sitemap, Date.now()) : { last_content_update: null, content_stale_months: null };
+  let updated = fresh.last_content_update;
+  let staleMonths = fresh.content_stale_months;
+  let freshEvidence = `${url}sitemap.xml`;
+
+  if (!updated) {
+    let headers: Record<string, string> = {};
+    try {
+      headers = JSON.parse(art.get('headers:-') ?? '{}');
+    } catch {
+      /* без headers */
     }
+    const lastModified = headers['last-modified'];
+    const parsed = lastModified ? Date.parse(lastModified) : NaN;
+    if (!Number.isNaN(parsed)) {
+      updated = new Date(parsed).toISOString().slice(0, 10);
+      staleMonths = Math.max(0, Math.round((Date.now() - parsed) / (30 * 86_400_000)));
+      freshEvidence = `Last-Modified: ${lastModified}`;
+    }
+  }
+
+  if (updated) {
+    out.push(fact('last_content_update', { text: updated }, freshEvidence));
+    out.push(judged('content_stale_months', { num: staleMonths ?? 0 }, (staleMonths ?? 0) <= 12, freshEvidence));
   } else {
     out.push(notMeasurable('last_content_update'));
     out.push(notMeasurable('content_stale_months'));

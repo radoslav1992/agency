@@ -21,8 +21,9 @@ import {
   deriveWeight,
   classifyRole,
   botAllowed,
+  botAccess,
 } from '@kova/shared-audit';
-import { CASES, ROLE_CASES } from './fixtures.mjs';
+import { CASES, REAL_CASES, ROLE_CASES } from './fixtures.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 let failures = 0;
@@ -66,13 +67,31 @@ for (const c of CASES) {
   for (const [key, expected] of Object.entries(c.expect)) check(key, got[key], expected);
 }
 
-console.log('\nРоли на страници');
-for (const c of ROLE_CASES) check(`${c.url}`, classifyRole(c.url, c.text), c.expect);
+console.log('\nРеални сайтове (записани с npm run snapshot)');
+let snapshotted = 0;
+for (const c of REAL_CASES) {
+  const path = resolve(HERE, 'fixtures', c.file);
+  if (!existsSync(path)) {
+    console.log(`  ⚠ ${c.domain}: няма запис — пусни "npm run snapshot -w @kova/crawler"`);
+    continue;
+  }
+  snapshotted++;
+  console.log(`  ${c.domain}`);
+  const got = measure(readFileSync(path, 'utf8'), null, `https://${c.domain}/`);
+  for (const [key, expected] of Object.entries(c.expect)) check(`  ${key}`, got[key], expected);
+}
+if (!snapshotted) console.log('  (нито един реален сайт не е записан още)');
 
-console.log('\nrobots.txt — уважаване на забраната');
-check('изричен Disallow за нашия бот', botAllowed('User-agent: KovaResearchBot\nDisallow: /', 'KovaResearchBot'), false);
-check('общ Disallow за всички', botAllowed('User-agent: *\nDisallow: /', 'KovaResearchBot'), false);
-check('разрешено', botAllowed('User-agent: *\nAllow: /', 'KovaResearchBot'), true);
+console.log('\nrobots.txt — три състояния, не булево');
+const BLOCK_AI = 'User-agent: GPTBot\nUser-agent: ClaudeBot\nDisallow: /\n\nUser-agent: *\nAllow: /';
+check('изброени агенти в една група → GPTBot', botAccess(BLOCK_AI, 'GPTBot'), 'disallow');
+check('изброени агенти в една група → ClaudeBot', botAccess(BLOCK_AI, 'ClaudeBot'), 'disallow');
+check('непосочен бот пада на * → allow', botAccess(BLOCK_AI, 'PerplexityBot'), 'allow');
+check('празен robots.txt → unspecified', botAccess('', 'GPTBot'), 'unspecified');
+check('само други агенти → unspecified', botAccess('User-agent: Googlebot\nDisallow: /admin', 'GPTBot'), 'unspecified');
+check('общ Disallow → disallow', botAccess('User-agent: *\nDisallow: /', 'GPTBot'), 'disallow');
+check('само път-специфично правило → allow', botAccess('User-agent: *\nDisallow: /admin', 'GPTBot'), 'allow');
+check('обхождането спира при забрана', botAllowed('User-agent: KovaResearchBot\nDisallow: /', 'KovaResearchBot'), false);
 
 console.log(failures === 0 ? '\nВсичко минава.' : `\n${failures} проверки се провалят.`);
 process.exit(failures === 0 ? 0 : 1);

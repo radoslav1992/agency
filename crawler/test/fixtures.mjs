@@ -73,6 +73,58 @@ export const CASES = [
   },
 ];
 
+/**
+ * Реални сайтове с проверени на ръка отговори.
+ *
+ * Файловете НЕ се теглят при всяко пускане на тестовете — записват се
+ * веднъж и се комитват:
+ *
+ *   npm run snapshot -w @kova/crawler
+ *
+ * Докато файлът липсва, случаят се пропуска с предупреждение, вместо да
+ * проваля тестовете. `renders_without_js` изисква и рендиран вариант
+ * (браузър), затова тук се проверяват само стойностите от суровия HTML;
+ * очакваната стойност е записана за справка.
+ */
+export const REAL_CASES = [
+  {
+    domain: 'nickmasch.bg',
+    file: 'nickmasch.html',
+    expect: { canonical_present: true, canonical_self: false },
+    expectRendered: { renders_without_js: false },
+  },
+  {
+    domain: 'oudobrinishte.com',
+    file: 'oudobrinishte.html',
+    expect: { canonical_present: false },
+    expectRendered: { renders_without_js: false },
+  },
+  {
+    domain: 'mezzanine.bg',
+    file: 'mezzanine.html',
+    expect: { canonical_present: false },
+    expectRendered: { renders_without_js: false },
+  },
+  {
+    domain: 'powertec.bg',
+    file: 'powertec.html',
+    expect: { canonical_present: true, canonical_self: false },
+    expectRendered: { renders_without_js: false },
+  },
+  {
+    domain: 'daporasnem.com',
+    file: 'daporasnem.html',
+    expect: { canonical_present: true, canonical_self: true },
+    expectRendered: { renders_without_js: false },
+  },
+  {
+    domain: 'speedguardbg.app',
+    file: 'speedguardbg.html',
+    expect: { canonical_present: true, canonical_self: true },
+    expectRendered: { renders_without_js: true },
+  },
+];
+
 /** Роли на страници — блог постовете не са „кариери". */
 export const ROLE_CASES = [
   { url: '/blog/sait-za-kvartalen-biznes/', text: 'Сайт за квартален бизнес — как работата се автоматизира', expect: 'other' },
