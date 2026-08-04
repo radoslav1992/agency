@@ -1,0 +1,10 @@
+{
+  "name": "@kova/shared-audit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure, runtime-agnostic HTML/robots/schema audit functions shared by the site analyzer and the research crawler.",
+  "exports": {
+    ".": "./index.ts"
+  }
+}

@@ -3,6 +3,10 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "crawler"
+  ],
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",

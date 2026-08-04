@@ -1,0 +1,53 @@
+name: Research crawler
+
+# Ръчно пускане, без планировчик (т. 1 от спецификацията).
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Идентификатор на пускането (напр. 2026-q3)'
+        required: true
+      targets:
+        description: 'Път до targets CSV в repo-то'
+        required: true
+        default: 'crawler/targets.sample.csv'
+      notes:
+        description: 'Бележки за пускането (по избор)'
+        required: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install workspace deps
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        run: npx --yes playwright@1.62.1 install --with-deps chromium
+
+      - name: Collect
+        run: npm run crawl -w @kova/crawler -- --targets "${{ inputs.targets }}" --run-id "${{ inputs.run_id }}" --notes "${{ inputs.notes }}"
+
+      - name: Derive
+        run: npm run derive -w @kova/crawler -- --run-id "${{ inputs.run_id }}"
+
+      - name: Export CSV
+        run: npm run export -w @kova/crawler -- --run-id "${{ inputs.run_id }}"
+
+      # Базата и износът се качват като артефакт на run-а — не се комитват.
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl-${{ inputs.run_id }}
+          path: |
+            crawler/crawler.db
+            crawler/exports/
+          retention-days: 30
