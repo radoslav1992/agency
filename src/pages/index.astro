@@ -12,28 +12,59 @@ import Pricing from '../components/Pricing.astro';
 import BlogPreview from '../components/BlogPreview.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 import { SITE } from '../data/site.mjs';
+import { TERMS } from '../data/content.ts';
 
 /** Set to `false` to hide the pricing section site-wide (the design's `showPricing` prop). */
 const SHOW_PRICING = true;
 
+/**
+ * Един @graph с няколко възела вместо самотен ProfessionalService:
+ * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка), а
+ * FAQPage изкарва секцията с условията като двойки въпрос/отговор, които
+ * отговарящите машини цитират директно. Въпросите идват от `TERMS`, за да
+ * не се разминават с акордеона на страницата.
+ */
+const studioId = `${SITE.url}/#studio`;
 const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'ProfessionalService',
-  name: SITE.name,
-  description: SITE.description,
-  url: SITE.url,
-  email: SITE.email,
-  foundingDate: String(SITE.founded),
-  areaServed: 'BG',
-  address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },
-  founder: {
-    '@type': 'Person',
-    name: SITE.owner.name,
-    jobTitle: 'Senior AI Data Engineer',
-    email: SITE.owner.email,
-    sameAs: [SITE.owner.linkedin],
-  },
-  knowsLanguage: ['bg', 'en'],
+  '@graph': [
+    {
+      '@type': ['Organization', 'ProfessionalService'],
+      '@id': studioId,
+      name: SITE.name,
+      description: SITE.description,
+      url: SITE.url,
+      email: SITE.email,
+      foundingDate: String(SITE.founded),
+      areaServed: 'BG',
+      address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },
+      founder: {
+        '@type': 'Person',
+        name: SITE.owner.name,
+        jobTitle: 'Senior AI Data Engineer',
+        email: SITE.owner.email,
+        sameAs: [SITE.owner.linkedin],
+      },
+      knowsLanguage: ['bg', 'en'],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE.url}/#website`,
+      url: SITE.url,
+      name: SITE.name,
+      inLanguage: 'bg',
+      publisher: { '@id': studioId },
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${SITE.url}/#faq`,
+      mainEntity: TERMS.map((term) => ({
+        '@type': 'Question',
+        name: term.title,
+        acceptedAnswer: { '@type': 'Answer', text: term.body },
+      })),
+    },
+  ],
 };
 ---
 
