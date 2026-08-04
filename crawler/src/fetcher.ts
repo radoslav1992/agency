@@ -155,24 +155,47 @@ export function tlsInfo(domain: string): Promise<TlsInfo> {
   });
 }
 
-/** WHOIS-заместител: RDAP регистрацията на домейна (за възрастта му). */
-export async function rdapInfo(domain: string): Promise<{ registered: string | null; country: string | null }> {
-  try {
-    const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
-      headers: { Accept: 'application/rdap+json' },
-      signal: AbortSignal.timeout(LIMITS.artifactTimeoutMs),
-      redirect: 'follow',
-    });
-    if (!res.ok) return { registered: null, country: null };
-    const data = (await res.json()) as {
-      events?: { eventAction: string; eventDate: string }[];
-      entities?: { vcardArray?: unknown }[];
-    };
-    const reg = data.events?.find((e) => e.eventAction === 'registration')?.eventDate ?? null;
-    return { registered: reg, country: null };
-  } catch {
-    return { registered: null, country: null };
+/**
+ * WHOIS-заместител: RDAP регистрацията на домейна (за възрастта му).
+ *
+ * Пуска се през rdap.org (bootstrap) и при неуспех — през RDAP сървъра на
+ * Verisign за .com/.net. Част от домейните от първото пускане връщаха 0,
+ * което при бърза поредица заявки най-често е ограничение на честотата,
+ * затова има един повторен опит с пауза.
+ *
+ * Внимание: не всички TLD-та имат RDAP. `.bg` е сред тях, така че за
+ * български домейни `domain_age_years` обикновено остава `not_measurable` —
+ * това е коректен резултат, а не грешка.
+ */
+export async function rdapInfo(
+  domain: string,
+): Promise<{ registered: string | null; country: string | null; note: string | null }> {
+  const tld = domain.split('.').pop() ?? '';
+  const endpoints = [`https://rdap.org/domain/${encodeURIComponent(domain)}`];
+  if (tld === 'com' || tld === 'net') {
+    endpoints.push(`https://rdap.verisign.com/${tld}/v1/domain/${encodeURIComponent(domain)}`);
   }
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          headers: { Accept: 'application/rdap+json' },
+          signal: AbortSignal.timeout(LIMITS.artifactTimeoutMs),
+          redirect: 'follow',
+        });
+        if (res.status === 404) return { registered: null, country: null, note: 'no-rdap-for-tld' };
+        if (!res.ok) continue;
+        const data = (await res.json()) as { events?: { eventAction: string; eventDate: string }[] };
+        const reg = data.events?.find((e) => e.eventAction === 'registration')?.eventDate ?? null;
+        if (reg) return { registered: reg, country: null, note: null };
+      } catch {
+        /* пробваме следващия адрес / опит */
+      }
+    }
+    if (attempt === 0) await sleep(2_000);
+  }
+  return { registered: null, country: null, note: 'rdap-unavailable' };
 }
 
 /** PageSpeed Insights (mobile). Изисква PAGESPEED_API_KEY; иначе връща null. */

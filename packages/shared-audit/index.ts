@@ -389,7 +389,24 @@ export interface StackSignals {
 export function detectStack(html: string, headers: Record<string, string>): StackSignals {
   const gen = html.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)["']/i)?.[1] ?? '';
   const powered = headers['x-powered-by'] ?? '';
-  const hay = `${html.slice(0, 4000)} ${gen} ${powered}`.toLowerCase();
+  // Цялият HTML, не първите N знака: маркерите на框ворките често са в body
+  // (`data-astro-cid-…`), а при голям <head> прозорец от 4 KB ги изпуска и
+  // дава различен отговор за еднакви по същество сайтове.
+  const hay = `${html} ${gen} ${powered}`.toLowerCase();
+
+  // Рамка (как е построен сайтът) — отделно от CMS (с какво се управлява
+  // съдържанието). Astro/Next/Nuxt не са CMS и не бива да попадат там.
+  let framework = 'none';
+  if (/_next\//.test(hay)) framework = 'Next.js';
+  else if (/data-reactroot|__react|react-dom/.test(hay)) framework = 'React';
+  else if (/__nuxt|nuxt/.test(hay)) framework = 'Nuxt';
+  else if (/ng-version|angular/.test(hay)) framework = 'Angular';
+  else if (/data-astro|astro-island/.test(hay)) framework = 'Astro';
+  else if (/data-v-|vue\.js|__vue__/.test(hay)) framework = 'Vue';
+  else if (/svelte/.test(hay)) framework = 'Svelte';
+
+  /** Стойности в <meta generator>, които са рамка или билдър, а не CMS. */
+  const GENERATOR_FRAMEWORKS = /^(astro|next|nuxt|gatsby|hugo|jekyll|eleventy|vite|svelte)/i;
 
   let cms = 'none';
   if (/wp-content|wordpress/.test(hay)) cms = 'WordPress';
@@ -397,16 +414,14 @@ export function detectStack(html: string, headers: Record<string, string>): Stac
   else if (/drupal/.test(hay)) cms = 'Drupal';
   else if (/shopify/.test(hay)) cms = 'Shopify';
   else if (/wix\.com|wixstatic/.test(hay)) cms = 'Wix';
+  else if (/squarespace/.test(hay)) cms = 'Squarespace';
+  else if (/webflow/.test(hay)) cms = 'Webflow';
   else if (/cloudcart/.test(hay)) cms = 'CloudCart';
   else if (/lovable|gpteng/.test(hay)) cms = 'Lovable';
-  else if (gen) cms = gen.split(' ')[0];
+  else if (gen && !GENERATOR_FRAMEWORKS.test(gen)) cms = gen.split(' ')[0];
 
-  let framework = 'none';
-  if (/data-reactroot|__next_data__|_next\//.test(hay)) framework = /_next\//.test(hay) ? 'Next.js' : 'React';
-  else if (/__nuxt|nuxt/.test(hay)) framework = 'Nuxt';
-  else if (/ng-version|angular/.test(hay)) framework = 'Angular';
-  else if (/data-astro|astro-island/.test(hay)) framework = 'Astro';
-  else if (/data-v-|vue/.test(hay)) framework = 'Vue';
+  // Generator-ът назовава рамката само ако не сме я разпознали по маркер.
+  if (framework === 'none' && gen && GENERATOR_FRAMEWORKS.test(gen)) framework = gen.split(' ')[0];
 
   // SPA евристика: почти празно body + JS bundle + монтиращ възел.
   // JSON-LD не се брои за скрипт (иначе „application/ld+json" мами и броя,
@@ -477,9 +492,14 @@ export interface LanguageSignals {
 
 export function deriveLanguages(html: string): LanguageSignals {
   const langs = new Set<string>();
+  /** `x-default` не е език, а резервен вариант — иначе излиза като „x-". */
+  const addLang = (raw: string) => {
+    const code = raw.slice(0, 2).toLowerCase();
+    if (/^[a-z]{2}$/.test(code) && code !== 'x-') langs.add(code);
+  };
   const htmlLang = html.match(/<html[^>]+lang\s*=\s*["']([a-z-]+)["']/i)?.[1];
-  if (htmlLang) langs.add(htmlLang.slice(0, 2).toLowerCase());
-  for (const m of html.matchAll(/hreflang\s*=\s*["']([a-z-]+)["']/gi)) langs.add(m[1].slice(0, 2).toLowerCase());
+  if (htmlLang) addLang(htmlLang);
+  for (const m of html.matchAll(/hreflang\s*=\s*["']([a-z-]+)["']/gi)) addLang(m[1]);
   // Езикови превключватели по текст на връзките.
   if (/>\s*(EN|English|Английски)\s*</i.test(html)) langs.add('en');
   const list = [...langs];

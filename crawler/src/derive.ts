@@ -258,7 +258,16 @@ function deriveDomain(db: DatabaseSync, runId: string, domain: string): MetricRo
   const robotsAi = deriveRobotsAi(robots);
   for (const [key, allowed] of Object.entries(robotsAi)) out.push(check(key, allowed, `${url}robots.txt`));
   out.push(measuredBool('robots_blocks_research', !botAllowed(robots, 'KovaResearchBot'), `${url}robots.txt`));
-  out.push(measuredBool('has_llms_txt', art.has('llms_txt:-'), `${url}llms.txt`));
+  // Размерът е доказателството: „намерен" файл от няколко байта е по-скоро
+  // празна страница, отколкото манифест — виж се на око в CSV-то.
+  const llmsBody = art.get('llms_txt:-');
+  out.push(
+    measuredBool(
+      'has_llms_txt',
+      llmsBody !== undefined,
+      llmsBody !== undefined ? `${url}llms.txt (${llmsBody.length} знака)` : `${url}llms.txt`,
+    ),
+  );
 
   // --- Поща и TLS ---
   const dnsRaw = art.get('dns:-');

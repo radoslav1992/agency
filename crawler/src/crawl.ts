@@ -159,6 +159,19 @@ function extractLocs(xml: string): string[] {
   return [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((m) => m[1].trim());
 }
 
+/** Имената, под които обикновено стои картата на сайта. */
+const SITEMAP_PATHS = ['/sitemap.xml', '/sitemap-index.xml', '/sitemap_index.xml', '/wp-sitemap.xml'];
+
+/**
+ * Отговорът е истински текстов файл, а не HTML страница. Проверява се цялото
+ * начало, не само първият знак — мека 404 често започва с празни редове,
+ * коментар или BOM преди `<html>`.
+ */
+function isPlainText(body: string): boolean {
+  if (!body.trim()) return false;
+  return !/<!doctype html|<html[\s>]|<body[\s>]/i.test(body.slice(0, 1000));
+}
+
 /**
  * Кои страници да се обходят освен началната (т. 3): навигационни връзки
  * (по-надеждни) + връзки от sitemap, класифицирани по роля. По една на роля
@@ -262,18 +275,44 @@ async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Pro
   recordFetch(db, runId, domain, slug, 'rendered_html', '-', rendered.status, rendered.html, rendered.error);
   await sleep(LIMITS.perHostDelayMs);
 
-  // Веднъж на домейн: llms / sitemap (robots.txt вече е свален и уважен).
+  // llms.txt — 200 не стига: някои хостове връщат SPA fallback или мека
+  // 404 страница, затова HTML се отхвърля независимо къде се появява.
+  const llms = await probeText(`https://${domain}/llms.txt`);
+  const llmsOk = llms.status === 200 && isPlainText(llms.body);
+  recordFetch(db, runId, domain, slug, 'llms_txt', '-', llms.status, llmsOk ? llms.body : '', llmsOk ? null : llms.error ?? 'not-found');
+  await sleep(LIMITS.perHostDelayMs);
+
+  // Sitemap: първо обявеният в robots.txt, после обичайните имена. Само
+  // /sitemap.xml пропуска sitemap-index.xml, което е по подразбиране в Astro.
+  const declared = [...robotsBody.matchAll(/^\s*sitemap:\s*(\S+)/gim)].map((m) => m[1]);
+  const candidates = [
+    ...declared,
+    ...SITEMAP_PATHS.map((p) => `https://${domain}${p}`),
+  ].slice(0, 5);
+
   let sitemapXml = '';
-  for (const [kind, path] of [
-    ['llms_txt', 'llms.txt'],
-    ['sitemap', 'sitemap.xml'],
-  ] as const) {
-    const res = await probeText(`https://${domain}/${path}`);
-    const isText = res.status === 200 && !/^\s*<!doctype html|<html/i.test(res.body);
-    if (kind === 'sitemap' && isText) sitemapXml = res.body;
-    recordFetch(db, runId, domain, slug, kind, '-', res.status, isText ? res.body : '', isText ? null : res.error ?? 'not-found');
+  let sitemapStatus = 404;
+  for (const candidate of candidates) {
+    const res = await probeText(candidate);
     await sleep(LIMITS.perHostDelayMs);
+    if (res.status !== 200 || !/<urlset[\s>]|<sitemapindex[\s>]/i.test(res.body)) continue;
+    sitemapXml = res.body;
+    sitemapStatus = 200;
+    // Индексът рядко носи <lastmod> за отделните страници — дърпаме и до две
+    // вложени карти, за да има от какво да се смята свежестта.
+    if (/<sitemapindex[\s>]/i.test(res.body)) {
+      for (const nested of extractLocs(res.body).slice(0, 2)) {
+        const sub = await probeText(nested);
+        await sleep(LIMITS.perHostDelayMs);
+        if (sub.status === 200 && /<urlset[\s>]/i.test(sub.body)) sitemapXml += '\n' + sub.body;
+      }
+    }
+    break;
   }
+  recordFetch(
+    db, runId, domain, slug, 'sitemap', '-', sitemapStatus,
+    sitemapXml, sitemapXml ? null : 'not-found',
+  );
 
   // Многостранично обхождане: контакти / за нас / услуги / цени / кариери (+ др.).
   const pages = selectPages(base, homeHtml, sitemapXml);
