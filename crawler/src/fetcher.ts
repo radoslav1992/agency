@@ -154,3 +154,41 @@ export function tlsInfo(domain: string): Promise<TlsInfo> {
     });
   });
 }
+
+/** WHOIS-заместител: RDAP регистрацията на домейна (за възрастта му). */
+export async function rdapInfo(domain: string): Promise<{ registered: string | null; country: string | null }> {
+  try {
+    const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
+      headers: { Accept: 'application/rdap+json' },
+      signal: AbortSignal.timeout(LIMITS.artifactTimeoutMs),
+      redirect: 'follow',
+    });
+    if (!res.ok) return { registered: null, country: null };
+    const data = (await res.json()) as {
+      events?: { eventAction: string; eventDate: string }[];
+      entities?: { vcardArray?: unknown }[];
+    };
+    const reg = data.events?.find((e) => e.eventAction === 'registration')?.eventDate ?? null;
+    return { registered: reg, country: null };
+  } catch {
+    return { registered: null, country: null };
+  }
+}
+
+/** PageSpeed Insights (mobile). Изисква PAGESPEED_API_KEY; иначе връща null. */
+export async function pageSpeed(url: string): Promise<unknown | null> {
+  const key = process.env.PAGESPEED_API_KEY;
+  if (!key) return null;
+  try {
+    const api = new URL('https://www.googleapis.com/pagespeedonline/v5/runPagespeed');
+    api.searchParams.set('url', url);
+    api.searchParams.set('strategy', 'mobile');
+    api.searchParams.set('category', 'performance');
+    api.searchParams.set('key', key);
+    const res = await fetch(api.href, { signal: AbortSignal.timeout(60_000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}

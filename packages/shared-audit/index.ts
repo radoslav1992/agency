@@ -313,3 +313,254 @@ export function deriveMxProvider(mxHosts: string[]): string {
   if (mxHosts.length === 0) return 'none';
   return 'hosting';
 }
+
+/* ------------------------------------------------------------------ */
+/* Откриване на страници и роли (за многостраничното обхождане)         */
+/* ------------------------------------------------------------------ */
+
+export interface DiscoveredLink {
+  url: string;
+  role: PageRole;
+  text: string;
+}
+
+export type PageRole = 'home' | 'contact' | 'about' | 'services' | 'pricing' | 'careers' | 'other';
+
+const ROLE_RULES: { role: PageRole; re: RegExp }[] = [
+  { role: 'contact', re: /(контакт|contact|kontakt|свържете)/i },
+  { role: 'careers', re: /(кариер|career|работа|jobs|свободни\s+позиции|вакансии)/i },
+  { role: 'pricing', re: /(цени|цена|price|pricing|тарифи|прайс)/i },
+  { role: 'about', re: /(за\s*нас|about|za-nas|за\s*компанията|кои\s+сме)/i },
+  { role: 'services', re: /(услуги|services|продукт|products|каталог)/i },
+];
+
+export function classifyRole(url: string, text: string): PageRole {
+  const hay = `${url} ${text}`;
+  for (const { role, re } of ROLE_RULES) if (re.test(hay)) return role;
+  return 'other';
+}
+
+/** Вътрешни връзки от началната страница + роля по URL/анкор текст. */
+export function discoverInternalLinks(html: string, baseUrl: string): DiscoveredLink[] {
+  let origin = '';
+  try {
+    origin = new URL(baseUrl).origin;
+  } catch {
+    return [];
+  }
+  const seen = new Set<string>();
+  const out: DiscoveredLink[] = [];
+  for (const m of html.matchAll(/<a[^>]+href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    let abs: URL;
+    try {
+      abs = new URL(m[1], baseUrl);
+    } catch {
+      continue;
+    }
+    if (abs.origin !== origin) continue;
+    if (/\.(pdf|docx?|xlsx?|zip|jpg|png|svg)$/i.test(abs.pathname)) continue;
+    const clean = `${abs.origin}${abs.pathname}`.replace(/\/$/, '') || abs.origin;
+    if (seen.has(clean)) continue;
+    seen.add(clean);
+    out.push({ url: clean + '/', role: classifyRole(abs.pathname, visibleText(m[2])), text: visibleText(m[2]).slice(0, 80) });
+  }
+  return out;
+}
+
+/** Шаблонни пътища, ако навигацията не даде нужната роля. */
+export const ROLE_PATTERNS: Record<Exclude<PageRole, 'home' | 'other'>, string[]> = {
+  contact: ['контакти', 'contact', 'kontakti', 'contacts'],
+  about: ['за-нас', 'about', 'za-nas', 'about-us'],
+  services: ['услуги', 'services', 'produkti', 'products'],
+  pricing: ['цени', 'prices', 'pricing', 'ceni'],
+  careers: ['кариери', 'careers', 'rabota', 'jobs', 'работа'],
+};
+
+/* ------------------------------------------------------------------ */
+/* Стек и възраст                                                     */
+/* ------------------------------------------------------------------ */
+
+export interface StackSignals {
+  cms: string;
+  framework: string;
+  is_spa: boolean;
+}
+
+export function detectStack(html: string, headers: Record<string, string>): StackSignals {
+  const gen = html.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)["']/i)?.[1] ?? '';
+  const powered = headers['x-powered-by'] ?? '';
+  const hay = `${html.slice(0, 4000)} ${gen} ${powered}`.toLowerCase();
+
+  let cms = 'none';
+  if (/wp-content|wordpress/.test(hay)) cms = 'WordPress';
+  else if (/joomla/.test(hay)) cms = 'Joomla';
+  else if (/drupal/.test(hay)) cms = 'Drupal';
+  else if (/shopify/.test(hay)) cms = 'Shopify';
+  else if (/wix\.com|wixstatic/.test(hay)) cms = 'Wix';
+  else if (/cloudcart/.test(hay)) cms = 'CloudCart';
+  else if (/lovable|gpteng/.test(hay)) cms = 'Lovable';
+  else if (gen) cms = gen.split(' ')[0];
+
+  let framework = 'none';
+  if (/data-reactroot|__next_data__|_next\//.test(hay)) framework = /_next\//.test(hay) ? 'Next.js' : 'React';
+  else if (/__nuxt|nuxt/.test(hay)) framework = 'Nuxt';
+  else if (/ng-version|angular/.test(hay)) framework = 'Angular';
+  else if (/data-astro|astro-island/.test(hay)) framework = 'Astro';
+  else if (/data-v-|vue/.test(hay)) framework = 'Vue';
+
+  // SPA евристика: почти празно body + JS bundle + монтиращ възел.
+  // JSON-LD не се брои за скрипт (иначе „application/ld+json" мами и броя,
+  // и регекса за „app"), а монтиращият възел се търси прецизно по id.
+  const bodyText = visibleText(html.match(/<body[\s\S]*<\/body>/i)?.[0] ?? html).length;
+  const jsBundle = /<script[^>]+src\s*=/i.test(html);
+  const mountNode = /id\s*=\s*["'](root|app|__next|__nuxt)["']|__NEXT_DATA__|window\.__NUXT__/i.test(html);
+  const is_spa = bodyText < 400 && jsBundle && mountNode;
+
+  return { cms, framework, is_spa };
+}
+
+/* ------------------------------------------------------------------ */
+/* Оперативни сигнали по роля на страница                             */
+/* ------------------------------------------------------------------ */
+
+const ADMIN_ROLE_RE =
+  /(администратор|оператор\s+(на\s+)?данни|data\s+entry|технически\s+сътрудник|офис\s+мениджър|бек\s*офис|back\s*office|деловодител|касиер)/i;
+
+export interface CareerSignals {
+  has_job_listings: boolean;
+  hiring_admin_roles: boolean;
+}
+
+export function deriveCareers(html: string): CareerSignals {
+  const text = visibleText(html);
+  const hasListings = /(свободни\s+позиции|обяви\s+за\s+работа|apply|кандидатствай|търсим|назначаваме|we\s+are\s+hiring|вакансии)/i.test(
+    text,
+  );
+  return { has_job_listings: hasListings, hiring_admin_roles: ADMIN_ROLE_RE.test(text) };
+}
+
+export interface CommerceSignals {
+  ecommerce_platform: string;
+  has_online_payment: boolean;
+  courier_integration: string;
+  product_count_estimate: number;
+}
+
+export function deriveCommerce(html: string): CommerceSignals {
+  const hay = html.toLowerCase();
+  let platform = 'none';
+  if (/cloudcart/.test(hay)) platform = 'CloudCart';
+  else if (/woocommerce|wc-/.test(hay)) platform = 'WooCommerce';
+  else if (/prestashop/.test(hay)) platform = 'PrestaShop';
+  else if (/shopify/.test(hay)) platform = 'Shopify';
+  else if (/opencart/.test(hay)) platform = 'OpenCart';
+  else if (/magento/.test(hay)) platform = 'Magento';
+
+  const courier = /econt|еконт/.test(hay) ? 'Еконт' : /speedy|спиди/.test(hay) ? 'Спиди' : 'none';
+  const payment = /(add\s*to\s*cart|добави\s+в\s+количк|stripe|paypal|mypos|borica|epay|заплащане\s+с\s+карта)/i.test(
+    hay,
+  );
+  const products = (hay.match(/add[-_\s]?to[-_\s]?cart|добави\s+в\s+количк/gi) ?? []).length;
+
+  return {
+    ecommerce_platform: platform,
+    has_online_payment: payment,
+    courier_integration: courier,
+    product_count_estimate: products,
+  };
+}
+
+export interface LanguageSignals {
+  languages: string[];
+  has_english_version: boolean;
+}
+
+export function deriveLanguages(html: string): LanguageSignals {
+  const langs = new Set<string>();
+  const htmlLang = html.match(/<html[^>]+lang\s*=\s*["']([a-z-]+)["']/i)?.[1];
+  if (htmlLang) langs.add(htmlLang.slice(0, 2).toLowerCase());
+  for (const m of html.matchAll(/hreflang\s*=\s*["']([a-z-]+)["']/gi)) langs.add(m[1].slice(0, 2).toLowerCase());
+  // Езикови превключватели по текст на връзките.
+  if (/>\s*(EN|English|Английски)\s*</i.test(html)) langs.add('en');
+  const list = [...langs];
+  return { languages: list, has_english_version: list.includes('en') };
+}
+
+/** Груба оценка на брой хора на страница „екип/за нас". */
+export function deriveTeamHeadcount(html: string): number {
+  // Всеки „човек" обикновено е карта с име (два главни думи) + роля.
+  const names = html.match(/>[\s]*[А-ЯA-Z][а-яa-z]+\s+[А-ЯA-Z][а-яa-z]+[\s]*</g) ?? [];
+  return names.length;
+}
+
+/* ------------------------------------------------------------------ */
+/* Достъпност (само механично проверимото, т. 6)                       */
+/* ------------------------------------------------------------------ */
+
+export interface A11ySignals {
+  img_alt_coverage: number | null;
+  form_label_coverage: number | null;
+}
+
+export function deriveA11y(html: string): A11ySignals {
+  const imgs = html.match(/<img\b[^>]*>/gi) ?? [];
+  const withAlt = imgs.filter((t) => /\balt\s*=\s*["'][^"']/.test(t)).length;
+  const inputs = (html.match(/<input\b[^>]*>/gi) ?? []).filter(
+    (t) => !/type\s*=\s*["'](hidden|submit|button|image)["']/i.test(t),
+  );
+  const labelled = inputs.filter(
+    (t) => /\baria-label\s*=|\bid\s*=/.test(t), // грубо: има id (за <label for>) или aria-label
+  ).length;
+  return {
+    img_alt_coverage: imgs.length ? Math.round((withAlt / imgs.length) * 100) / 100 : null,
+    form_label_coverage: inputs.length ? Math.round((labelled / inputs.length) * 100) / 100 : null,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Свежест на съдържанието (от sitemap lastmod)                        */
+/* ------------------------------------------------------------------ */
+
+export interface FreshnessSignals {
+  last_content_update: string | null;
+  content_stale_months: number | null;
+}
+
+export function deriveFreshness(sitemapXml: string, nowMs: number): FreshnessSignals {
+  const dates = [...sitemapXml.matchAll(/<lastmod>([^<]+)<\/lastmod>/gi)]
+    .map((m) => Date.parse(m[1].trim()))
+    .filter((n) => !Number.isNaN(n));
+  if (!dates.length) return { last_content_update: null, content_stale_months: null };
+  const latest = Math.max(...dates);
+  const months = Math.max(0, Math.round((nowMs - latest) / (30 * 86_400_000)));
+  return { last_content_update: new Date(latest).toISOString().slice(0, 10), content_stale_months: months };
+}
+
+/* ------------------------------------------------------------------ */
+/* Производителност (от PageSpeed Insights JSON)                       */
+/* ------------------------------------------------------------------ */
+
+export interface PerfSignals {
+  psi_performance_score: number | null;
+  lcp_ms: number | null;
+  cls: number | null;
+  inp_ms: number | null;
+  crux_data_available: boolean;
+}
+
+export function derivePerformance(psi: unknown): PerfSignals {
+  const p = psi as {
+    lighthouseResult?: { categories?: { performance?: { score?: number } }; audits?: Record<string, { numericValue?: number }> };
+    loadingExperience?: { metrics?: Record<string, unknown> };
+  };
+  const lh = p?.lighthouseResult;
+  const audits = lh?.audits ?? {};
+  const crux = p?.loadingExperience?.metrics;
+  return {
+    psi_performance_score: lh?.categories?.performance?.score != null ? Math.round(lh.categories.performance.score * 100) : null,
+    lcp_ms: audits['largest-contentful-paint']?.numericValue ?? null,
+    cls: audits['cumulative-layout-shift']?.numericValue ?? null,
+    inp_ms: audits['interaction-to-next-paint']?.numericValue ?? audits['max-potential-fid']?.numericValue ?? null,
+    crux_data_available: Boolean(crux && Object.keys(crux).length),
+  };
+}
