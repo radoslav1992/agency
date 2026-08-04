@@ -64,6 +64,7 @@ const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
     }
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={SITE.owner.name} />
     <link rel="canonical" href={canonicalUrl} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
