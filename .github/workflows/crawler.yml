@@ -15,24 +15,25 @@ on:
         description: 'Бележки за пускането (по избор)'
         required: false
 
-# Данните са трайни в Cloudflare R2 — базата и артефактите се възстановяват
-# в началото и се качват обратно накрая, за да натрупват между тримесечията.
-# Конфигурацията идва изцяло от secrets/variables — нищо чувствително в кода.
-#   Repo variable: R2_BUCKET
-#   Repo secrets:  R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
-# `||` приема стойността и като Variable, и като Secret — за да не се чупи
-# при объркан таб в настройките.
-env:
-  R2_BUCKET: ${{ vars.R2_BUCKET || secrets.R2_BUCKET }}
-  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID || vars.R2_ACCOUNT_ID }}
-  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID || vars.R2_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: auto
-
 jobs:
   crawl:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    # Конфигурацията за R2 живее в environment „production". Без този ключ
+    # environment secrets/variables НЕ се виждат от job-а и всички стойности
+    # излизат празни.
+    environment: production
+    # Данните са трайни в Cloudflare R2 — базата и артефактите се възстановяват
+    # в началото и се качват обратно накрая, за да натрупват между тримесечията.
+    # Нищо чувствително в кода. `||` приема стойността и като Variable, и като
+    # Secret — освен тайния ключ, който трябва да е Secret (Variables не се
+    # маскират в логовете).
+    env:
+      R2_BUCKET: ${{ vars.R2_BUCKET || secrets.R2_BUCKET }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID || vars.R2_ACCOUNT_ID }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID || vars.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
     steps:
       - uses: actions/checkout@v4
 
@@ -54,13 +55,13 @@ jobs:
         id: r2check
         run: |
           missing=""
-          [ -n "$R2_BUCKET" ]             || missing="$missing R2_BUCKET(variable)"
-          [ -n "$R2_ACCOUNT_ID" ]         || missing="$missing R2_ACCOUNT_ID(secret)"
-          [ -n "$AWS_ACCESS_KEY_ID" ]     || missing="$missing R2_ACCESS_KEY_ID(secret)"
-          [ -n "$AWS_SECRET_ACCESS_KEY" ] || missing="$missing R2_SECRET_ACCESS_KEY(secret)"
+          [ -n "$R2_BUCKET" ]             || missing="$missing R2_BUCKET"
+          [ -n "$R2_ACCOUNT_ID" ]         || missing="$missing R2_ACCOUNT_ID"
+          [ -n "$AWS_ACCESS_KEY_ID" ]     || missing="$missing R2_ACCESS_KEY_ID"
+          [ -n "$AWS_SECRET_ACCESS_KEY" ] || missing="$missing R2_SECRET_ACCESS_KEY(само като Secret — Variables не се маскират в логовете)"
           if [ -n "$missing" ]; then
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=R2 не е конфигуриран::Липсват:$missing — резултатите ще са само в артефакта на пускането (30 дни), без трайно съхранение."
+            echo "::warning title=R2 не е конфигуриран::Липсват:$missing — очакват се в environment „production\" (Settings → Environments → production). Пускането пак дава CSV като артефакт, но без трайно съхранение."
           else
             echo "enabled=true" >> "$GITHUB_OUTPUT"
             echo "AWS_ENDPOINT_URL=https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" >> "$GITHUB_ENV"
