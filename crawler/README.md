@@ -38,6 +38,31 @@ npm run export -w @kova/crawler -- --run-id 2026-q3
 - **Артефакти** — gzip на диск: `artifacts/{run_id}/{domain}/{page_slug}/{kind}.gz`.
   Не в базата. И двете папки, и `*.db`, са в `.gitignore`.
 
+### Трайно съхранение (Cloudflare R2)
+
+Локално базата и артефактите просто остават на диска между пусканията.
+В GitHub Actions рънърът е ефимерен, затова workflow-ът пази състоянието в
+**Cloudflare R2**: възстановява `crawler.db` (и артефактите на текущия
+`run_id`) в началото и качва обратно базата, артефактите и CSV-то накрая.
+Така базата натрупва между тримесечията, а старите артефакти остават за
+повторен `derive` с нова метрика.
+
+Конфигурацията идва изцяло от GitHub secrets/variables (нищо чувствително в
+кода). Добави в **Settings → Secrets and variables → Actions**:
+
+| Вид | Име | Стойност |
+|---|---|---|
+| Variable | `R2_BUCKET` | име на R2 bucket-а |
+| Secret | `R2_ACCOUNT_ID` | Cloudflare account ID |
+| Secret | `R2_ACCESS_KEY_ID` | от R2 API token |
+| Secret | `R2_SECRET_ACCESS_KEY` | от R2 API token |
+
+R2 API token се създава от Cloudflare → R2 → *Manage API Tokens* (права за
+четене и запис върху bucket-а). Пускай по едно събиране наведнъж — базата е
+един обект в R2 и паралелни пускания биха се презаписали.
+
+Структурата в bucket-а: `crawler.db`, `artifacts/{run_id}/…`, `exports/{run_id}.csv`.
+
 ## Статус на всяка метрика (т. 8)
 
 `passed | failed | not_applicable | not_measurable | error` — никога слети в
