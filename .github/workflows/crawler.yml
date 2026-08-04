@@ -34,6 +34,9 @@ jobs:
         run: npx --yes playwright@1.62.1 install --with-deps chromium
 
       - name: Collect
+        env:
+          # По избор: даде ли се секрет, collect добавя PageSpeed метрики.
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
         run: npm run crawl -w @kova/crawler -- --targets "${{ inputs.targets }}" --run-id "${{ inputs.run_id }}" --notes "${{ inputs.notes }}"
 
       - name: Derive

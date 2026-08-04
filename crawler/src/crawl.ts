@@ -6,7 +6,8 @@ import { readFileSync } from 'node:fs';
 import { openDb } from './db.ts';
 import { writeArtifact } from './artifacts.ts';
 import { LIMITS, TOOL_VERSION, UA_VARIANTS, type UaVariant } from './config.ts';
-import { rawFetch, probeText, renderPage, resolveMx, tlsInfo, closeBrowser } from './fetcher.ts';
+import { rawFetch, probeText, renderPage, resolveMx, tlsInfo, rdapInfo, pageSpeed, closeBrowser } from './fetcher.ts';
+import { discoverInternalLinks, classifyRole, type PageRole } from '@kova/shared-audit';
 import type { DatabaseSync } from 'node:sqlite';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -125,15 +126,89 @@ function recordFetch(
   ).run(runId, domain, slug, kind, ua, status, new Date().toISOString(), path, error);
 }
 
-function alreadyDone(db: DatabaseSync, runId: string, domain: string): boolean {
+/**
+ * Домейнът е приключил, ако е записан TLS редът — той е сред последните
+ * per-domain стъпки. Незавършен домейн се пуска отново: home се тегли
+ * наново (евтино), а вече събраните подстраници се прескачат (pageCollected).
+ */
+function domainDone(db: DatabaseSync, runId: string, domain: string): boolean {
+  const row = db
+    .prepare(`SELECT COUNT(*) AS n FROM fetches WHERE run_id=? AND domain=? AND kind='tls'`)
+    .get(runId, domain) as { n: number };
+  return row.n > 0;
+}
+
+function pageCollected(db: DatabaseSync, runId: string, domain: string, slug: string): boolean {
   const row = db
     .prepare(
       `SELECT COUNT(*) AS n FROM fetches
-       WHERE run_id=? AND domain=? AND page_slug='home' AND error IS NULL`,
+       WHERE run_id=? AND domain=? AND page_slug=? AND kind='raw_html' AND error IS NULL`,
     )
-    .get(runId, domain) as { n: number };
-  // home прави 3 raw + 1 rendered + headers + robots + llms + sitemap + dns + tls = 9 успешни.
-  return row.n >= 9;
+    .get(runId, domain, slug) as { n: number };
+  return row.n > 0;
+}
+
+/** Пътят → slug: '/' → home, '/за-нас/' → za-nas. */
+function slugOf(pathname: string): string {
+  const p = pathname.replace(/^\/+|\/+$/g, '');
+  if (!p) return 'home';
+  return p.replace(/[^a-z0-9]+/gi, '-').slice(0, 60).toLowerCase() || 'home';
+}
+
+function extractLocs(xml: string): string[] {
+  return [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((m) => m[1].trim());
+}
+
+/**
+ * Кои страници да се обходят освен началната (т. 3): навигационни връзки
+ * (по-надеждни) + връзки от sitemap, класифицирани по роля. По една на роля
+ * (контакти/за нас/услуги/цени/кариери) + до няколко „други", таван 10 общо.
+ */
+function selectPages(
+  base: string,
+  homeHtml: string,
+  sitemapXml: string,
+): { url: string; slug: string; role: PageRole; via: string }[] {
+  const wanted: PageRole[] = ['contact', 'about', 'services', 'pricing', 'careers'];
+  const chosen = new Map<string, { url: string; slug: string; role: PageRole; via: string }>();
+
+  const navLinks = discoverInternalLinks(homeHtml, base);
+  const sitemapLinks = extractLocs(sitemapXml)
+    .map((loc) => {
+      try {
+        const u = new URL(loc);
+        return { url: u.href, role: classifyRole(u.pathname, ''), text: '' };
+      } catch {
+        return null;
+      }
+    })
+    .filter((x): x is { url: string; role: PageRole; text: string } => Boolean(x));
+
+  const add = (url: string, role: PageRole, via: string) => {
+    let path = '/';
+    try {
+      path = new URL(url).pathname;
+    } catch {
+      return;
+    }
+    const slug = slugOf(path);
+    if (slug === 'home' || chosen.has(slug) || chosen.size >= LIMITS.maxPagesPerDomain - 1) return;
+    chosen.set(slug, { url, slug, role, via });
+  };
+
+  // По една страница на желана роля — навигацията има приоритет пред sitemap.
+  for (const role of wanted) {
+    const nav = navLinks.find((l) => l.role === role);
+    if (nav) add(nav.url, role, 'nav');
+    else {
+      const sm = sitemapLinks.find((l) => l.role === role);
+      if (sm) add(sm.url, role, 'sitemap');
+    }
+  }
+  // До няколко „други" от навигацията, за да стигнем разумен обем.
+  for (const l of navLinks) if (l.role === 'other') add(l.url, 'other', 'nav');
+
+  return [...chosen.values()];
 }
 
 async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Promise<void> {
@@ -148,11 +223,13 @@ async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Pro
 
   // Начална страница с трите UA варианта.
   let homeStatus = 0;
+  let homeHtml = '';
   let browserHeaders: Record<string, string> = {};
   for (const ua of Object.keys(UA_VARIANTS) as UaVariant[]) {
     const res = await rawFetch(base, ua);
     if (ua === 'browser') {
       homeStatus = res.status;
+      homeHtml = res.body;
       browserHeaders = res.headers;
     }
     recordFetch(db, runId, domain, slug, 'raw_html', ua, res.status, res.body, res.error);
@@ -165,12 +242,13 @@ async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Pro
     domain,
   );
 
-  // Рендиране в браузър.
+  // Рендиране в браузър (само началната — за renders_without_js).
   const rendered = await renderPage(base);
   recordFetch(db, runId, domain, slug, 'rendered_html', '-', rendered.status, rendered.html, rendered.error);
   await sleep(LIMITS.perHostDelayMs);
 
   // Веднъж на домейн: robots / llms / sitemap.
+  let sitemapXml = '';
   for (const [kind, path] of [
     ['robots_txt', 'robots.txt'],
     ['llms_txt', 'llms.txt'],
@@ -178,15 +256,41 @@ async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Pro
   ] as const) {
     const res = await probeText(`https://${domain}/${path}`);
     const isText = res.status === 200 && !/^\s*<!doctype html|<html/i.test(res.body);
+    if (kind === 'sitemap' && isText) sitemapXml = res.body;
     recordFetch(db, runId, domain, slug, kind, '-', res.status, isText ? res.body : '', isText ? null : res.error ?? 'not-found');
     await sleep(LIMITS.perHostDelayMs);
   }
 
-  // DNS (MX) и TLS — не са HTTP към хоста, без забавяне.
+  // Многостранично обхождане: контакти / за нас / услуги / цени / кариери (+ др.).
+  const pages = selectPages(base, homeHtml, sitemapXml);
+  for (const p of pages) {
+    if (pageCollected(db, runId, domain, p.slug)) continue;
+    db.prepare(
+      `INSERT INTO pages (run_id, domain, page_slug, url, page_role, discovered_via, status_code)
+       VALUES (?, ?, ?, ?, ?, ?, NULL)
+       ON CONFLICT(run_id, domain, page_slug) DO UPDATE SET
+         url=excluded.url, page_role=excluded.page_role, discovered_via=excluded.discovered_via`,
+    ).run(runId, domain, p.slug, p.url, p.role, p.via);
+    const res = await rawFetch(p.url, 'browser');
+    recordFetch(db, runId, domain, p.slug, 'raw_html', 'browser', res.status, res.body, res.error);
+    db.prepare(`UPDATE pages SET status_code=? WHERE run_id=? AND domain=? AND page_slug=?`).run(
+      res.status,
+      runId,
+      domain,
+      p.slug,
+    );
+    await sleep(LIMITS.perHostDelayMs);
+  }
+
+  // Веднъж на домейн, не са HTTP към хоста: DNS (MX), TLS, RDAP, PageSpeed.
   const mx = await resolveMx(domain);
   recordFetch(db, runId, domain, slug, 'dns', '-', mx.length ? 200 : 0, JSON.stringify({ mx }), null);
   const tls = await tlsInfo(domain);
   recordFetch(db, runId, domain, slug, 'tls', '-', tls.error ? 0 : 200, JSON.stringify(tls), tls.error);
+  const rdap = await rdapInfo(domain);
+  recordFetch(db, runId, domain, slug, 'rdap', '-', rdap.registered ? 200 : 0, JSON.stringify(rdap), null);
+  const psi = await pageSpeed(base);
+  if (psi) recordFetch(db, runId, domain, slug, 'psi', '-', 200, JSON.stringify(psi), null);
 }
 
 /** Прост пул: N домейна едновременно. */
@@ -223,7 +327,7 @@ export async function crawl(opts: CrawlOptions): Promise<void> {
 
   let done = 0;
   await pool(domains, LIMITS.domainConcurrency, async (domain) => {
-    if (alreadyDone(db, opts.runId, domain)) {
+    if (domainDone(db, opts.runId, domain)) {
       console.log(`[skip] ${domain} (вече събран в този run)`);
       done++;
       return;
