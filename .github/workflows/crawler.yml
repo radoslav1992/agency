@@ -18,7 +18,10 @@ on:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 300 домейна са около 25 минути; с PAGESPEED_API_KEY се добавят още
+    # 15–25, защото PageSpeed отговаря за 10–30 секунди на адрес. 60 минути
+    # опират в тавана точно при пълната извадка.
+    timeout-minutes: 120
     # Конфигурацията за R2 живее в environment „production". Без този ключ
     # environment secrets/variables НЕ се виждат от job-а и всички стойности
     # излизат празни.

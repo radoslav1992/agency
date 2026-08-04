@@ -15,7 +15,26 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { botAllowed } from '@kova/shared-audit';
 import { REAL_CASES } from './fixtures.mjs';
+
+const UA = 'KovaResearchBot/1.0 (+https://kova.bg/research)';
+
+/** Същото правило като при обхождането: забраната в robots.txt се уважава. */
+async function allowedByRobots(domain) {
+  try {
+    const res = await fetch(`https://${domain}/robots.txt`, {
+      headers: { 'User-Agent': UA },
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (res.status !== 200) return true;
+    const body = await res.text();
+    if (/<!doctype html|<html[\s>]/i.test(body.slice(0, 1000))) return true;
+    return botAllowed(body, 'KovaResearchBot');
+  } catch {
+    return true;
+  }
+}
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DIR = resolve(HERE, 'fixtures');
@@ -32,11 +51,15 @@ mkdirSync(DIR, { recursive: true });
 
 for (const c of cases) {
   const url = `https://${c.domain}/`;
+  if (!(await allowedByRobots(c.domain))) {
+    console.error(`⊘ ${c.domain}: robots.txt забранява KovaResearchBot — пропуснат`);
+    continue;
+  }
   try {
     const res = await fetch(url, {
       redirect: 'follow',
       signal: AbortSignal.timeout(20_000),
-      headers: { 'User-Agent': 'KovaResearchBot/1.0 (+https://kova.bg/research)' },
+      headers: { 'User-Agent': UA },
     });
     const html = await res.text();
     const path = resolve(DIR, c.file);
