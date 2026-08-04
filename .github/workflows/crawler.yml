@@ -15,6 +15,18 @@ on:
         description: 'Бележки за пускането (по избор)'
         required: false
 
+# Данните са трайни в Cloudflare R2 — базата и артефактите се възстановяват
+# в началото и се качват обратно накрая, за да натрупват между тримесечията.
+# Конфигурацията идва изцяло от secrets/variables — нищо чувствително в кода.
+#   Repo variable: R2_BUCKET
+#   Repo secrets:  R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
+env:
+  R2_BUCKET: ${{ vars.R2_BUCKET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: auto
+  AWS_ENDPOINT_URL: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+
 jobs:
   crawl:
     runs-on: ubuntu-latest
@@ -33,11 +45,29 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx --yes playwright@1.62.1 install --with-deps chromium
 
+      # Възстановяваме базата (натрупва между пусканията) и — ако този run_id
+      # вече е започнат — артефактите му, за да може collect да продължи.
+      - name: Restore state from R2
+        run: |
+          set -euo pipefail
+          mkdir -p crawler/artifacts crawler/exports
+          aws s3 cp "s3://$R2_BUCKET/crawler.db" crawler/crawler.db \
+            --endpoint-url "$AWS_ENDPOINT_URL" || echo "Няма съществуваща база — започваме на чисто."
+          aws s3 sync "s3://$R2_BUCKET/artifacts/${{ inputs.run_id }}/" "crawler/artifacts/${{ inputs.run_id }}/" \
+            --endpoint-url "$AWS_ENDPOINT_URL" || true
+
       - name: Collect
         env:
           # По избор: даде ли се секрет, collect добавя PageSpeed метрики.
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
         run: npm run crawl -w @kova/crawler -- --targets "${{ inputs.targets }}" --run-id "${{ inputs.run_id }}" --notes "${{ inputs.notes }}"
+
+      # Базата се качва дори при провал на collect, за да не се губи напредък.
+      - name: Persist database to R2
+        if: always()
+        run: |
+          test -f crawler/crawler.db && aws s3 cp crawler/crawler.db "s3://$R2_BUCKET/crawler.db" \
+            --endpoint-url "$AWS_ENDPOINT_URL" || echo "Няма база за качване."
 
       - name: Derive
         run: npm run derive -w @kova/crawler -- --run-id "${{ inputs.run_id }}"
@@ -45,8 +75,19 @@ jobs:
       - name: Export CSV
         run: npm run export -w @kova/crawler -- --run-id "${{ inputs.run_id }}"
 
-      # Базата и износът се качват като артефакт на run-а — не се комитват.
-      - name: Upload results
+      # Артефактите (за re-derive по-късно), обновената база и CSV-то → R2.
+      - name: Persist artifacts and export to R2
+        if: always()
+        run: |
+          set -euo pipefail
+          aws s3 cp crawler/crawler.db "s3://$R2_BUCKET/crawler.db" --endpoint-url "$AWS_ENDPOINT_URL" || true
+          aws s3 sync crawler/artifacts/ "s3://$R2_BUCKET/artifacts/" --endpoint-url "$AWS_ENDPOINT_URL" || true
+          aws s3 sync crawler/exports/ "s3://$R2_BUCKET/exports/" --endpoint-url "$AWS_ENDPOINT_URL" || true
+
+      # Освен в R2, CSV-то и базата се качват и като артефакт на run-а —
+      # удобно за бърз преглед без R2 клиент.
+      - name: Upload results artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: crawl-${{ inputs.run_id }}
