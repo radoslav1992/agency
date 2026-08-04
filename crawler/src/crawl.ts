@@ -7,7 +7,7 @@ import { openDb } from './db.ts';
 import { writeArtifact } from './artifacts.ts';
 import { LIMITS, TOOL_VERSION, UA_VARIANTS, type UaVariant } from './config.ts';
 import { rawFetch, probeText, renderPage, resolveMx, tlsInfo, rdapInfo, pageSpeed, closeBrowser } from './fetcher.ts';
-import { discoverInternalLinks, classifyRole, type PageRole } from '@kova/shared-audit';
+import { discoverInternalLinks, classifyRole, botAllowed, type PageRole } from '@kova/shared-audit';
 import type { DatabaseSync } from 'node:sqlite';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -133,7 +133,7 @@ function recordFetch(
  */
 function domainDone(db: DatabaseSync, runId: string, domain: string): boolean {
   const row = db
-    .prepare(`SELECT COUNT(*) AS n FROM fetches WHERE run_id=? AND domain=? AND kind='tls'`)
+    .prepare(`SELECT COUNT(*) AS n FROM fetches WHERE run_id=? AND domain=? AND kind IN ('tls','blocked')`)
     .get(runId, domain) as { n: number };
   return row.n > 0;
 }
@@ -215,6 +215,21 @@ async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Pro
   const base = `https://${domain}/`;
   const slug = 'home';
 
+  // robots.txt ПЪРВО — забраната за нашия бот се уважава, не се заобикаля
+  // (т. 10). Ако robots ни забранява, спираме дотук и записваме причината;
+  // страницата на https://kova.bg/research обещава точно този opt-out.
+  const robotsRes = await probeText(`https://${domain}/robots.txt`);
+  const robotsIsText = robotsRes.status === 200 && !/^\s*<!doctype html|<html/i.test(robotsRes.body);
+  const robotsBody = robotsIsText ? robotsRes.body : '';
+  recordFetch(db, runId, domain, slug, 'robots_txt', '-', robotsRes.status, robotsBody, robotsIsText ? null : robotsRes.error ?? 'not-found');
+  await sleep(LIMITS.perHostDelayMs);
+
+  if (!botAllowed(robotsBody, 'KovaResearchBot')) {
+    recordFetch(db, runId, domain, slug, 'blocked', '-', 200, 'robots.txt disallows KovaResearchBot', null);
+    console.log(`[robots] ${domain} — забранено от robots.txt, пропуска се`);
+    return;
+  }
+
   db.prepare(
     `INSERT INTO pages (run_id, domain, page_slug, url, page_role, discovered_via, status_code)
      VALUES (?, ?, 'home', ?, 'home', 'pattern', NULL)
@@ -247,10 +262,9 @@ async function crawlDomain(db: DatabaseSync, runId: string, domain: string): Pro
   recordFetch(db, runId, domain, slug, 'rendered_html', '-', rendered.status, rendered.html, rendered.error);
   await sleep(LIMITS.perHostDelayMs);
 
-  // Веднъж на домейн: robots / llms / sitemap.
+  // Веднъж на домейн: llms / sitemap (robots.txt вече е свален и уважен).
   let sitemapXml = '';
   for (const [kind, path] of [
-    ['robots_txt', 'robots.txt'],
     ['llms_txt', 'llms.txt'],
     ['sitemap', 'sitemap.xml'],
   ] as const) {

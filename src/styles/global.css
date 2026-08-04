@@ -331,3 +331,24 @@ p {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+.legal :not(pre) > code {
+  font-size: 0.9em;
+  background: var(--chip);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.legal pre {
+  background: var(--dark);
+  color: var(--dark-ink);
+  padding: 16px 18px;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 0 0 16px;
+}
+
+.legal pre code {
+  font-size: 14px;
+  line-height: 1.6;
+}
