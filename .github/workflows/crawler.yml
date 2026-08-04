@@ -20,12 +20,14 @@ on:
 # Конфигурацията идва изцяло от secrets/variables — нищо чувствително в кода.
 #   Repo variable: R2_BUCKET
 #   Repo secrets:  R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY
+# `||` приема стойността и като Variable, и като Secret — за да не се чупи
+# при объркан таб в настройките.
 env:
-  R2_BUCKET: ${{ vars.R2_BUCKET }}
-  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_BUCKET: ${{ vars.R2_BUCKET || secrets.R2_BUCKET }}
+  R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID || vars.R2_ACCOUNT_ID }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID || vars.R2_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: auto
-  AWS_ENDPOINT_URL: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
 
 jobs:
   crawl:
@@ -45,9 +47,30 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx --yes playwright@1.62.1 install --with-deps chromium
 
+      # Проверява дали R2 е конфигуриран. Ако липсва нещо — казва точно какво
+      # и продължава без трайно съхранение (пускането пак дава CSV като
+      # артефакт), вместо да залива лога с „Invalid endpoint".
+      - name: Check R2 configuration
+        id: r2check
+        run: |
+          missing=""
+          [ -n "$R2_BUCKET" ]             || missing="$missing R2_BUCKET(variable)"
+          [ -n "$R2_ACCOUNT_ID" ]         || missing="$missing R2_ACCOUNT_ID(secret)"
+          [ -n "$AWS_ACCESS_KEY_ID" ]     || missing="$missing R2_ACCESS_KEY_ID(secret)"
+          [ -n "$AWS_SECRET_ACCESS_KEY" ] || missing="$missing R2_SECRET_ACCESS_KEY(secret)"
+          if [ -n "$missing" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=R2 не е конфигуриран::Липсват:$missing — резултатите ще са само в артефакта на пускането (30 дни), без трайно съхранение."
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "AWS_ENDPOINT_URL=https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" >> "$GITHUB_ENV"
+            echo "R2 е конфигуриран: bucket=$R2_BUCKET"
+          fi
+
       # Възстановяваме базата (натрупва между пусканията) и — ако този run_id
       # вече е започнат — артефактите му, за да може collect да продължи.
       - name: Restore state from R2
+        if: steps.r2check.outputs.enabled == 'true'
         run: |
           set -euo pipefail
           mkdir -p crawler/artifacts crawler/exports
@@ -64,7 +87,7 @@ jobs:
 
       # Базата се качва дори при провал на collect, за да не се губи напредък.
       - name: Persist database to R2
-        if: always()
+        if: always() && steps.r2check.outputs.enabled == 'true'
         run: |
           test -f crawler/crawler.db && aws s3 cp crawler/crawler.db "s3://$R2_BUCKET/crawler.db" \
             --endpoint-url "$AWS_ENDPOINT_URL" || echo "Няма база за качване."
@@ -77,7 +100,7 @@ jobs:
 
       # Артефактите (за re-derive по-късно), обновената база и CSV-то → R2.
       - name: Persist artifacts and export to R2
-        if: always()
+        if: always() && steps.r2check.outputs.enabled == 'true'
         run: |
           set -euo pipefail
           aws s3 cp crawler/crawler.db "s3://$R2_BUCKET/crawler.db" --endpoint-url "$AWS_ENDPOINT_URL" || true
