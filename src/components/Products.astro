@@ -9,12 +9,12 @@ const allLabel = `Всички ${PROJECTS.length} проекта →`;
 <section id="products" class="products container">
   <header class="head">
     <div>
-      <p class="eyebrow">Продукти</p>
-      <h2 class="section-title">Собствени продукти</h2>
+      <p class="eyebrow">Проекти</p>
+      <h2 class="section-title">Работещи проекти, които можеш да отвориш</h2>
     </div>
     <p class="head__note">
-      Правя и поддържам свои продукти. Всичките са публични и можеш да ги отвориш сега — това е
-      най-прекият начин да видиш как работя.
+      Повечето са поръчани от клиенти, две са мои собствени продукти — пише го на всяка карта.
+      Всичките са публични и работят в момента.
     </p>
   </header>
 
@@ -22,9 +22,14 @@ const allLabel = `Всички ${PROJECTS.length} проекта →`;
     {
       PRODUCTS_FEATURED.map((item) => (
         <article class="product">
-          <a class="product__name" href={item.url} target="_blank" rel="noopener">
-            {item.name} <span class="product__domain">· {item.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span> ↗
-          </a>
+          <div class="product__top">
+            <a class="product__name" href={item.url} target="_blank" rel="noopener">
+              {item.name} <span class="product__domain">· {item.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span> ↗
+            </a>
+            <span class:list={['product__origin', item.own && 'product__origin--own']}>
+              {item.own ? 'Собствен продукт' : 'Клиентски проект'}
+            </span>
+          </div>
 
           <dl class="product__rows">
             <div class="product__row">
@@ -87,6 +92,28 @@ const allLabel = `Всички ${PROJECTS.length} проекта →`;
     display: flex;
     flex-direction: column;
     gap: 18px;
+  }
+
+  .product__top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .product__origin {
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+
+  .product__origin--own {
+    background: var(--chip);
+    color: var(--ink-muted);
+    font-weight: 500;
   }
 
   .product__name {
