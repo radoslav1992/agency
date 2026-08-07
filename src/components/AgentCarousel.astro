@@ -1,0 +1,439 @@
+---
+import { Image } from 'astro:assets';
+import { AGENTS } from '../data/agents.ts';
+
+/**
+ * Въртележка с агентите: фокусираната карта е в средата, съседните се
+ * виждат смалени отстрани, а редът се сменя бавно сам.
+ *
+ * Три неща са нарочни, за да няма обичайните недостатъци на въртележките:
+ *   • спира при посочване с мишка, при фокус с клавиатура и при докосване —
+ *     иначе съдържанието бяга изпод пръста на четящия;
+ *   • при `prefers-reduced-motion` изобщо не тръгва сама;
+ *   • всяка карта е достъпна и без скриптове — лентата се плъзга с пръст,
+ *     а стрелките работят с клавиатура.
+ *
+ * Картинките са по избор: `src/assets/agents/<id>.png` се хваща по име.
+ * Без файл се показва рисунка според канала, за да не зее празно.
+ */
+const shots = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/agents/*.{png,jpg,jpeg,webp,avif}',
+  { eager: true },
+);
+
+const slides = AGENTS.map((agent) => ({
+  agent,
+  shot: Object.entries(shots).find(
+    ([path]) => path.split('/').pop()?.replace(/\.\w+$/, '') === agent.id,
+  )?.[1].default,
+}));
+
+/** Рисунка по канал, когато няма картинка. */
+const GLYPH: Record<string, string> = {
+  Глас: 'M7 4a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V4Zm-3 6a6 6 0 0 0 12 0M10 16v3',
+  Съобщения: 'M3 5h14v9H8l-5 4V5Z',
+  Чат: 'M3 5h14v9H8l-5 4V5Zm4 4h6M7 11h4',
+  Документи: 'M5 2h7l4 4v12H5V2Zm7 0v4h4M8 11h6M8 14h6',
+  Имейл: 'M2 5h16v10H2V5Zm0 0 8 6 8-6',
+  Отчети: 'M3 17V8m5 9V4m5 13v-6m5 6V7',
+};
+---
+
+<section class="carousel-wrap" aria-labelledby="agents-carousel-title">
+  <div class="container head">
+    <h2 class="head__title" id="agents-carousel-title">Готови AI агенти</h2>
+    <a class="head__link" href="/agents/">Всички {AGENTS.length} агента →</a>
+  </div>
+
+  <div class="stage" data-carousel>
+    <button class="nav nav--prev" type="button" aria-label="Предишен агент" data-prev>
+      <span aria-hidden="true">‹</span>
+    </button>
+
+    <ul class="track" data-track>
+      {
+        slides.map(({ agent, shot }, index) => (
+          <li class="slide" data-slide data-index={index}>
+            <a class="agentcard" href={`/agents/#${agent.id}`}>
+              <span class="agentcard__visual">
+                {shot ? (
+                  <Image
+                    src={shot}
+                    alt=""
+                    widths={[480, 720, 960, 1440]}
+                    sizes="(max-width: 780px) 280px, (max-width: 1500px) 32vw, 480px"
+                    loading="lazy"
+                  />
+                ) : (
+                  <svg class="agentcard__glyph" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d={GLYPH[agent.channel] ?? GLYPH['Документи']} />
+                  </svg>
+                )}
+                <span class="agentcard__channel">{agent.channel}</span>
+              </span>
+              <span class="agentcard__body">
+                <span class="agentcard__name">{agent.name}</span>
+                <span class="agentcard__short">{agent.short}</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <button class="nav nav--next" type="button" aria-label="Следващ агент" data-next>
+      <span aria-hidden="true">›</span>
+    </button>
+  </div>
+
+  <div class="dots" role="tablist" aria-label="Избор на агент" data-dots>
+    {
+      slides.map(({ agent }, index) => (
+        <button
+          class="dot"
+          type="button"
+          role="tab"
+          aria-label={agent.name}
+          aria-selected={index === 0 ? 'true' : 'false'}
+          data-dot
+          data-index={index}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .carousel-wrap {
+    border-top: 1px solid var(--line);
+    background: var(--bg-sand);
+    padding-block: 28px 30px;
+    overflow: hidden;
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .head__title {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  .head__link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .stage {
+    position: relative;
+    /*
+     * Ширината на картата живее на едно място, защото се ползва два пъти:
+     * веднъж за самата карта и веднъж за отстъпа на лентата, който изкарва
+     * първата и последната до центъра. Разминат ли се, snap-ът застава
+     * накриво. `clamp` сваля размера на тесни екрани, вместо да го прави
+     * медия заявка — така няма праг, на който картата да подскочи.
+     */
+    --slide: clamp(280px, 32vw, 480px);
+  }
+
+  /* Хоризонтална лента със snap в центъра — плъзга се с пръст без скрипт. */
+  .track {
+    display: flex;
+    gap: 18px;
+    margin: 0;
+    padding: 6px 0 10px;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* Първата и последната карта също стигат до центъра. */
+    padding-inline: calc(50% - var(--slide) / 2);
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    flex: 0 0 var(--slide);
+    scroll-snap-align: center;
+    /* Съседните са смалени и приглушени; фокусираната изпъква. */
+    transform: scale(0.86);
+    opacity: 0.42;
+    transition:
+      transform 0.5s ease,
+      opacity 0.5s ease;
+  }
+
+  .slide.is-active {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .agentcard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    color: inherit;
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.18s ease;
+  }
+
+  .slide.is-active .agentcard {
+    border-color: var(--accent);
+  }
+
+  .agentcard:hover {
+    color: inherit;
+  }
+
+  .agentcard__visual {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    /*
+     * `width` и `flex: none` заедно, и двете са нужни. Без ширината
+     * съотношението тръгва от височината на картата и полето излиза
+     * по-тясно от самата карта; без `flex: none` картата се изравнява по
+     * най-високата в реда и смачква полето под 16:9. И в двата случая
+     * подадената картинка се реже повече, отколкото пише в README.
+     */
+    width: 100%;
+    flex: none;
+    background: var(--bg-blush);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .agentcard__visual :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .agentcard__glyph {
+    width: 64px;
+    height: 64px;
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.85;
+  }
+
+  .agentcard__channel {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    padding: 4px 11px;
+  }
+
+  .agentcard__body {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 20px 22px 22px;
+    /* Поема разликата във височината, за да не я поема картинката. */
+    flex: 1;
+  }
+
+  .agentcard__name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .agentcard__short {
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--shadow-card);
+    transition:
+      background-color 0.16s ease,
+      color 0.16s ease;
+  }
+
+  .nav:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .nav--prev {
+    left: 12px;
+  }
+
+  .nav--next {
+    right: 12px;
+  }
+
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--line-strong);
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      width 0.2s ease;
+  }
+
+  .dot[aria-selected='true'] {
+    background: var(--accent);
+    width: 20px;
+    border-radius: 999px;
+  }
+
+  @media (max-width: 780px) {
+    .track {
+      gap: 14px;
+    }
+
+    .nav {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-carousel]');
+  const track = document.querySelector<HTMLElement>('[data-track]');
+
+  if (root && track) {
+    const slides = [...track.querySelectorAll<HTMLElement>('[data-slide]')];
+    const dots = [...document.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let active = 0;
+    let timer: number | undefined;
+
+    /** Коя карта е най-близо до центъра на лентата. */
+    function nearestToCentre(): number {
+      const centre = track!.scrollLeft + track!.clientWidth / 2;
+      let best = 0;
+      let bestDistance = Infinity;
+      slides.forEach((slide, i) => {
+        const slideCentre = slide.offsetLeft + slide.offsetWidth / 2;
+        const distance = Math.abs(slideCentre - centre);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = i;
+        }
+      });
+      return best;
+    }
+
+    function paint(index: number) {
+      active = index;
+      slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
+      dots.forEach((dot, i) => dot.setAttribute('aria-selected', String(i === index)));
+    }
+
+    function goTo(index: number) {
+      const target = slides[(index + slides.length) % slides.length];
+      if (!target) return;
+      track!.scrollTo({
+        left: target.offsetLeft - (track!.clientWidth - target.offsetWidth) / 2,
+        behavior: reduced.matches ? 'auto' : 'smooth',
+      });
+    }
+
+    /* Автоматична смяна — бавно, и само ако движението не е ограничено. */
+    function start() {
+      if (reduced.matches || timer !== undefined) return;
+      timer = window.setInterval(() => goTo(active + 1), 5000);
+    }
+
+    function stop() {
+      if (timer !== undefined) {
+        clearInterval(timer);
+        timer = undefined;
+      }
+    }
+
+    let frame = 0;
+    track.addEventListener('scroll', () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => paint(nearestToCentre()));
+    });
+
+    // Спира, докато човек чете или борави с нея; тръгва пак, щом я остави.
+    for (const event of ['pointerenter', 'focusin', 'touchstart']) {
+      root.addEventListener(event, stop, { passive: true });
+    }
+    for (const event of ['pointerleave', 'focusout']) {
+      root.addEventListener(event, start);
+    }
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    root.querySelector('[data-prev]')?.addEventListener('click', () => goTo(active - 1));
+    root.querySelector('[data-next]')?.addEventListener('click', () => goTo(active + 1));
+    dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+
+    // Стрелките на клавиатурата местят лентата, когато е на фокус.
+    track.setAttribute('tabindex', '0');
+    track.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') goTo(active + 1);
+      else if (event.key === 'ArrowLeft') goTo(active - 1);
+      else return;
+      event.preventDefault();
+    });
+
+    paint(0);
+    goTo(0);
+    start();
+  }
+</script>
