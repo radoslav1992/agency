@@ -54,26 +54,26 @@ const GLYPH: Record<string, string> = {
       {
         slides.map(({ agent, shot }, index) => (
           <li class="slide" data-slide data-index={index}>
-            <a class="card" href={`/agents/#${agent.id}`}>
-              <span class="card__visual">
+            <a class="agentcard" href={`/agents/#${agent.id}`}>
+              <span class="agentcard__visual">
                 {shot ? (
                   <Image
                     src={shot}
                     alt=""
-                    widths={[380, 560, 760, 1140]}
-                    sizes="(max-width: 680px) 78vw, 380px"
+                    widths={[480, 720, 960, 1440]}
+                    sizes="(max-width: 780px) 280px, (max-width: 1500px) 32vw, 480px"
                     loading="lazy"
                   />
                 ) : (
-                  <svg class="card__glyph" viewBox="0 0 20 20" aria-hidden="true">
+                  <svg class="agentcard__glyph" viewBox="0 0 20 20" aria-hidden="true">
                     <path d={GLYPH[agent.channel] ?? GLYPH['Документи']} />
                   </svg>
                 )}
-                <span class="card__channel">{agent.channel}</span>
+                <span class="agentcard__channel">{agent.channel}</span>
               </span>
-              <span class="card__body">
-                <span class="card__name">{agent.name}</span>
-                <span class="card__short">{agent.short}</span>
+              <span class="agentcard__body">
+                <span class="agentcard__name">{agent.name}</span>
+                <span class="agentcard__short">{agent.short}</span>
               </span>
             </a>
           </li>
@@ -139,6 +139,14 @@ const GLYPH: Record<string, string> = {
 
   .stage {
     position: relative;
+    /*
+     * Ширината на картата живее на едно място, защото се ползва два пъти:
+     * веднъж за самата карта и веднъж за отстъпа на лентата, който изкарва
+     * първата и последната до центъра. Разминат ли се, snap-ът застава
+     * накриво. `clamp` сваля размера на тесни екрани, вместо да го прави
+     * медия заявка — така няма праг, на който картата да подскочи.
+     */
+    --slide: clamp(280px, 32vw, 480px);
   }
 
   /* Хоризонтална лента със snap в центъра — плъзга се с пръст без скрипт. */
@@ -152,7 +160,7 @@ const GLYPH: Record<string, string> = {
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     /* Първата и последната карта също стигат до центъра. */
-    padding-inline: calc(50% - 190px);
+    padding-inline: calc(50% - var(--slide) / 2);
   }
 
   .track::-webkit-scrollbar {
@@ -160,7 +168,7 @@ const GLYPH: Record<string, string> = {
   }
 
   .slide {
-    flex: 0 0 380px;
+    flex: 0 0 var(--slide);
     scroll-snap-align: center;
     /* Съседните са смалени и приглушени; фокусираната изпъква. */
     transform: scale(0.86);
@@ -175,7 +183,7 @@ const GLYPH: Record<string, string> = {
     opacity: 1;
   }
 
-  .card {
+  .agentcard {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -188,34 +196,43 @@ const GLYPH: Record<string, string> = {
     transition: border-color 0.18s ease;
   }
 
-  .slide.is-active .card {
+  .slide.is-active .agentcard {
     border-color: var(--accent);
   }
 
-  .card:hover {
+  .agentcard:hover {
     color: inherit;
   }
 
-  .card__visual {
+  .agentcard__visual {
     position: relative;
     display: grid;
     place-items: center;
     aspect-ratio: 16 / 9;
+    /*
+     * `width` и `flex: none` заедно, и двете са нужни. Без ширината
+     * съотношението тръгва от височината на картата и полето излиза
+     * по-тясно от самата карта; без `flex: none` картата се изравнява по
+     * най-високата в реда и смачква полето под 16:9. И в двата случая
+     * подадената картинка се реже повече, отколкото пише в README.
+     */
+    width: 100%;
+    flex: none;
     background: var(--bg-blush);
     border-bottom: 1px solid var(--line);
     overflow: hidden;
   }
 
-  .card__visual :global(img) {
+  .agentcard__visual :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  .card__glyph {
-    width: 54px;
-    height: 54px;
+  .agentcard__glyph {
+    width: 64px;
+    height: 64px;
     fill: none;
     stroke: var(--accent);
     stroke-width: 1.4;
@@ -224,7 +241,7 @@ const GLYPH: Record<string, string> = {
     opacity: 0.85;
   }
 
-  .card__channel {
+  .agentcard__channel {
     position: absolute;
     top: 12px;
     left: 12px;
@@ -238,23 +255,25 @@ const GLYPH: Record<string, string> = {
     padding: 4px 11px;
   }
 
-  .card__body {
+  .agentcard__body {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 18px 20px 20px;
+    gap: 7px;
+    padding: 20px 22px 22px;
+    /* Поема разликата във височината, за да не я поема картинката. */
+    flex: 1;
   }
 
-  .card__name {
+  .agentcard__name {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 17px;
+    font-size: 19px;
     letter-spacing: -0.02em;
     line-height: 1.25;
   }
 
-  .card__short {
-    font-size: 13.5px;
+  .agentcard__short {
+    font-size: 14.5px;
     line-height: 1.5;
     color: var(--ink-muted);
   }
@@ -320,12 +339,7 @@ const GLYPH: Record<string, string> = {
 
   @media (max-width: 780px) {
     .track {
-      padding-inline: calc(50% - 140px);
       gap: 14px;
-    }
-
-    .slide {
-      flex-basis: 280px;
     }
 
     .nav {
