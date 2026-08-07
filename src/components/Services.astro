@@ -43,6 +43,20 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
                   <dd set:html={service.change} />
                 </div>
               )}
+              {service.changes && service.changes.length > 0 && (
+                <div class="service__row">
+                  <dt>Какво се променя</dt>
+                  <dd>
+                    <ul class="service__changes">
+                      {service.changes.map((change) => (
+                        <li>
+                          <strong>{change.title}:</strong> {change.body}
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              )}
             </dl>
           )}
           {service.points && service.points.length > 0 && (
@@ -58,6 +72,11 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
                 <li class="pill">{tag}</li>
               ))}
             </ul>
+          )}
+          {service.link && (
+            <a class="service__more" href={service.link.href}>
+              {service.link.label}
+            </a>
           )}
         </article>
       ))
@@ -246,6 +265,33 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
 
   .service--dark .service__row dd {
     color: var(--dark-ink-muted);
+  }
+
+  /* „Какво се променя“ с подзаглавия — когато ефектите са няколко. */
+  .service__changes {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .service__changes strong {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .service--dark .service__changes strong {
+    color: var(--dark-ink);
+  }
+
+  .service__more {
+    display: inline-block;
+    margin-top: 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
   }
 
   .service__points {

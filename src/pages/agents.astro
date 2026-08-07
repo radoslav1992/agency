@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 import { AGENTS, AGENT_PROCESS } from '../data/agents.ts';
+import { agentShot } from '../data/agentShots.ts';
 import { SITE } from '../data/site.mjs';
 
 const structuredData = {
@@ -47,13 +49,29 @@ const structuredData = {
       {
         AGENTS.map((agent) => (
           <article class="agent" id={agent.id}>
-            <header class="agent__head">
-              <span class="agent__channel">{agent.channel}</span>
-              <h2 class="agent__name">{agent.name}</h2>
-              {agent.demo && <span class="agent__demo">Мога да го покажа на живо</span>}
-            </header>
+            {/* Рисунката е същата, която стои и във въртележката — така
+                човек, дошъл от началната страница, разпознава агента. */}
+            <div class="agent__top">
+              {agentShot(agent.id) && (
+                <Image
+                  class="agent__shot"
+                  src={agentShot(agent.id)!}
+                  alt={agent.alt}
+                  widths={[340, 510, 680]}
+                  sizes="(max-width: 780px) 92vw, 340px"
+                  loading="lazy"
+                />
+              )}
+              <div class="agent__intro">
+                <header class="agent__head">
+                  <span class="agent__channel">{agent.channel}</span>
+                  <h2 class="agent__name">{agent.name}</h2>
+                  {agent.demo && <span class="agent__demo">Мога да го покажа на живо</span>}
+                </header>
 
-            <p class="agent__problem">{agent.problem}</p>
+                <p class="agent__problem">{agent.problem}</p>
+              </div>
+            </div>
 
             <div class="agent__cols">
               <div>
@@ -172,6 +190,30 @@ const structuredData = {
     scroll-margin-top: calc(var(--header-h) + 20px);
   }
 
+  /* Рисунката отляво, заглавието и проблемът отдясно. */
+  .agent__top {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 26px;
+    align-items: start;
+    margin-bottom: 22px;
+  }
+
+  .agent__shot {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-blush);
+  }
+
+  .agent__intro {
+    min-width: 0;
+  }
+
   .agent__head {
     display: flex;
     align-items: center;
@@ -208,7 +250,8 @@ const structuredData = {
     font-size: 16.5px;
     line-height: 1.6;
     color: var(--ink-body);
-    margin: 16px 0 22px;
+    /* Долният отстъп идва от `.agent__top`, за да не се удвои. */
+    margin: 16px 0 0;
     max-width: 680px;
   }
 
@@ -348,6 +391,14 @@ const structuredData = {
 
     .process__steps {
       grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 780px) {
+    /* Под тази ширина рисунката отнема твърде много от текста — сяда отгоре. */
+    .agent__top {
+      grid-template-columns: 1fr;
+      gap: 18px;
     }
   }
 
