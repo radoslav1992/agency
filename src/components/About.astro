@@ -40,7 +40,10 @@ const stats = [
         {
           stats.map((stat) => (
             <div class="stat">
-              <p class="stat__value">{stat.value}</p>
+              {/* Числата стоят едри; думите се смаляват, за да се поберат. */}
+              <p class:list={['stat__value', stat.value.length > 4 && 'stat__value--word']}>
+                {stat.value}
+              </p>
               <p class="stat__label">{stat.label}</p>
             </div>
           ))
@@ -99,7 +102,7 @@ const stats = [
 
   .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
     margin-top: 28px;
   }
@@ -109,6 +112,8 @@ const stats = [
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 16px 18px;
+    /* Кутията става мерна единица за текста си — виж `.stat__value`. */
+    container-type: inline-size;
   }
 
   .stat__value {
@@ -116,6 +121,20 @@ const stats = [
     font-size: 24px;
     font-weight: 600;
     margin: 0;
+    /* Клапан, ако някога влезе дума, по-дълга и от смаления размер. */
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * „Докторант“ е дума в поле, оразмерено за „6+“ — при 24px излизаше с
+   * около 50px извън кутията. Едно общо смаляване щеше да отнеме тежестта
+   * и на числата, затова се смаляват само стойностите, които не са число.
+   * Мярката е кутията (`cqi`), не екранът, за да важи и когато картите
+   * се преподредят.
+   */
+  .stat__value--word {
+    font-size: clamp(14px, 11cqi, 19px);
+    line-height: 1.2;
   }
 
   .stat__label {
