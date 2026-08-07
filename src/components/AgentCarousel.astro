@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import { AGENTS } from '../data/agents.ts';
+import { agentShot } from '../data/agentShots.ts';
 
 /**
  * Въртележка с агентите: фокусираната карта е в средата, съседните се
@@ -13,20 +14,10 @@ import { AGENTS } from '../data/agents.ts';
  *   • всяка карта е достъпна и без скриптове — лентата се плъзга с пръст,
  *     а стрелките работят с клавиатура.
  *
- * Картинките са по избор: `src/assets/agents/<id>.png` се хваща по име.
+ * Картинките са по избор: `src/assets/agents/<id>.webp` се хваща по име.
  * Без файл се показва рисунка според канала, за да не зее празно.
  */
-const shots = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/agents/*.{png,jpg,jpeg,webp,avif}',
-  { eager: true },
-);
-
-const slides = AGENTS.map((agent) => ({
-  agent,
-  shot: Object.entries(shots).find(
-    ([path]) => path.split('/').pop()?.replace(/\.\w+$/, '') === agent.id,
-  )?.[1].default,
-}));
+const slides = AGENTS.map((agent) => ({ agent, shot: agentShot(agent.id) }));
 
 /** Рисунка по канал, когато няма картинка. */
 const GLYPH: Record<string, string> = {
@@ -59,7 +50,7 @@ const GLYPH: Record<string, string> = {
                 {shot ? (
                   <Image
                     src={shot}
-                    alt=""
+                    alt={agent.alt}
                     widths={[480, 720, 960, 1440]}
                     sizes="(max-width: 780px) 280px, (max-width: 1500px) 32vw, 480px"
                     loading="lazy"
