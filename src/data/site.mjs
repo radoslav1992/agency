@@ -46,6 +46,7 @@ export const SITE = {
 export const NAV = [
   { label: 'Начало', href: '/' },
   { label: 'Услуги', href: '/#services' },
+  { label: 'AI агенти', href: '/agents/' },
   /** Временно „Проекти“ — връща се на „Казуси“ при първия външен казус. */
   { label: 'Проекти', href: '/projects/' },
   { label: 'Анализатор', href: '/analyzer/' },
