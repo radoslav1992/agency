@@ -2,6 +2,19 @@
 import { Image } from 'astro:assets';
 import stageImage from '../assets/stage-talk.png';
 import { ABOUT } from '../data/content.ts';
+import { PROJECTS } from '../data/projects.ts';
+
+/**
+ * Броят проекти се смята от списъка, а не се преписва на ръка — точно това
+ * разминаване създаде твърдението „7 собствени продукта“, което вече не
+ * беше вярно. Добавя се към статистиките, за да не се дублира лентата
+ * „Опит:“, която го повтаряше над същия текст.
+ */
+const clientCount = PROJECTS.filter((p) => !p.own).length;
+const stats = [
+  ...ABOUT.stats,
+  { value: String(PROJECTS.length), label: `пуснати проекта — ${clientCount} от тях за клиенти` },
+];
 ---
 
 <section id="about" class="about">
@@ -25,7 +38,7 @@ import { ABOUT } from '../data/content.ts';
 
       <div class="stats">
         {
-          ABOUT.stats.map((stat) => (
+          stats.map((stat) => (
             <div class="stat">
               <p class="stat__value">{stat.value}</p>
               <p class="stat__label">{stat.label}</p>
@@ -86,7 +99,7 @@ import { ABOUT } from '../data/content.ts';
 
   .stats {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
     gap: 14px;
     margin-top: 28px;
   }

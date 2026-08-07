@@ -98,17 +98,6 @@ export const SECONDARY_SERVICES: Service[] = [
   },
 ];
 
-/**
- * Проверими доказателства — всяко твърдение тук може да се провери:
- * продуктите са онлайн, преподаването и лекциите са публични.
- */
-export const EXPERIENCE = [
-  '6+ години корпоративна разработка',
-  'Преподавател по генеративен AI и NLP в университет',
-  'Лектор на технически конференции',
-  '7 собствени продукта, които работят в момента',
-];
-
 export type ProcessStep = { number: string; title: string; body: string };
 
 export const PROCESS: ProcessStep[] = [
