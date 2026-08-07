@@ -17,7 +17,23 @@ import { agentShot } from '../data/agentShots.ts';
  * Картинките са по избор: `src/assets/agents/<id>.webp` се хваща по име.
  * Без файл се показва рисунка според канала, за да не зее празно.
  */
-const slides = AGENTS.map((agent) => ({ agent, shot: agentShot(agent.id) }));
+const base = AGENTS.map((agent) => ({ agent, shot: agentShot(agent.id) }));
+
+/*
+ * Лентата съдържа три еднакви копия на реда, а скриптът стои в средното.
+ * Оттам въртенето е безкрайно и в двете посоки: вляво от първата карта вече
+ * стои последната, а стигне ли краят, лентата се премества с едно копие
+ * назад — мигновено и без анимация, така че окото не хваща нищо, защото
+ * съдържанието е буквално същото.
+ *
+ * Клонингите са `aria-hidden` и извън реда на табулацията; иначе екранният
+ * четец би изчел каталога три пъти.
+ */
+const reel = [
+  ...base.map((slide) => ({ ...slide, clone: true })),
+  ...base.map((slide) => ({ ...slide, clone: false })),
+  ...base.map((slide) => ({ ...slide, clone: true })),
+];
 
 /** Рисунка по канал, когато няма картинка. */
 const GLYPH: Record<string, string> = {
@@ -41,11 +57,15 @@ const GLYPH: Record<string, string> = {
       <span aria-hidden="true">‹</span>
     </button>
 
-    <ul class="track" data-track>
+    <ul class="track" data-track data-count={base.length}>
       {
-        slides.map(({ agent, shot }, index) => (
-          <li class="slide" data-slide data-index={index}>
-            <a class="agentcard" href={`/agents/#${agent.id}`}>
+        reel.map(({ agent, shot, clone }, index) => (
+          <li class="slide" data-slide data-index={index} aria-hidden={clone ? 'true' : undefined}>
+            <a
+              class="agentcard"
+              href={`/agents/#${agent.id}`}
+              tabindex={clone ? -1 : undefined}
+            >
               <span class="agentcard__visual">
                 {shot ? (
                   <Image
@@ -79,7 +99,7 @@ const GLYPH: Record<string, string> = {
 
   <div class="dots" role="tablist" aria-label="Избор на агент" data-dots>
     {
-      slides.map(({ agent }, index) => (
+      base.map(({ agent }, index) => (
         <button
           class="dot"
           type="button"
@@ -354,8 +374,18 @@ const GLYPH: Record<string, string> = {
     const dots = [...document.querySelectorAll<HTMLButtonElement>('[data-dot]')];
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    let active = 0;
+    /** Колко са истинските агенти; лентата държи три копия по толкова. */
+    const count = Number(track.dataset.count) || slides.length;
+
+    let active = count;
     let timer: number | undefined;
+    let settle: number | undefined;
+
+    /** Отместването, при което картата застава точно в средата. */
+    function centreOf(index: number): number {
+      const target = slides[index];
+      return target.offsetLeft - (track!.clientWidth - target.offsetWidth) / 2;
+    }
 
     /** Коя карта е най-близо до центъра на лентата. */
     function nearestToCentre(): number {
@@ -376,16 +406,31 @@ const GLYPH: Record<string, string> = {
     function paint(index: number) {
       active = index;
       slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
-      dots.forEach((dot, i) => dot.setAttribute('aria-selected', String(i === index)));
+      // Точките са колкото агентите, а лентата е три пъти по-дълга.
+      const real = ((index % count) + count) % count;
+      dots.forEach((dot, i) => dot.setAttribute('aria-selected', String(i === real)));
     }
 
-    function goTo(index: number) {
-      const target = slides[(index + slides.length) % slides.length];
-      if (!target) return;
+    function goTo(index: number, smooth = true) {
+      if (index < 0 || index >= slides.length) return;
       track!.scrollTo({
-        left: target.offsetLeft - (track!.clientWidth - target.offsetWidth) / 2,
-        behavior: reduced.matches ? 'auto' : 'smooth',
+        left: centreOf(index),
+        behavior: smooth && !reduced.matches ? 'smooth' : 'auto',
       });
+    }
+
+    /**
+     * Връща лентата в средното копие, щом е излязла от него.
+     *
+     * Премества се точно с едно копие, мигновено и след като плъзгането е
+     * спряло. Картата под центъра е същата и преди, и след преместването,
+     * затова окото не хваща нищо — а лентата никога не опира до край.
+     */
+    function recentre() {
+      if (active >= count && active < count * 2) return;
+      const shifted = active < count ? active + count : active - count;
+      track!.scrollTo({ left: centreOf(shifted), behavior: 'auto' });
+      paint(shifted);
     }
 
     /* Автоматична смяна — бавно, и само ако движението не е ограничено. */
@@ -405,6 +450,9 @@ const GLYPH: Record<string, string> = {
     track.addEventListener('scroll', () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => paint(nearestToCentre()));
+      // Преместването чака плъзгането да спре — иначе би го прекъснало.
+      clearTimeout(settle);
+      settle = window.setTimeout(recentre, 150);
     });
 
     // Спира, докато човек чете или борави с нея; тръгва пак, щом я остави.
@@ -418,7 +466,8 @@ const GLYPH: Record<string, string> = {
 
     root.querySelector('[data-prev]')?.addEventListener('click', () => goTo(active - 1));
     root.querySelector('[data-next]')?.addEventListener('click', () => goTo(active + 1));
-    dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+    // Точката води към средното копие, за да остане накъде да се върти.
+    dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(count + i)));
 
     // Стрелките на клавиатурата местят лентата, когато е на фокус.
     track.setAttribute('tabindex', '0');
@@ -429,8 +478,10 @@ const GLYPH: Record<string, string> = {
       event.preventDefault();
     });
 
-    paint(0);
-    goTo(0);
+    // Тръгва от първия агент в средното копие: вляво от него вече стои
+    // последният, вдясно — вторият.
+    paint(count);
+    goTo(count, false);
     start();
   }
 </script>
