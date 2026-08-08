@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import logoMark from '../assets/brand/logo-mark.webp';
 import { SITE } from '../data/site.mjs';
 
 const year = new Date().getFullYear();
@@ -8,7 +10,15 @@ const year = new Date().getFullYear();
   <div class="container grid">
     <div class="col col--brand">
       <p class="brand">
-        <span class="brand__mark" aria-hidden="true">К</span>
+        {/* Декоративна: името на студиото стои като текст веднага след нея. */}
+        <Image
+          class="brand__mark"
+          src={logoMark}
+          alt=""
+          widths={[26, 52, 78]}
+          sizes="26px"
+          loading="lazy"
+        />
         <span class="brand__name">{SITE.name}</span>
       </p>
       <p class="muted">{SITE.legalName}</p>
@@ -91,18 +101,12 @@ const year = new Date().getFullYear();
     margin: 0 0 4px;
   }
 
+  /* Логото си носи заобления квадрат и цвета — тук само размерът. */
   .brand__mark {
     width: 26px;
     height: 26px;
-    border-radius: 8px;
-    background: var(--accent);
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 13px;
     flex: none;
+    display: block;
   }
 
   .brand__name {
