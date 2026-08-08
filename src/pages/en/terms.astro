@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../data/site.mjs';
+import { localeOf } from '../../i18n/index.ts';
+import { legalName } from '../../i18n/content.ts';
+
+const who = legalName(localeOf(Astro.currentLocale));
+
+/**
+ * Превод на българските общи условия. Договорът се сключва по българското
+ * право и българският текст остава меродавен — това е записано и на самата
+ * страница, за да не тълкува читателят превода като отделен режим.
+ */
+---
+
+<BaseLayout
+  title="Terms of service"
+  description="Terms of working with Kova Studio — quotes, payments, code ownership, support and project handover."
+  canonical="/en/terms/"
+>
+  <div class="container legal">
+    <p class="eyebrow">Terms</p>
+    <h1>Terms of service</h1>
+    <p class="updated">Last updated: August 2026</p>
+
+    <p class="note">
+      This is a translation for convenience. The contract is governed by Bulgarian law, and in
+      case of any discrepancy the <a href="/terms/">Bulgarian version</a> prevails.
+    </p>
+
+    <h2>Who is behind this site</h2>
+    <p>
+      The services on this site are provided by {who}, Sofia, Bulgaria. Contact:
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+
+    <h2>How a project is agreed</h2>
+    <p>
+      Every project starts with a free call and a written one-page quote — a concrete scope,
+      deadline and price. Work begins after written confirmation of the quote. An invoice is
+      issued for every project.
+    </p>
+
+    <h2>Payments</h2>
+    <p>
+      Payment is made in stages: an advance at the start and the balance on delivery of the agreed
+      stages. The exact schedule is set out in the quote. For AI solutions and applications, the
+      recurring monthly costs for servers and models are stated in the quote in advance.
+    </p>
+
+    <h2>Changes of scope</h2>
+    <p>
+      New requirements arising during a project are described and priced separately before any
+      work is done on them, so neither side is left with unclear expectations.
+    </p>
+
+    <h2>Ownership of the code</h2>
+    <p>
+      After the final payment, the source code, the design and the project data become the
+      property of the client. Open-source components and third-party licences are the exception
+      and keep their own terms.
+    </p>
+
+    <h2>Support</h2>
+    <p>
+      The scope and duration of the included support are set out in the quote. Support covers
+      monitoring, bug fixing and minor changes; larger developments are agreed as separate stages.
+    </p>
+
+    <h2>Limitations of AI solutions</h2>
+    <p>
+      AI models can get things wrong. That is why every AI solution begins with a limited pilot
+      that measures its accuracy and its practical value. Systems are designed so that results can
+      be checked by a person before being used for important decisions.
+    </p>
+
+    <h2>Liability</h2>
+    <p>
+      Liability on any project is limited to the amount paid under the relevant contract, unless
+      applicable law provides otherwise.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .note {
+    background: var(--bg-blush);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 12px 12px 0;
+    font-size: 15px;
+  }
+</style>

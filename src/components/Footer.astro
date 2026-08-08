@@ -1,5 +1,13 @@
 ---
 import { SITE } from '../data/site.mjs';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { cta, legalName, nav, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+/* Същата навигация като горе плюс контактите — на английски анализаторът
+   и блогът просто липсват, защото ги няма на този език. */
+const links = [...nav(lang).filter((item) => item.href !== '/'), cta(lang)];
 
 const year = new Date().getFullYear();
 ---
@@ -11,37 +19,32 @@ const year = new Date().getFullYear();
         <span class="brand__mark" aria-hidden="true">К</span>
         <span class="brand__name">{SITE.name}</span>
       </p>
-      <p class="muted">{SITE.legalName}</p>
-      <p class="muted">{SITE.location} · Работа с клиенти от цялата страна</p>
+      <p class="muted">{legalName(lang)}</p>
+      <p class="muted">{SITE.location} {t.footer.reach}</p>
     </div>
 
     <div class="col">
-      <p class="col__title">Контакт</p>
+      <p class="col__title">{t.footer.contactTitle}</p>
       <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
       <a href={SITE.owner.linkedin} rel="me noopener" target="_blank">LinkedIn</a>
     </div>
 
-    <nav class="col" aria-label="Долна навигация">
-      <p class="col__title">Навигация</p>
-      <a href="/#services">Услуги</a>
-      <a href="/agents/">AI агенти</a>
-      <a href="/projects/">Проекти</a>
-      <a href="/analyzer/">Анализатор</a>
-      <a href="/blog/">Блог</a>
-      <a href="/contact/">Контакти</a>
+    <nav class="col" aria-label={t.footer.nav}>
+      <p class="col__title">{t.footer.navTitle}</p>
+      {links.map((item) => <a href={localised(item.href, lang)}>{item.label}</a>)}
     </nav>
 
     <div class="col">
-      <p class="col__title">Условия</p>
-      <a href="/terms/">Общи условия</a>
-      <a href="/privacy/">Политика за поверителност</a>
-      <a href="/cookies/">Политика за бисквитки</a>
-      <p class="muted">Всеки проект — с писмена оферта, договор и фактура.</p>
+      <p class="col__title">{t.footer.termsTitle}</p>
+      <a href={localised('/terms/', lang)}>{t.footer.terms}</a>
+      <a href={localised('/privacy/', lang)}>{t.footer.privacy}</a>
+      <a href={localised('/cookies/', lang)}>{t.footer.cookies}</a>
+      <p class="muted">{t.footer.promise}</p>
     </div>
   </div>
 
   <div class="container bottom">
-    <p class="muted">© {year} {SITE.name}. Всички права запазени.</p>
+    <p class="muted">© {year} {SITE.name}{t.footer.rights}</p>
   </div>
 </footer>
 

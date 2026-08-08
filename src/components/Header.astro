@@ -1,14 +1,27 @@
 ---
-import { SITE, NAV, CTA } from '../data/site.mjs';
+import { SITE } from '../data/site.mjs';
+import { href as localised, localeOf, pathForLocale } from '../i18n/index.ts';
+import { cta, nav, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const NAV = nav(lang);
+const CTA = cta(lang);
 
 const path = Astro.url.pathname;
+/** Сравнява без езиковия префикс, за да работи и на двата езика. */
+const bare = path.replace(/^\/en(?=\/|$)/, '') || '/';
 const isCurrent = (href: string) =>
-  href === '/' ? path === '/' : !href.startsWith('/#') && path.startsWith(href);
+  href === '/' ? bare === '/' : !href.startsWith('/#') && bare.startsWith(href);
+
+const other = lang === 'bg' ? 'en' : 'bg';
+const switchTo = { href: pathForLocale(path, other), label: other === 'en' ? 'EN' : 'BG' };
+const switchLabel = other === 'en' ? 'Switch to English' : 'Смени на български';
 ---
 
 <header class="site-header">
   <div class="container bar">
-    <a class="brand" href="/" aria-label={`${SITE.name} — начало`}>
+    <a class="brand" href={localised('/', lang)} aria-label={`${SITE.name} — ${t.header.home}`}>
       <span class="brand__mark" aria-hidden="true">К</span>
       <span class="brand__name">{SITE.shortName}</span>
       <span class="brand__suffix">{SITE.suffix}</span>
@@ -19,26 +32,37 @@ const isCurrent = (href: string) =>
       type="button"
       aria-expanded="false"
       aria-controls="site-nav"
-      aria-label="Отвори менюто"
+      aria-label={t.header.open}
+      data-open-label={t.header.open}
+      data-close-label={t.header.close}
       data-nav-toggle
     >
       <span aria-hidden="true"></span>
       <span aria-hidden="true"></span>
     </button>
 
-    <nav id="site-nav" class="nav" aria-label="Основна навигация">
+    <nav id="site-nav" class="nav" aria-label={t.header.nav}>
       {
         NAV.map((item) => (
           <a
             class="nav__link"
-            href={item.href}
+            href={localised(item.href, lang)}
             aria-current={isCurrent(item.href) ? 'page' : undefined}
           >
             {item.label}
           </a>
         ))
       }
-      <a class="nav__cta" href={CTA.href} aria-current={isCurrent(CTA.href) ? 'page' : undefined}>
+      {/* Езикът стои до основното действие — най-търсеното място, а и не
+          конкурира навигацията за внимание. */}
+      <a class="nav__lang" href={switchTo.href} hreflang={other} aria-label={switchLabel}>
+        {switchTo.label}
+      </a>
+      <a
+        class="nav__cta"
+        href={localised(CTA.href, lang)}
+        aria-current={isCurrent(CTA.href) ? 'page' : undefined}
+      >
         {CTA.label}
       </a>
     </nav>
@@ -117,6 +141,24 @@ const isCurrent = (href: string) =>
   .nav__link:hover,
   .nav__link[aria-current='page'] {
     color: var(--ink);
+  }
+
+  .nav__lang {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 6px 11px;
+    transition:
+      border-color 0.16s ease,
+      color 0.16s ease;
+  }
+
+  .nav__lang:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .nav__cta {
@@ -210,9 +252,13 @@ const isCurrent = (href: string) =>
   const nav = document.getElementById('site-nav');
 
   if (toggle && nav) {
+    // Надписите идват от разметката, за да са на езика на страницата.
+    const openLabel = toggle.dataset.openLabel ?? 'Отвори менюто';
+    const closeLabel = toggle.dataset.closeLabel ?? 'Затвори менюто';
+
     const setOpen = (open: boolean) => {
       toggle.setAttribute('aria-expanded', String(open));
-      toggle.setAttribute('aria-label', open ? 'Затвори менюто' : 'Отвори менюто');
+      toggle.setAttribute('aria-label', open ? closeLabel : openLabel);
       nav.toggleAttribute('data-open', open);
     };
 

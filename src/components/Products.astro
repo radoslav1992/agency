@@ -1,20 +1,24 @@
 ---
-import { PRODUCTS_FEATURED } from '../data/cases.ts';
-import { PROJECTS } from '../data/projects.ts';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { cases, projects as projectsFor, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { PRODUCTS_FEATURED } = cases(lang);
+const { PROJECTS } = projectsFor(lang);
 
 /** Единствената продуктова секция на началната страница — без дублиране. */
-const allLabel = `Всички ${PROJECTS.length} проекта →`;
+const allLabel = t.products.all(PROJECTS.length);
 ---
 
 <section id="products" class="products container">
   <header class="head">
     <div>
-      <p class="eyebrow">Проекти</p>
-      <h2 class="section-title">Работещи проекти, които можеш да отвориш</h2>
+      <p class="eyebrow">{t.products.eyebrow}</p>
+      <h2 class="section-title">{t.products.title}</h2>
     </div>
     <p class="head__note">
-      Повечето са поръчани от клиенти, две са мои собствени продукти — пише го на всяка карта.
-      Всичките са публични и работят в момента.
+      {t.products.note}
     </p>
   </header>
 
@@ -27,21 +31,21 @@ const allLabel = `Всички ${PROJECTS.length} проекта →`;
               {item.name} <span class="product__domain">· {item.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</span> ↗
             </a>
             <span class:list={['product__origin', item.own && 'product__origin--own']}>
-              {item.own ? 'Собствен продукт' : 'Клиентски проект'}
+              {item.own ? t.products.own : t.products.client}
             </span>
           </div>
 
           <dl class="product__rows">
             <div class="product__row">
-              <dt>Проблемът</dt>
+              <dt>{t.products.problem}</dt>
               <dd>{item.problem}</dd>
             </div>
             <div class="product__row">
-              <dt>Решението</dt>
+              <dt>{t.products.solution}</dt>
               <dd>{item.solution}</dd>
             </div>
             <div class="product__row">
-              <dt>Как работи</dt>
+              <dt>{t.products.how}</dt>
               <dd>{item.under}</dd>
             </div>
           </dl>
@@ -53,7 +57,7 @@ const allLabel = `Всички ${PROJECTS.length} проекта →`;
   </div>
 
   <p class="foot">
-    <a class="foot__link" href="/projects/">{allLabel}</a>
+    <a class="foot__link" href={localised('/projects/', lang)}>{allLabel}</a>
   </p>
 </section>
 

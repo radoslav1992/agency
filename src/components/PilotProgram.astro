@@ -1,23 +1,25 @@
 ---
 /** Пилотната програма — една секция, без повторение при цените. */
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
 ---
 
 <section class="pilot-wrap container">
   <div class="pilot">
     <div>
-      <p class="eyebrow">Пилотна програма</p>
-      <h2 class="pilot__title">Три свободни места</h2>
+      <p class="eyebrow">{t.pilot.eyebrow}</p>
+      <h2 class="pilot__title">{t.pilot.title}</h2>
       <p class="pilot__text">
-        Имаш идея за автоматизация, но първо искаш да се увериш, че работи? Отварям три места за
-        компании, които да проверят конкретен процес с реални данни. За пилота цената е с 20%
-        по-ниска.
+        {t.pilot.body}
       </p>
       <p class="pilot__text">
-        Накрая получаваш работещ прототип и ясна препоръка — има ли смисъл да се продължава. Ако
-        резултатът стане за казус, го публикувам само с твоето одобрение.
+        {t.pilot.note}
       </p>
     </div>
-    <a class="btn btn--primary pilot__cta" href="/contact/">Заяви място в пилотната програма →</a>
+    <a class="btn btn--primary pilot__cta" href={localised('/contact/', lang)}>{t.pilot.cta}</a>
   </div>
 </section>
 

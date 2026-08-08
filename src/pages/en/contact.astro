@@ -1,0 +1,197 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ContactForm from '../../components/ContactForm.astro';
+import { SITE } from '../../data/site.mjs';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Get in touch with Kova Studio — an AI agent, automation, an internal system, a business website or training. I read every enquiry myself and reply within one working day."
+  canonical="/en/contact/"
+>
+  <div class="container wrap">
+    <div class="lead-col">
+      <p class="eyebrow">Contact</p>
+      <h1 class="title">Let's find out whether I can help.</h1>
+      <p class="lead">
+        Tell me briefly how the process runs today and what you want to improve. I read every
+        enquiry myself and reply within one working day.
+      </p>
+      <ContactForm />
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <p class="panel__title panel__title--ink">What happens next?</p>
+        <p class="panel__text">
+          I read the enquiry myself and reply within one working day. If the project is a fit, we
+          arrange a free 30-minute call. After it you get a short quote with a concrete scope,
+          deadline and price.
+        </p>
+        <p class="panel__text">
+          If I think a different approach or a different specialist suits you better, I will say so.
+        </p>
+      </div>
+
+      <div class="panel panel--dark">
+        <p class="panel__title">Prefer email?</p>
+        <p class="panel__label">General enquiries</p>
+        <a class="panel__link" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        <p class="panel__label">Straight to Radoslav</p>
+        <a class="panel__link" href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>
+        <a class="panel__link panel__link--secondary" href={SITE.owner.linkedin} target="_blank" rel="noopener">
+          {SITE.owner.linkedinLabel}
+        </a>
+      </div>
+
+      <div class="panel">
+        <p class="panel__title panel__title--ink">A free 30-minute call</p>
+        <p class="panel__text">
+          The call is free and commits you to nothing. We can talk online, or meet in Sofia if you
+          happen to be here.
+        </p>
+        <a
+          class="panel__cta"
+          href={SITE.bookingUrl ?? `mailto:${SITE.owner.email}?subject=${encodeURIComponent('30-minute call')}`}
+          {...SITE.bookingUrl ? { target: '_blank', rel: 'noopener' } : {}}
+        >
+          {SITE.bookingUrl ? 'Pick a slot in the calendar' : 'Suggest a time'}
+        </a>
+      </div>
+
+      <div class="panel">
+        <p class="panel__address">Kova Studio is based in Sofia, Bulgaria. I work remotely with clients across Europe.
+        </p>
+      </div>
+    </aside>
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: 76px 96px;
+    display: grid;
+    grid-template-columns: 1fr 0.85fr;
+    gap: 56px;
+    align-items: start;
+  }
+
+  .title {
+    font-size: clamp(32px, 5.5vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    margin: 12px 0 14px;
+  }
+
+  .lead {
+    font-size: 18px;
+    color: var(--ink-muted);
+    margin: 0 0 34px;
+    max-width: 520px;
+  }
+
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 24px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 28px;
+  }
+
+  .panel--dark {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #fff;
+  }
+
+  .panel__title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 0 0 16px;
+  }
+
+  .panel__title--ink {
+    margin-bottom: 10px;
+  }
+
+  .panel__link {
+    display: block;
+    font-size: 16px;
+    color: #fff;
+    word-break: break-word;
+  }
+
+  .panel__link:hover {
+    color: var(--accent-soft);
+    text-decoration: underline;
+  }
+
+  .panel__label {
+    font-size: 12.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 14px 0 4px;
+  }
+
+  .panel__label:first-of-type {
+    margin-top: 0;
+  }
+
+  .panel__link--secondary {
+    margin-top: 14px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .panel__text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 0 0 16px;
+  }
+
+  .panel__cta {
+    display: inline-block;
+    border: 1px solid var(--ink);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .panel__cta:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .panel__address {
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  @media (max-width: 940px) {
+    .wrap {
+      grid-template-columns: 1fr;
+      gap: 32px;
+      padding-block: 48px 64px;
+    }
+
+    .side {
+      padding-top: 0;
+    }
+  }
+</style>

@@ -1,11 +1,16 @@
 ---
-import { PROCESS, TERMS } from '../data/content.ts';
+import { localeOf } from '../i18n/index.ts';
+import { content, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { PROCESS, TERMS } = content(lang);
 ---
 
 <section class="process container">
   <header class="head">
-    <p class="eyebrow">Процес</p>
-    <h2 class="section-title">Как протича работата</h2>
+    <p class="eyebrow">{t.process.eyebrow}</p>
+    <h2 class="section-title">{t.process.title}</h2>
   </header>
 
   <ol class="steps">
@@ -21,7 +26,7 @@ import { PROCESS, TERMS } from '../data/content.ts';
   </ol>
 
   <div class="terms">
-    <h3 class="terms__title">Важните условия — ясни още в началото</h3>
+    <h3 class="terms__title">{t.process.terms}</h3>
     {/* Акордеон, затворен по подразбиране — иначе яде половин екран. */}
     <div class="terms__list">
       {

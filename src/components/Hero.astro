@@ -2,6 +2,12 @@
 import { Image } from 'astro:assets';
 import heroPortrait from '../assets/hero-portrait.png';
 import { SITE } from '../data/site.mjs';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { owner, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const who = owner(lang);
 ---
 
 <section class="hero container">
@@ -16,34 +22,31 @@ import { SITE } from '../data/site.mjs';
     }
 
     <h1 class="hero__title">
-      Автоматизирам работата, която екипът ти още <span class="accent">върши на ръка</span>.
+      {t.hero.titleLead} <span class="accent">{t.hero.titleAccent}</span>.
     </h1>
 
     {/* „Готови агенти“ + „по мярка“ нарочно заедно: въртележката отдолу продава
         пакетираните, но вътрешните системи не са агенти и не бива да изпаднат. */}
-    <p class="hero__lead">
-      Готови AI агенти и решения по мярка, които спестяват време на екипа, свалят разходите за
-      ръчна работа и работят 24/7.
-    </p>
+    <p class="hero__lead">{t.hero.lead}</p>
 
     <div class="hero__actions">
-      <a class="btn btn--primary" href="/contact/">Запази безплатен разговор</a>
-      <a class="btn btn--outline" href="/#services">Виж как работя</a>
+      <a class="btn btn--primary" href={localised('/contact/', lang)}>{t.hero.ctaPrimary}</a>
+      <a class="btn btn--outline" href={localised('/#services', lang)}>{t.hero.ctaSecondary}</a>
     </div>
-    <p class="hero__subnote">
-      30 минути, без ангажимент. Ако процесът ти не става за автоматизация, ще ти го кажа в
-      разговора.
-    </p>
+    <p class="hero__subnote">{t.hero.subnote}</p>
 
-    <p class="hero__analyzer">
-      Имаш сайт? <a href="/analyzer/">Провери го безплатно за 15 секунди →</a>
-    </p>
+    {/* Анализаторът съществува само на български, затова редът към него
+        се показва само там — връзка, която сменя езика под краката на
+        читателя, е по-лоша от липсваща връзка. */}
+    {
+      t.hero.analyzerQ && (
+        <p class="hero__analyzer">
+          {t.hero.analyzerQ} <a href="/analyzer/">{t.hero.analyzerA}</a>
+        </p>
+      )
+    }
 
-    <ul class="hero__facts">
-      <li>🤝 Работиш с мен, не с акаунт мениджър</li>
-      <li>🧪 Тръгваме с малък пилот, преди да влагаш бюджет</li>
-      <li>🎯 Целта, срокът и цената са ясни от офертата</li>
-    </ul>
+    <ul class="hero__facts">{t.hero.facts.map((fact) => <li>{fact}</li>)}</ul>
   </div>
 
   <div class="hero__media">
@@ -51,15 +54,15 @@ import { SITE } from '../data/site.mjs';
     <Image
       class="hero__image"
       src={heroPortrait}
-      alt={SITE.owner.name}
+      alt={who.name}
       widths={[420, 640, 900]}
       sizes="(max-width: 900px) 90vw, 440px"
       loading="eager"
       fetchpriority="high"
     />
     <div class="hero__badge">
-      <p class="hero__badge-name">{SITE.owner.name}</p>
-      <p class="hero__badge-role">{SITE.owner.role}</p>
+      <p class="hero__badge-name">{who.name}</p>
+      <p class="hero__badge-role">{who.role}</p>
     </div>
   </div>
 </section>
