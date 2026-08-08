@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import logoMark from '../assets/brand/logo-mark.webp';
 import { SITE, NAV, CTA } from '../data/site.mjs';
 
 const path = Astro.url.pathname;
@@ -9,7 +11,16 @@ const isCurrent = (href: string) =>
 <header class="site-header">
   <div class="container bar">
     <a class="brand" href="/" aria-label={`${SITE.name} — начало`}>
-      <span class="brand__mark" aria-hidden="true">К</span>
+      {/* Марката е декоративна: името на студиото стои като текст веднага
+          след нея, а линкът си има aria-label. */}
+      <Image
+        class="brand__mark"
+        src={logoMark}
+        alt=""
+        widths={[30, 60, 90]}
+        sizes="30px"
+        loading="eager"
+      />
       <span class="brand__name">{SITE.shortName}</span>
       <span class="brand__suffix">{SITE.suffix}</span>
     </a>
@@ -75,17 +86,12 @@ const isCurrent = (href: string) =>
     color: var(--ink);
   }
 
+  /* Логото си носи заобления квадрат и цвета — тук само размерът. */
   .brand__mark {
     width: 30px;
     height: 30px;
-    border-radius: 9px;
-    background: var(--accent);
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 15px;
+    flex: none;
+    display: block;
   }
 
   .brand__name {
