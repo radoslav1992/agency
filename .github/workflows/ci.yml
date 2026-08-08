@@ -1,0 +1,45 @@
+# Пуска се при всяко бутане и при всяко PR — само проверява, че проектът се
+# компилира и че типовете са наред.
+#
+# Не публикува. Публикуването се прави от самия Cloudflare, който сам следи
+# хранилището и си строи от изходния код. Тук имаше и втора задача, която
+# качваше през wrangler; тя се проваляше от 4 август, защото
+# CLOUDFLARE_API_TOKEN така и не беше зададен. Ремонтът ѝ би бил грешният
+# ход: два независими пътя към една и съща услуга рано или късно качват
+# различни версии една върху друга. Затова остава един път, а тук —
+# проверката, която пази PR-ите.
+name: Build & type-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Build
+        run: npm run build

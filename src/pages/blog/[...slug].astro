@@ -1,6 +1,8 @@
 ---
 import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
 import { render } from 'astro:content';
+import logoMark from '../../assets/brand/logo-mark.webp';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getPosts, formatDate } from '../../lib/posts.ts';
 import { SITE } from '../../data/site.mjs';
@@ -59,7 +61,15 @@ const articleSchema = {
 
     <footer class="foot">
       <div class="author">
-        <span class="author__mark" aria-hidden="true">К</span>
+        {/* Декоративна: името на автора стои като текст веднага след нея. */}
+        <Image
+          class="author__mark"
+          src={logoMark}
+          alt=""
+          widths={[38, 76, 114]}
+          sizes="38px"
+          loading="lazy"
+        />
         <span>
           <span class="author__name">{SITE.owner.name}</span>
           <span class="author__role">{SITE.owner.role}</span>
@@ -166,18 +176,12 @@ const articleSchema = {
     gap: 12px;
   }
 
+  /* Логото си носи заобления квадрат и цвета — тук само размерът. */
   .author__mark {
     width: 38px;
     height: 38px;
-    border-radius: 12px;
-    background: var(--accent);
-    color: #fff;
-    display: grid;
-    place-items: center;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 16px;
     flex: none;
+    display: block;
   }
 
   .author__name {

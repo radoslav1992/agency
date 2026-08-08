@@ -48,8 +48,34 @@ export function href(path: string, locale: Locale): string {
   return `${prefix(locale)}${path}`;
 }
 
-/** Езиковите двойки за `hreflang` в `<head>`. */
+/**
+ * Страниците, които съществуват и на двата езика.
+ *
+ * Анализаторът, блогът и /research са само на български. Без този списък
+ * `hreflang` сочеше към `/en/analyzer/` и подобни, които връщат 404 — а
+ * `hreflang` към несъществуваща страница е грешка, която Search Console
+ * отчита. Същият списък пази и превключвателя да не води в нищото.
+ */
+const TRANSLATED = ['/', '/agents/', '/projects/', '/contact/', '/terms/', '/privacy/', '/cookies/'];
+
+/** Пътят без езиков префикс — за сравнение между двата езика. */
+export function barePath(pathname: string): string {
+  return pathname.replace(/^\/en(?=\/|$)/, '') || '/';
+}
+
+/** Има ли тази страница вариант на другия език. */
+export function hasTranslation(pathname: string): boolean {
+  return TRANSLATED.includes(barePath(pathname));
+}
+
+/**
+ * Езиковите двойки за `hreflang` в `<head>`.
+ *
+ * Върху непреведена страница връща само нейния собствен език: една самотна
+ * двойка не носи информация, но погрешната води робота в 404.
+ */
 export function alternates(pathname: string): { locale: Locale; hreflang: string; path: string }[] {
+  if (!hasTranslation(pathname)) return [];
   return [
     { locale: 'bg', hreflang: 'bg', path: pathForLocale(pathname, 'bg') },
     { locale: 'en', hreflang: 'en', path: pathForLocale(pathname, 'en') },

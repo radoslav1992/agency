@@ -1,6 +1,8 @@
 ---
+import { Image } from 'astro:assets';
+import logoMark from '../assets/brand/logo-mark.webp';
 import { SITE } from '../data/site.mjs';
-import { href as localised, localeOf, pathForLocale } from '../i18n/index.ts';
+import { hasTranslation, href as localised, localeOf, pathForLocale } from '../i18n/index.ts';
 import { cta, nav, ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
@@ -14,15 +16,35 @@ const bare = path.replace(/^\/en(?=\/|$)/, '') || '/';
 const isCurrent = (href: string) =>
   href === '/' ? bare === '/' : !href.startsWith('/#') && bare.startsWith(href);
 
+/*
+ * Анализаторът, блогът и /research ги няма на английски. Оттам
+ * превключвателят води към началната страница на другия език, вместо към
+ * 404 — а надписът го казва, за да не изглежда като счупена връзка.
+ */
 const other = lang === 'bg' ? 'en' : 'bg';
-const switchTo = { href: pathForLocale(path, other), label: other === 'en' ? 'EN' : 'BG' };
-const switchLabel = other === 'en' ? 'Switch to English' : 'Смени на български';
+const paired = hasTranslation(path);
+const switchTo = {
+  href: paired ? pathForLocale(path, other) : `${other === 'en' ? '/en/' : '/'}`,
+  label: other === 'en' ? 'EN' : 'BG',
+};
+const switchLabel = other === 'en'
+  ? (paired ? 'Switch to English' : 'This page is Bulgarian only — go to the English home page')
+  : (paired ? 'Смени на български' : 'Тази страница я има само на английски — към българската начална');
 ---
 
 <header class="site-header">
   <div class="container bar">
     <a class="brand" href={localised('/', lang)} aria-label={`${SITE.name} — ${t.header.home}`}>
-      <span class="brand__mark" aria-hidden="true">К</span>
+      {/* Марката е декоративна: името на студиото стои като текст веднага
+          след нея, а линкът си има aria-label. */}
+      <Image
+        class="brand__mark"
+        src={logoMark}
+        alt=""
+        widths={[30, 60, 90]}
+        sizes="30px"
+        loading="eager"
+      />
       <span class="brand__name">{SITE.shortName}</span>
       <span class="brand__suffix">{SITE.suffix}</span>
     </a>
@@ -99,17 +121,12 @@ const switchLabel = other === 'en' ? 'Switch to English' : 'Смени на бъ
     color: var(--ink);
   }
 
+  /* Логото си носи заобления квадрат и цвета — тук само размерът. */
   .brand__mark {
     width: 30px;
     height: 30px;
-    border-radius: 9px;
-    background: var(--accent);
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 15px;
+    flex: none;
+    display: block;
   }
 
   .brand__name {
