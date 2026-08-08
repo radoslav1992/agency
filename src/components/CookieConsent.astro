@@ -11,23 +11,27 @@ import { SITE } from '../data/site.mjs';
  * `data-cookie-reset`).
  */
 const gaId = SITE.gaId;
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
 ---
 
 {
   gaId && (
     <>
-      <div class="cookie" data-cookie-banner hidden role="region" aria-label="Съгласие за бисквитки">
+      <div class="cookie" data-cookie-banner hidden role="region" aria-label={t.cookies.label}>
         <p class="cookie__text">
-          Използвам Google Analytics, за да разбирам кои страници са полезни. Аналитични бисквитки
-          се поставят само със съгласието ти —
-          <a href="/cookies/">виж политиката за бисквитки</a>.
+          {t.cookies.bodyA}
+          <a href={localised('/cookies/', lang)}>{t.cookies.link}</a>.
         </p>
         <div class="cookie__actions">
           <button class="cookie__btn cookie__btn--accept" type="button" data-cookie-accept>
-            Приемам
+            {t.cookies.accept}
           </button>
           <button class="cookie__btn cookie__btn--decline" type="button" data-cookie-decline>
-            Отказвам
+            {t.cookies.decline}
           </button>
         </div>
       </div>

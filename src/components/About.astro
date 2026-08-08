@@ -1,8 +1,13 @@
 ---
 import { Image } from 'astro:assets';
 import stageImage from '../assets/stage-talk.png';
-import { ABOUT } from '../data/content.ts';
-import { PROJECTS } from '../data/projects.ts';
+import { localeOf } from '../i18n/index.ts';
+import { content, projects as projectsFor, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { ABOUT } = content(lang);
+const { PROJECTS } = projectsFor(lang);
 
 /**
  * Броят проекти се смята от списъка, а не се преписва на ръка — точно това
@@ -11,10 +16,7 @@ import { PROJECTS } from '../data/projects.ts';
  * „Опит:“, която го повтаряше над същия текст.
  */
 const clientCount = PROJECTS.filter((p) => !p.own).length;
-const stats = [
-  ...ABOUT.stats,
-  { value: String(PROJECTS.length), label: `пуснати проекта — ${clientCount} от тях за клиенти` },
-];
+const stats = [...ABOUT.stats, t.about.projectsStat(PROJECTS.length, clientCount)];
 ---
 
 <section id="about" class="about">
@@ -23,7 +25,7 @@ const stats = [
       <Image
         class="figure__image"
         src={stageImage}
-        alt="Радослав Додников на сцената на техническа конференция"
+        alt={t.about.imageAlt}
         widths={[400, 620, 900]}
         sizes="(max-width: 900px) 90vw, 460px"
         loading="lazy"
@@ -32,7 +34,7 @@ const stats = [
     </figure>
 
     <div class="copy">
-      <p class="eyebrow">За мен</p>
+      <p class="eyebrow">{t.about.eyebrow}</p>
       <h2 class="section-title">{ABOUT.heading}</h2>
       {ABOUT.paragraphs.map((text) => <p class="copy__text">{text}</p>)}
 

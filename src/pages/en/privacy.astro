@@ -1,0 +1,89 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../data/site.mjs';
+import { localeOf } from '../../i18n/index.ts';
+import { legalName } from '../../i18n/content.ts';
+
+const who = legalName(localeOf(Astro.currentLocale));
+
+/** Превод на българската политика; българският текст остава меродавен. */
+---
+
+<BaseLayout
+  title="Privacy policy"
+  description="What information the Kova Studio site collects, why, and for how long."
+  canonical="/en/privacy/"
+>
+  <div class="container legal">
+    <p class="eyebrow">Terms</p>
+    <h1>Privacy policy</h1>
+    <p class="updated">Last updated: August 2026</p>
+
+    <p class="note">
+      This is a translation for convenience. In case of any discrepancy the
+      <a href="/privacy/">Bulgarian version</a> prevails.
+    </p>
+
+    <h2>Controller</h2>
+    <p>
+      The controller of personal data collected through this site is {who}, Sofia,
+      Bulgaria. Contact: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+
+    <h2>What is collected, and why</h2>
+    <ul>
+      <li>
+        <strong>Contact form</strong> — name, email and the text of the enquiry. Used solely to
+        reply to the enquiry, and stored only in the business mailbox.
+      </li>
+      <li>
+        <strong>Site analyser</strong> — the analysis runs in real time and the result is not
+        stored on the server. No email or registration is required to use it. The analyser is
+        available in Bulgarian only.
+      </li>
+      <li>
+        <strong>Sending a report for personal review</strong> — optional, after a completed
+        analysis. The name, email, message and the analysis results are sent. Used solely to reply
+        to the enquiry, and stored only in the business mailbox.
+      </li>
+      <li>
+        <strong>Analytics (Google Analytics 4)</strong> — analytics cookies are set only after
+        consent via the cookie banner. Without consent, only anonymous signals are sent, with no
+        cookies and no identifiers (Google Consent Mode). Aggregated visit statistics are
+        collected and are not linked to any individual enquiry. Details are in the
+        <a href="/en/cookies/">cookie policy</a>.
+      </li>
+    </ul>
+    <p>The site does not sell or share personal data with third parties for marketing purposes.</p>
+
+    <h2>Where the data is processed</h2>
+    <p>
+      The site runs on Cloudflare infrastructure, and enquiries from the contact form are
+      delivered by email through Cloudflare Email Routing.
+    </p>
+
+    <h2>How long the data is kept</h2>
+    <p>
+      Correspondence about enquiries is kept for as long as it is needed to reply and for any
+      project that follows. Deletion can be requested at any time.
+    </p>
+
+    <h2>Your rights</h2>
+    <p>
+      Under the GDPR you have the right to access, rectify, erase and restrict the processing of
+      your personal data, and the right to lodge a complaint with the Bulgarian Commission for
+      Personal Data Protection. Requests under these rights should be sent to
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .note {
+    background: var(--bg-blush);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 12px 12px 0;
+    font-size: 15px;
+  }
+</style>

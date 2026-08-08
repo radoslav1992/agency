@@ -1,20 +1,24 @@
 ---
 import { SITE } from '../data/site.mjs';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
 ---
 
 <section class="cta container">
   <div class="panel">
     <div>
-      <h2 class="panel__title">Имаш процес, който яде твърде много време?</h2>
+      <h2 class="panel__title">{t.cta.title}</h2>
       <p class="panel__lead">
-        Разкажи ми как върви в момента. Ще ти кажа дали може да се автоматизира и откъде е
-        разумно да се започне. Ако не съм подходящият човек, ще ти го кажа още в разговора.
+        {t.cta.body}
       </p>
     </div>
     <div class="panel__actions">
-      <a class="action action--ink" href="/contact/">Запази безплатен разговор</a>
+      <a class="action action--ink" href={localised('/contact/', lang)}>{t.cta.button}</a>
       <a class="action action--ghost" href={`mailto:${SITE.email}`}>{SITE.email}</a>
-      <p class="panel__subnote">30 минути. Не се иска подготовка — покажи ми процеса както си е.</p>
+      <p class="panel__subnote">{t.cta.note}</p>
     </div>
   </div>
 </section>

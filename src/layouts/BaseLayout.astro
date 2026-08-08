@@ -7,6 +7,8 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import { SITE } from '../data/site.mjs';
+import { alternates, HTML_LANG, localeOf, OG_LOCALE } from '../i18n/index.ts';
+import { meta, ui } from '../i18n/content.ts';
 
 interface Props {
   title?: string;
@@ -17,21 +19,33 @@ interface Props {
   noindex?: boolean;
 }
 
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const m = meta(lang);
+
 const {
   title,
-  description = SITE.description,
+  description = m.description,
   canonical,
   ogType = 'website',
   noindex = false,
 } = Astro.props;
 
-const pageTitle = title ? `${title} — ${SITE.name}` : SITE.title;
+const pageTitle = title ? `${title} — ${SITE.name}` : m.title;
 const canonicalUrl = new URL(canonical ?? Astro.url.pathname, Astro.site ?? Astro.url.origin);
 const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
+
+/**
+ * `hreflang` за двата езика плюс `x-default`. Каноничният адрес на всяка
+ * страница сочи себе си, а двойките казват на търсачките, че това е един и
+ * същ документ на два езика — иначе се броят като дублирано съдържание.
+ */
+const langAlternates = alternates(Astro.url.pathname);
+const origin = Astro.site ?? Astro.url.origin;
 ---
 
 <!doctype html>
-<html lang={SITE.lang}>
+<html lang={HTML_LANG[lang]}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -68,6 +82,17 @@ const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
     <link rel="canonical" href={canonicalUrl} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
+    {
+      langAlternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.hreflang} href={new URL(alt.path, origin).href} />
+      ))
+    }
+    {
+      langAlternates.length > 0 && (
+        <link rel="alternate" hreflang="x-default" href={new URL('/', origin).href} />
+      )
+    }
+
     {/*
       Растер, не SVG. Досегашният favicon.svg рисуваше буквата „К“ с шрифт;
       новата марка е собствена геометрия, която не се получава от текст, а
@@ -83,18 +108,18 @@ const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
 
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.name} />
-    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="alternate" type="application/rss+xml" title={`Блог — ${SITE.name}`} href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${t.layout.blogTitle} — ${SITE.name}`} href="/rss.xml" />
     <slot name="head" />
   </head>
   <body>
-    <a class="skip-link" href="#main">Към съдържанието</a>
+    <a class="skip-link" href="#main">{t.layout.skip}</a>
     <Header />
     <main id="main">
       <slot />

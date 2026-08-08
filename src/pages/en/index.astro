@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/Hero.astro';
+import AgentCarousel from '../../components/AgentCarousel.astro';
+import Services from '../../components/Services.astro';
+import Process from '../../components/Process.astro';
+import About from '../../components/About.astro';
+import Products from '../../components/Products.astro';
+import PilotProgram from '../../components/PilotProgram.astro';
+import Pricing from '../../components/Pricing.astro';
+import CtaBanner from '../../components/CtaBanner.astro';
+import { SITE } from '../../data/site.mjs';
+import { localeOf } from '../../i18n/index.ts';
+import { content, meta } from '../../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const { TERMS } = content(lang);
+const m = meta(lang);
+
+/** Set to `false` to hide the pricing section site-wide (the design's `showPricing` prop). */
+const SHOW_PRICING = true;
+
+/**
+ * Един @graph с няколко възела вместо самотен ProfessionalService:
+ * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка), а
+ * FAQPage изкарва секцията с условията като двойки въпрос/отговор, които
+ * отговарящите машини цитират директно. Въпросите идват от `TERMS`, за да
+ * не се разминават с акордеона на страницата.
+ */
+const studioId = `${SITE.url}/#studio`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': ['Organization', 'ProfessionalService'],
+      '@id': studioId,
+      name: SITE.name,
+      description: m.description,
+      url: SITE.url,
+      email: SITE.email,
+      foundingDate: String(SITE.founded),
+      areaServed: 'BG',
+      address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },
+      founder: {
+        '@type': 'Person',
+        name: SITE.owner.name,
+        jobTitle: 'Senior AI Data Engineer',
+        email: SITE.owner.email,
+        sameAs: [SITE.owner.linkedin],
+      },
+      knowsLanguage: ['bg', 'en'],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE.url}/en/#website`,
+      url: `${SITE.url}/en/`,
+      name: SITE.name,
+      inLanguage: 'en',
+      publisher: { '@id': studioId },
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${SITE.url}/en/#faq`,
+      mainEntity: TERMS.map((term) => ({
+        '@type': 'Question',
+        name: term.title,
+        acceptedAnswer: { '@type': 'Answer', text: term.body },
+      })),
+    },
+  ],
+};
+---
+
+<BaseLayout canonical="/en/">
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structuredData)}
+    />
+  </Fragment>
+
+  {/* Същият ред като на български, без двете секции, които съществуват
+      само на български — анализаторът и блогът. */}
+  <Hero />
+  <AgentCarousel />
+  <Services />
+  <Process />
+  <About />
+  <Products />
+  <PilotProgram />
+  {SHOW_PRICING && <Pricing />}
+  <CtaBanner />
+</BaseLayout>

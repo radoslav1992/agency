@@ -1,23 +1,38 @@
 ---
-import { NEEDS } from '../data/content.ts';
+import { localeOf } from '../i18n/index.ts';
+import { content, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { NEEDS } = content(lang);
 import { SITE } from '../data/site.mjs';
 ---
 
-<form class="form" method="post" action="/api/contact" novalidate data-contact-form>
+<form
+  class="form"
+  method="post"
+  action="/api/contact"
+  novalidate
+  data-contact-form
+  data-sending={t.form.sending}
+  data-sent={t.form.sent}
+  data-thanks={t.form.thanks}
+  data-prefill={t.form.prefill}
+>
   <div class="row">
     <label class="field">
-      Име
+      {t.form.name}
       <input
         type="text"
         name="name"
         autocomplete="name"
-        placeholder="Име и фамилия"
+        placeholder={t.form.namePlaceholder}
         required
         maxlength="120"
       />
     </label>
     <label class="field">
-      Имейл
+      {t.form.email}
       <input
         type="email"
         name="email"
@@ -30,7 +45,7 @@ import { SITE } from '../data/site.mjs';
   </div>
 
   <fieldset class="needs">
-    <legend>От какво имаш нужда?</legend>
+    <legend>{t.form.need}</legend>
     <div class="needs__options">
       {
         NEEDS.map((need, index) => (
@@ -46,27 +61,24 @@ import { SITE } from '../data/site.mjs';
   </fieldset>
 
   <label class="field">
-    Разкажи ми накратко
-    <span class="field__hint">
-      Опиши как работи процесът в момента, какво те затруднява и какъв резултат искаш да
-      постигнеш. Не е необходимо да имаш готово техническо задание.
-    </span>
+    {t.form.message}
+    <span class="field__hint">{t.form.messagePlaceholder}</span>
     <textarea name="message" rows="5" required maxlength="4000"></textarea>
   </label>
 
   {/* Honeypot — hidden from people, tempting for bots. */}
   <div class="honeypot" aria-hidden="true">
     <label>
-      Не попълвай това поле
+      {t.form.honeypot}
       <input type="text" name="website" tabindex="-1" autocomplete="off" />
     </label>
   </div>
 
-  <button class="btn btn--primary submit" type="submit">Изпрати запитването</button>
+  <button class="btn btn--primary submit" type="submit">{t.form.submit}</button>
 
   <p class="status" role="status" data-form-status hidden></p>
   <p class="fallback">
-    Или просто ми пиши на <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    {t.form.orEmail}<a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
   </p>
 </form>
 
@@ -251,7 +263,8 @@ import { SITE } from '../data/site.mjs';
   const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
   const status = document.querySelector<HTMLParagraphElement>('[data-form-status]');
 
-  const SUCCESS = 'Благодаря! Получих запитването и ще ти отговоря до един работен ден.';
+  // Надписите идват от разметката, за да са на езика на страницата.
+  const SUCCESS = form?.dataset.thanks ?? '';
 
   function show(message: string, tone: 'success' | 'error') {
     if (!status) return;
@@ -268,7 +281,7 @@ import { SITE } from '../data/site.mjs';
   const about = params.get('about');
   const messageField = form?.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
   if (about && messageField && !messageField.value) {
-    messageField.value = `Проверих ${about} с безплатната проверка на сайтове. Кои три неща да оправя първо?`;
+    messageField.value = (form?.dataset.prefill ?? '').replace('{url}', about);
   }
 
   if (params.get('sent') === '1') {
@@ -304,7 +317,7 @@ import { SITE } from '../data/site.mjs';
 
       submit?.setAttribute('disabled', '');
       const original = submit?.textContent ?? '';
-      if (submit) submit.textContent = 'Изпращам…';
+      if (submit) submit.textContent = form.dataset.sending ?? '';
 
       try {
         const response = await fetch(form.action, {
@@ -320,7 +333,7 @@ import { SITE } from '../data/site.mjs';
         if (response.ok && result.ok) {
           form.reset();
           show(SUCCESS, 'success');
-          if (submit) submit.textContent = 'Изпратено ✓';
+          if (submit) submit.textContent = form.dataset.sent ?? '';
           return;
         }
 
@@ -328,7 +341,7 @@ import { SITE } from '../data/site.mjs';
       } catch {
         show('Няма връзка със сървъра. Пиши ми директно на имейла отдолу.', 'error');
       } finally {
-        if (submit && submit.textContent !== 'Изпратено ✓') {
+        if (submit && submit.textContent !== form.dataset.sent) {
           submit.removeAttribute('disabled');
           submit.textContent = original;
         }

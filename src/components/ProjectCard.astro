@@ -1,6 +1,8 @@
 ---
 import { Image } from 'astro:assets';
 import { domainOf, initialOf, slugOf, type Project } from '../data/projects.ts';
+import { localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
 
 interface Props {
   project: Project;
@@ -25,6 +27,9 @@ const slug = slugOf(project);
 const shot = Object.entries(shots).find(
   ([path]) => path.split('/').pop()?.replace(/\.\w+$/, '') === slug,
 )?.[1].default;
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
 ---
 
 <a class:list={['project', shot && 'project--shot']} href={project.url} target="_blank" rel="noopener">
@@ -33,7 +38,7 @@ const shot = Object.entries(shots).find(
       <span class="project__shot">
         <Image
           src={shot}
-          alt={project.alt ?? `Екран от ${project.name}`}
+          alt={project.alt ?? `${lang === 'en' ? 'A screen from' : 'Екран от'} ${project.name}`}
           widths={[380, 560, 760]}
           sizes="(max-width: 680px) 90vw, (max-width: 980px) 45vw, 360px"
           loading={eager ? 'eager' : 'lazy'}
@@ -53,7 +58,7 @@ const shot = Object.entries(shots).find(
 
   <span class="project__foot">
     <span class:list={['pill', 'pill--origin', project.own && 'pill--own']}>
-      {project.own ? 'Собствен продукт' : 'Клиентски проект'}
+      {project.own ? t.products.own : t.products.client}
     </span>
     {project.tags.map((tag) => <span class="pill">{tag}</span>)}
     {project.year && <span class="project__year">{project.year}</span>}

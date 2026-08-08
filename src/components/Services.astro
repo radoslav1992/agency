@@ -1,16 +1,20 @@
 ---
-import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { content, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { SERVICES, SECONDARY_SERVICES } = content(lang);
 ---
 
 <section id="services" class="services container">
   <header class="head">
     <div>
-      <p class="eyebrow">Услуги</p>
-      <h2 class="section-title">С какво мога да помогна</h2>
+      <p class="eyebrow">{t.services.eyebrow}</p>
+      <h2 class="section-title">{t.services.title}</h2>
     </div>
     <p class="head__note">
-      Технологията е средство. Целта е процесът да стане по-бърз и да не зависи от това кой е на
-      работа днес.
+      {t.services.note}
     </p>
   </header>
 
@@ -30,22 +34,22 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
           {service.problem && (
             <dl class="service__rows">
               <div class="service__row">
-                <dt>Проблемът</dt>
+                <dt>{t.services.problem}</dt>
                 <dd>{service.problem}</dd>
               </div>
               <div class="service__row">
-                <dt>Решението</dt>
+                <dt>{t.services.solution}</dt>
                 <dd>{service.solution}</dd>
               </div>
               {service.change && (
                 <div class="service__row">
-                  <dt>Какво се променя</dt>
+                  <dt>{t.services.change}</dt>
                   <dd set:html={service.change} />
                 </div>
               )}
               {service.changes && service.changes.length > 0 && (
                 <div class="service__row">
-                  <dt>Какво се променя</dt>
+                  <dt>{t.services.change}</dt>
                   <dd>
                     <ul class="service__changes">
                       {service.changes.map((change) => (
@@ -74,7 +78,7 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
             </ul>
           )}
           {service.link && (
-            <a class="service__more" href={service.link.href}>
+            <a class="service__more" href={localised(service.link.href, lang)}>
               {service.link.label}
             </a>
           )}
@@ -93,16 +97,16 @@ import { SERVICES, SECONDARY_SERVICES } from '../data/content.ts';
           {service.problem && (
             <dl class="service__rows">
               <div class="service__row">
-                <dt>Проблемът</dt>
+                <dt>{t.services.problem}</dt>
                 <dd>{service.problem}</dd>
               </div>
               <div class="service__row">
-                <dt>Решението</dt>
+                <dt>{t.services.solution}</dt>
                 <dd>{service.solution}</dd>
               </div>
               {service.change && (
                 <div class="service__row">
-                  <dt>Какво се променя</dt>
+                  <dt>{t.services.change}</dt>
                   <dd set:html={service.change} />
                 </div>
               )}

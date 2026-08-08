@@ -43,15 +43,71 @@ export const SITE = {
   bookingUrl: null,
 };
 
-export const NAV = [
-  { label: 'Начало', href: '/' },
-  { label: 'Услуги', href: '/#services' },
-  { label: 'AI агенти', href: '/agents/' },
-  /** Временно „Проекти“ — връща се на „Казуси“ при първия външен казус. */
-  { label: 'Проекти', href: '/projects/' },
-  { label: 'Анализатор', href: '/analyzer/' },
-  { label: 'За мен', href: '/#about' },
-  { label: 'Блог', href: '/blog/' },
-];
+/**
+ * Заглавие и описание по език. Английското описание не е превод на
+ * българското — то се чете от друг купувач, който не търси „в България“.
+ */
+/** Име и длъжност по език — латиница за английската версия. */
+export const OWNER_BY_LOCALE = {
+  bg: { name: 'Радослав Додников', role: 'Основател · Софтуерен и AI инженер' },
+  en: { name: 'Radoslav Dodnikov', role: 'Founder · Software and AI engineer' },
+};
 
-export const CTA = { label: 'Да поговорим', href: '/contact/' };
+/**
+ * Име на изпълнителя за футъра и правните страници. Няма регистрирано
+ * дружество — изпълнителят е физическо лице, затова английският вариант е
+ * транслитерация на същото име, а не друго юридическо лице.
+ */
+export const LEGAL_NAME_BY_LOCALE = {
+  bg: 'Кова студио · Радослав Додников',
+  en: 'Kova Studio · Radoslav Dodnikov',
+};
+
+export const META = {
+  bg: {
+    title: 'Кова студио — AI асистенти, вътрешни системи и автоматизации',
+    description:
+      'Автоматизирам процеси, които екипът ти още върши на ръка — AI асистенти върху фирмени документи, вътрешни системи и интеграции. Работиш директно с инженера.',
+  },
+  en: {
+    title: 'Kova Studio — AI agents, internal systems and automation',
+    description:
+      'I automate the work your team still does by hand: AI agents over company documents, phone and inbox, plus internal systems. You work directly with the engineer who builds it.',
+  },
+};
+
+/**
+ * Навигация по език.
+ *
+ * Английската е по-къса нарочно: анализаторът и блогът съществуват само на
+ * български, а връзка, която сменя езика под краката на читателя, е по-лоша
+ * от липсваща връзка.
+ */
+export const NAV_BY_LOCALE = {
+  bg: [
+    { label: 'Начало', href: '/' },
+    { label: 'Услуги', href: '/#services' },
+    { label: 'AI агенти', href: '/agents/' },
+    /** Временно „Проекти“ — връща се на „Казуси“ при първия външен казус. */
+    { label: 'Проекти', href: '/projects/' },
+    { label: 'Анализатор', href: '/analyzer/' },
+    { label: 'За мен', href: '/#about' },
+    { label: 'Блог', href: '/blog/' },
+  ],
+  en: [
+    { label: 'Home', href: '/' },
+    { label: 'Services', href: '/#services' },
+    { label: 'AI agents', href: '/agents/' },
+    { label: 'Projects', href: '/projects/' },
+    { label: 'About', href: '/#about' },
+  ],
+};
+
+export const CTA_BY_LOCALE = {
+  bg: { label: 'Да поговорим', href: '/contact/' },
+  en: { label: "Let's talk", href: '/contact/' },
+};
+
+/** Български по подразбиране — за местата, които още не са двуезични. */
+export const NAV = NAV_BY_LOCALE.bg;
+export const CTA = CTA_BY_LOCALE.bg;

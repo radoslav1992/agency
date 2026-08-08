@@ -1,0 +1,423 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CtaBanner from '../../components/CtaBanner.astro';
+import { localeOf } from '../../i18n/index.ts';
+import { agents as agentsFor } from '../../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const { AGENTS, AGENT_PROCESS } = agentsFor(lang);
+import { agentShot } from '../../data/agentShots.ts';
+import { SITE } from '../../data/site.mjs';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'AI agents by Kova Studio',
+  itemListElement: AGENTS.map((agent, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@type': 'Service',
+      name: agent.name,
+      description: agent.short,
+      areaServed: 'BG',
+      provider: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    },
+  })),
+};
+---
+
+<BaseLayout
+  title="AI agents"
+  description="Ready-made AI agents for small and mid-sized companies: a phone receptionist, website chat, an agent over company documents, invoice processing, quotes and reports. Clear scope, and a pilot before any large investment."
+  canonical="/en/agents/"
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+  </Fragment>
+
+  <div class="container wrap">
+    <p class="eyebrow">AI agents</p>
+    <h1 class="title">Agents that take over a specific job</h1>
+    <p class="lead">
+      Each one is packaged around a familiar problem: a clear scope, a clear list of what is
+      needed from you, and a clear statement of where it does not work. We start with one channel
+      and a pilot on your data — not with a subscription to "AI".
+    </p>
+
+    <nav class="jump" aria-label="Agent list">
+      {AGENTS.map((agent) => <a href={`#${agent.id}`}>{agent.name}</a>)}
+    </nav>
+
+    <div class="agents">
+      {
+        AGENTS.map((agent) => (
+          <article class="agent" id={agent.id}>
+            {/* Рисунката е същата, която стои и във въртележката — така
+                човек, дошъл от началната страница, разпознава агента. */}
+            <div class="agent__top">
+              {agentShot(agent.id) && (
+                <Image
+                  class="agent__shot"
+                  src={agentShot(agent.id)!}
+                  alt={agent.alt}
+                  widths={[340, 510, 680]}
+                  sizes="(max-width: 780px) 92vw, 340px"
+                  loading="lazy"
+                />
+              )}
+              <div class="agent__intro">
+                <header class="agent__head">
+                  <span class="agent__channel">{agent.channel}</span>
+                  <h2 class="agent__name">{agent.name}</h2>
+                  {agent.demo && <span class="agent__demo">I can demo this live</span>}
+                </header>
+
+                <p class="agent__problem">{agent.problem}</p>
+              </div>
+            </div>
+
+            <div class="agent__cols">
+              <div>
+                <h3 class="agent__label">What it does</h3>
+                <ul class="agent__list">
+                  {agent.does.map((d) => (
+                    <li>{d}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 class="agent__label">What it needs from you</h3>
+                <ul class="agent__list agent__list--plain">
+                  {agent.needs.map((n) => (
+                    <li>{n}</li>
+                  ))}
+                </ul>
+                <h3 class="agent__label agent__label--spaced">Best for</h3>
+                <p class="agent__best">{agent.bestFor}</p>
+              </div>
+            </div>
+
+            <p class="agent__limits">
+              <strong>Where it does not work:</strong> {agent.limits}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+
+    <section class="process" aria-labelledby="process-title">
+      <h2 class="process__title" id="process-title">How an agent starts</h2>
+      <ol class="process__steps">
+        {
+          AGENT_PROCESS.map((step, i) => (
+            <li>
+              <span class="process__num">{String(i + 1).padStart(2, '0')}</span>
+              <span class="process__name">{step.title}</span>
+              <span class="process__body">{step.body}</span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="process__note">
+        Pilots start at €3,500. On top of that come monthly costs for telephony and models, which
+        depend on volume — I state them in the quote, before we start.
+      </p>
+    </section>
+
+    <section class="honest" aria-labelledby="honest-title">
+      <h2 class="honest__title" id="honest-title">What you will not hear from me</h2>
+      <ul class="honest__list">
+        <li>That the agent never gets it wrong. It does — which is why the pilot measures how often, and where.</li>
+        <li>That it replaces a person. It takes the repeatable part; the judgement stays with you.</li>
+        <li>
+          That the data is "in the cloud, it's fine". Where data is sensitive the model runs on
+          your own infrastructure, and calls are recorded only with consent.
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <CtaBanner />
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: 76px 88px;
+  }
+
+  .title {
+    font-size: clamp(32px, 6vw, 48px);
+    letter-spacing: -0.035em;
+    margin: 12px 0;
+  }
+
+  .lead {
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    max-width: 640px;
+    margin: 0 0 28px;
+  }
+
+  .jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 48px;
+  }
+
+  .jump a {
+    font-size: 13.5px;
+    background: var(--chip);
+    border-radius: 999px;
+    padding: 7px 14px;
+    color: var(--ink-body);
+  }
+
+  .jump a:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .agents {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .agent {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 30px;
+    scroll-margin-top: calc(var(--header-h) + 20px);
+  }
+
+  /* Рисунката отляво, заглавието и проблемът отдясно. */
+  .agent__top {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 26px;
+    align-items: start;
+    margin-bottom: 22px;
+  }
+
+  .agent__shot {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg-blush);
+  }
+
+  .agent__intro {
+    min-width: 0;
+  }
+
+  .agent__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .agent__channel {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    padding: 4px 11px;
+  }
+
+  .agent__name {
+    font-size: clamp(20px, 3vw, 25px);
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+
+  .agent__demo {
+    font-size: 12px;
+    background: var(--chip);
+    color: var(--ink-muted);
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+
+  .agent__problem {
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    /* Долният отстъп идва от `.agent__top`, за да не се удвои. */
+    margin: 16px 0 0;
+    max-width: 680px;
+  }
+
+  .agent__cols {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 28px;
+  }
+
+  .agent__label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  .agent__label--spaced {
+    margin-top: 20px;
+  }
+
+  .agent__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-body);
+  }
+
+  .agent__list li::before {
+    content: '✓ ';
+    color: var(--success, #34a853);
+  }
+
+  .agent__list--plain li::before {
+    content: '· ';
+    color: var(--ink-faint);
+  }
+
+  .agent__best {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  .agent__limits {
+    margin: 22px 0 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+  }
+
+  .agent__limits strong {
+    color: var(--ink);
+  }
+
+  .process,
+  .honest {
+    margin-top: 56px;
+  }
+
+  .process__title,
+  .honest__title {
+    font-size: clamp(22px, 3.5vw, 28px);
+    letter-spacing: -0.025em;
+    margin: 0 0 22px;
+  }
+
+  .process__steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .process__steps li {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--bg-sand);
+    border-radius: 18px;
+    padding: 22px;
+  }
+
+  .process__num {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  .process__name {
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .process__body {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+  }
+
+  .process__note {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 20px 0 0;
+    max-width: 680px;
+  }
+
+  .honest__list {
+    margin: 0;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    max-width: 700px;
+  }
+
+  @media (max-width: 900px) {
+    .agent__cols {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .process__steps {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 780px) {
+    /* Под тази ширина рисунката отнема твърде много от текста — сяда отгоре. */
+    .agent__top {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .wrap {
+      padding-block: 48px 56px;
+    }
+
+    .agent {
+      padding: 24px 20px;
+    }
+
+    .process__steps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

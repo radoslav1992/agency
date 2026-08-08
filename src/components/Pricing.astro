@@ -1,13 +1,18 @@
 ---
-import { PLANS, PRICING_PROMO } from '../data/content.ts';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { content, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { PLANS, PRICING_PROMO } = content(lang);
 ---
 
 <section class="pricing">
   <div class="container inner">
-    <p class="eyebrow">Цени</p>
-    <h2 class="section-title">Ориентировъчни бюджети</h2>
+    <p class="eyebrow">{t.pricing.eyebrow}</p>
+    <h2 class="section-title">{t.pricing.title}</h2>
     <p class="lead">
-      Всеки проект е различен. Тези числа са, за да прецениш още сега дали изобщо си говорим.
+      {t.pricing.note}
     </p>
 
     {
@@ -39,10 +44,15 @@ import { PLANS, PRICING_PROMO } from '../data/content.ts';
     </div>
 
     <p class="footnote">
-      Цената на пълното решение определям след пилота и техническата оценка. Текущите разходи за
-      сървъри, модели и външни услуги ги казвам предварително — в
-      <a href="/blog/oferta-na-edna-stranica/">офертата на една страница</a>, преди да започнем,
-      не после.
+      {t.pricing.afterA}{
+        t.pricing.afterLink && (
+          <>
+            {' '}
+            <a href={localised('/blog/oferta-na-edna-stranica/', 'bg')}>{t.pricing.afterLink}</a>
+            {t.pricing.afterB}
+          </>
+        )
+      }
     </p>
   </div>
 </section>

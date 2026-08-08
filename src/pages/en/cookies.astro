@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../data/site.mjs';
+---
+
+<BaseLayout
+  title="Cookie policy"
+  description="Which cookies the Kova Studio site uses."
+  canonical="/en/cookies/"
+>
+  <div class="container legal">
+    <p class="eyebrow">Terms</p>
+    <h1>Cookie policy</h1>
+    <p class="updated">Last updated: August 2026</p>
+
+    <p class="note">
+      This is a translation for convenience. In case of any discrepancy the
+      <a href="/cookies/">Bulgarian version</a> prevails.
+    </p>
+
+    <h2>Which cookies the site uses</h2>
+    <ul>
+      <li>
+        <strong>Technical cookies</strong> — the infrastructure the site runs on (Cloudflare) may set
+        cookies needed for security and performance. They are not used for profiling.
+      </li>
+      <li>
+        <strong>Analytics cookies (Google Analytics 4)</strong> — set <strong>only after consent</strong> via the
+        cookie banner. They are used for aggregated statistics on which pages are visited
+        (cookies of the <code>_ga</code> type). The data is processed by Google — more in
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">
+          Google's privacy policy</a>. The script loads in a cookie-free mode
+        (Google Consent Mode): before consent, or on refusal, no cookies are set and no
+        identifiers are used — only anonymous technical signals are sent.
+      </li>
+    </ul>
+    <p>The site uses no marketing cookies and no third-party advertising networks.</p>
+
+    <h2>Changing your choice</h2>
+    <p>
+      Your choice is remembered on this device. You can change it at any time with the button
+      below — the banner will appear again.
+    </p>
+    <p>
+      <button class="cookie-reset" type="button" data-cookie-reset>Change your choice</button>
+    </p>
+
+    <h2>Questions</h2>
+    <p>
+      Questions about cookies and personal data can be sent to
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. See also the
+      <a href="/en/privacy/">privacy policy</a>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .note {
+    background: var(--bg-blush);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 12px 12px 0;
+    font-size: 15px;
+  }
+
+  .cookie-reset {
+    font-family: var(--font-body);
+    font-size: 14.5px;
+    font-weight: 600;
+    padding: 11px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition:
+      background-color 0.16s ease,
+      color 0.16s ease;
+  }
+
+  .cookie-reset:hover {
+    background: var(--ink);
+    color: #fff;
+  }
+</style>
