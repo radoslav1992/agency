@@ -10,6 +10,20 @@ const { AGENTS, AGENT_PROCESS } = agentsFor(lang);
 import { agentShot } from '../../data/agentShots.ts';
 import { SITE } from '../../data/site.mjs';
 
+/**
+ * Един водещ агент, останалите свити.
+ *
+ * Каталог от осем равностойни оферти казва „правя осем неща“ — при нула
+ * пуснати инсталации това е обещание за продуктова готовност, каквато още
+ * няма. Първият в списъка води, защото при него сметката е най-проста:
+ * пропуснато обаждане = незаписан час.
+ *
+ * Останалите седем НЕ губят съдържание — само се свиват в `<details>`.
+ * Текстът остава в HTML-а, тоест търсачките и отговарящите машини го четат
+ * както преди; свива се само вниманието на човека.
+ */
+const [lead, ...rest] = AGENTS;
+
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
@@ -41,19 +55,89 @@ const structuredData = {
     <p class="eyebrow">AI agents</p>
     <h1 class="title">Agents that take over a specific job</h1>
     <p class="lead">
-      Each one is packaged around a familiar problem: a clear scope, a clear list of what is
-      needed from you, and a clear statement of where it does not work. We start with one channel
-      and a pilot on your data — not with a subscription to "AI".
+      I lead with one — the phone receptionist, because its arithmetic is the simplest. Below it
+      are the other seven: each with a clear scope, a clear list of what it needs from you, and a
+      clear statement of where it does not work. One channel at a time, with a pilot on your data.
+    </p>
+
+    {/* ---------- Водещата оферта ---------- */}
+    <article class="agent agent--lead" id={lead.id}>
+      <div class="agent__top">
+        {agentShot(lead.id) && (
+          <Image
+            class="agent__shot"
+            src={agentShot(lead.id)!}
+            alt={lead.alt}
+            widths={[420, 630, 840]}
+            sizes="(max-width: 780px) 92vw, 420px"
+            loading="eager"
+          />
+        )}
+        <div class="agent__intro">
+          <header class="agent__head">
+            <span class="agent__channel">{lead.channel}</span>
+            <h2 class="agent__name">{lead.name}</h2>
+            {lead.demo && <span class="agent__demo">I can demo this live</span>}
+          </header>
+          <p class="agent__problem">{lead.problem}</p>
+        </div>
+      </div>
+
+      {/* Сметката е с ЧУЖДИ числа нарочно: сайтът обещава, че не твърди
+          неизмерени резултати, а тук читателят смята своя случай сам. */}
+      <div class="sum">
+        <h3 class="sum__title">The arithmetic is yours, not mine</h3>
+        <p class="sum__body">
+          A missed call is an unbooked appointment. How many a week, at your place? Multiply that
+          by what one booking is worth. Three calls a week at €40 come to
+          <strong> about €480 a month</strong> that never arrives.
+        </p>
+        <p class="sum__note">
+          The numbers are yours. If it is two calls at €25, the arithmetic is different and it may
+          not be worth doing at all — we will check that on the call, before you pay anything.
+        </p>
+      </div>
+
+      <div class="agent__cols">
+        <div>
+          <h3 class="agent__label">What it does</h3>
+          <ul class="agent__list">{lead.does.map((d) => <li>{d}</li>)}</ul>
+        </div>
+        <div>
+          <h3 class="agent__label">What it needs from you</h3>
+          <ul class="agent__list agent__list--plain">{lead.needs.map((n) => <li>{n}</li>)}</ul>
+          <h3 class="agent__label agent__label--spaced">Best for</h3>
+          <p class="agent__best">{lead.bestFor}</p>
+        </div>
+      </div>
+
+      <p class="agent__limits">
+        <strong>Where it does not work:</strong> {lead.limits}
+      </p>
+
+      <a class="btn btn--primary agent__cta" href="/en/contact/">Book a call about the receptionist →</a>
+    </article>
+
+    {/* ---------- Останалите, свити ---------- */}
+    <h2 class="rest__title">And seven more, built the same way</h2>
+    <p class="rest__note">
+      Each one takes on a different repeating channel. Open whichever sounds familiar — inside is
+      the same: what it does, what it needs from you, and where it does not work.
     </p>
 
     <nav class="jump" aria-label="Agent list">
-      {AGENTS.map((agent) => <a href={`#${agent.id}`}>{agent.name}</a>)}
+      {rest.map((agent) => <a href={`#${agent.id}`}>{agent.name}</a>)}
     </nav>
 
     <div class="agents">
       {
-        AGENTS.map((agent) => (
-          <article class="agent" id={agent.id}>
+        rest.map((agent) => (
+          <details class="agent agent--folded" id={agent.id}>
+            <summary class="agent__summary">
+              <span class="agent__channel">{agent.channel}</span>
+              <span class="agent__name agent__name--small">{agent.name}</span>
+              <span class="agent__short">{agent.short}</span>
+            </summary>
             {/* Рисунката е същата, която стои и във въртележката — така
                 човек, дошъл от началната страница, разпознава агента. */}
             <div class="agent__top">
@@ -68,12 +152,7 @@ const structuredData = {
                 />
               )}
               <div class="agent__intro">
-                <header class="agent__head">
-                  <span class="agent__channel">{agent.channel}</span>
-                  <h2 class="agent__name">{agent.name}</h2>
-                  {agent.demo && <span class="agent__demo">I can demo this live</span>}
-                </header>
-
+                {agent.demo && <span class="agent__demo">I can demo this live</span>}
                 <p class="agent__problem">{agent.problem}</p>
               </div>
             </div>
@@ -102,7 +181,7 @@ const structuredData = {
             <p class="agent__limits">
               <strong>Where it does not work:</strong> {agent.limits}
             </p>
-          </article>
+          </details>
         ))
       }
     </div>
@@ -141,6 +220,26 @@ const structuredData = {
 
   <CtaBanner />
 </BaseLayout>
+
+<script>
+  /*
+   * Връзка към свит агент трябва да го отвори. Браузърите го правят сами
+   * само в най-новите версии, а котвите идват и от въртележката на
+   * началната страница — тоест мълчаливото несработване би било често.
+   */
+  function openTarget() {
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const target = document.getElementById(id);
+    const fold = target?.closest('details');
+    if (!fold) return;
+    fold.open = true;
+    fold.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }
+
+  openTarget();
+  window.addEventListener('hashchange', openTarget);
+</script>
 
 <style>
   .wrap {
@@ -217,6 +316,124 @@ const structuredData = {
 
   .agent__intro {
     min-width: 0;
+  }
+
+  /* ---------- Водещата оферта ---------- */
+  .agent--lead {
+    border-color: var(--accent);
+    padding: 34px;
+  }
+
+  .agent--lead .agent__top {
+    grid-template-columns: 420px 1fr;
+  }
+
+  .agent--lead .agent__name {
+    font-size: clamp(24px, 3.4vw, 31px);
+  }
+
+  .agent__cta {
+    margin-top: 24px;
+  }
+
+  /* Сметката — числата са на читателя, не мои. */
+  .sum {
+    background: var(--bg-blush);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 22px;
+  }
+
+  .sum__title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .sum__body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 8px 0 0;
+  }
+
+  .sum__note {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-subtle);
+    margin: 10px 0 0;
+  }
+
+  /* ---------- Останалите седем, свити ---------- */
+  .rest__title {
+    font-size: clamp(21px, 3vw, 26px);
+    letter-spacing: -0.025em;
+    margin: 64px 0 8px;
+  }
+
+  .rest__note {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    max-width: 620px;
+    margin: 0 0 24px;
+  }
+
+  .agent--folded {
+    padding: 0;
+  }
+
+  .agent__summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .agent__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .agent__summary::after {
+    content: '+';
+    margin-left: auto;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--ink-subtle);
+  }
+
+  .agent--folded[open] .agent__summary::after {
+    content: '−';
+  }
+
+  .agent--folded[open] .agent__summary {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .agent__name--small {
+    font-size: 17.5px;
+  }
+
+  .agent__short {
+    flex-basis: 100%;
+    font-size: 14.5px;
+    color: var(--ink-muted);
+  }
+
+  .agent--folded > *:not(.agent__summary) {
+    padding-inline: 24px;
+  }
+
+  .agent--folded > .agent__top {
+    padding-top: 22px;
+  }
+
+  .agent--folded > .agent__limits {
+    margin-bottom: 22px;
   }
 
   .agent__head {
@@ -401,7 +618,8 @@ const structuredData = {
 
   @media (max-width: 780px) {
     /* Под тази ширина рисунката отнема твърде много от текста — сяда отгоре. */
-    .agent__top {
+    .agent__top,
+    .agent--lead .agent__top {
       grid-template-columns: 1fr;
       gap: 18px;
     }
