@@ -1,0 +1,82 @@
+---
+/** Английското огледало на `/services/` — същите компоненти, друг речник. */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Services from '../../components/Services.astro';
+import Process from '../../components/Process.astro';
+import Pricing from '../../components/Pricing.astro';
+import PilotProgram from '../../components/PilotProgram.astro';
+import CtaBanner from '../../components/CtaBanner.astro';
+import { SITE } from '../../data/site.mjs';
+import { localeOf } from '../../i18n/index.ts';
+import { content, ui } from '../../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { TERMS } = content(lang);
+
+/** Set to `false` to hide the pricing section (the design's `showPricing` prop). */
+const SHOW_PRICING = true;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': `${SITE.url}/en/services/#faq`,
+  mainEntity: TERMS.map((term) => ({
+    '@type': 'Question',
+    name: term.title,
+    acceptedAnswer: { '@type': 'Answer', text: term.body },
+  })),
+};
+---
+
+<BaseLayout
+  canonical="/en/services/"
+  title={t.servicesPage.title}
+  description={t.servicesPage.description}
+>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(structuredData)}
+    />
+  </Fragment>
+
+  <header class="page-head">
+    <p class="eyebrow">{t.services.eyebrow}</p>
+    <h1 class="page-head__title">{t.servicesPage.heading}</h1>
+    <p class="page-head__lead">{t.servicesPage.lead}</p>
+  </header>
+
+  <Services />
+  <Process />
+  {SHOW_PRICING && <Pricing />}
+  <PilotProgram />
+  <CtaBanner />
+</BaseLayout>
+
+<style>
+  /* Същият ляв ръб като на секциите отдолу — мярката е върху текста. */
+  .page-head {
+    max-width: var(--container);
+    margin-inline: auto;
+    padding: clamp(48px, 7vw, 88px) var(--gutter) 0;
+  }
+
+  .page-head__title {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 5.4vw, 58px);
+    line-height: 1.03;
+    letter-spacing: -0.042em;
+    margin: 14px 0 0;
+    max-width: 14em;
+  }
+
+  .page-head__lead {
+    font-size: clamp(16.5px, 1.8vw, 19px);
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 20px 0 0;
+    max-width: 58ch;
+  }
+</style>

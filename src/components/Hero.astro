@@ -1,4 +1,13 @@
 ---
+/**
+ * Първото движение. Заглавието влиза на етапи при зареждане (по часовник,
+ * не по скрол — то е над сгъвката и никой не скролва до него).
+ *
+ * Посланието е същото, което вече работеше. Промени се мащабът: заглавието
+ * е двойно по-едро, а всичко останало отстъпва под него. Портретът остава —
+ * „работиш с мен, не с акаунт мениджър“ е обещание, което трудно се вярва
+ * на сайт без лице.
+ */
 import { Image } from 'astro:assets';
 import heroPortrait from '../assets/hero-portrait.png';
 import { SITE } from '../data/site.mjs';
@@ -10,69 +19,76 @@ const t = ui(lang);
 const who = owner(lang);
 ---
 
-<section class="hero container">
-  <div class="hero__copy">
-    {
-      SITE.availability && (
-        <p class="availability">
-          <span class="availability__dot" aria-hidden="true" />
-          {SITE.availability}
-        </p>
-      )
-    }
+<section class="hero">
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      {
+        SITE.availability && (
+          <p class="availability stagger" style="--s: 0">
+            <span class="availability__dot" aria-hidden="true" />
+            {SITE.availability}
+          </p>
+        )
+      }
 
-    <h1 class="hero__title">
-      {t.hero.titleLead} <span class="accent">{t.hero.titleAccent}</span>.
-    </h1>
+      <h1 class="hero__title stagger" style="--s: 1">
+        {t.hero.titleLead} <span class="accent">{t.hero.titleAccent}</span>.
+      </h1>
 
-    {/* „Готови агенти“ + „по мярка“ нарочно заедно: въртележката отдолу продава
-        пакетираните, но вътрешните системи не са агенти и не бива да изпаднат. */}
-    <p class="hero__lead">{t.hero.lead}</p>
+      {/* „Готови агенти“ + „по мярка“ нарочно заедно: каталогът отдолу продава
+          пакетираните, но вътрешните системи не са агенти и не бива да изпаднат. */}
+      <p class="hero__lead stagger" style="--s: 2">{t.hero.lead}</p>
 
-    <div class="hero__actions">
-      <a class="btn btn--primary" href={localised('/contact/', lang)}>{t.hero.ctaPrimary}</a>
-      <a class="btn btn--outline" href={localised('/#services', lang)}>{t.hero.ctaSecondary}</a>
+      <div class="hero__actions stagger" style="--s: 3">
+        <a class="btn btn--primary" href={localised('/contact/', lang)}>{t.hero.ctaPrimary}</a>
+        <a class="btn btn--outline" href={localised('/services/', lang)}>{t.hero.ctaSecondary}</a>
+      </div>
+
+      <p class="hero__subnote stagger" style="--s: 4">{t.hero.subnote}</p>
+
+      {/* Анализаторът съществува само на български, затова редът към него се
+          показва само там. */}
+      {
+        t.hero.analyzerQ && (
+          <p class="hero__analyzer stagger" style="--s: 5">
+            {t.hero.analyzerQ} <a href="/analyzer/">{t.hero.analyzerA}</a>
+          </p>
+        )
+      }
     </div>
-    <p class="hero__subnote">{t.hero.subnote}</p>
 
-    {/* Анализаторът съществува само на български, затова редът към него
-        се показва само там — връзка, която сменя езика под краката на
-        читателя, е по-лоша от липсваща връзка. */}
-    {
-      t.hero.analyzerQ && (
-        <p class="hero__analyzer">
-          {t.hero.analyzerQ} <a href="/analyzer/">{t.hero.analyzerA}</a>
-        </p>
-      )
-    }
-
-    <ul class="hero__facts">{t.hero.facts.map((fact) => <li>{fact}</li>)}</ul>
+    <div class="hero__media stagger" style="--s: 2">
+      <div class="hero__blob" aria-hidden="true"></div>
+      <Image
+        class="hero__image"
+        src={heroPortrait}
+        alt={who.name}
+        widths={[380, 560, 780]}
+        sizes="(max-width: 900px) 70vw, 380px"
+        loading="eager"
+        fetchpriority="high"
+      />
+      <div class="hero__badge">
+        <p class="hero__badge-name">{who.name}</p>
+        <p class="hero__badge-role">{who.role}</p>
+      </div>
+    </div>
   </div>
 
-  <div class="hero__media">
-    <div class="hero__blob" aria-hidden="true"></div>
-    <Image
-      class="hero__image"
-      src={heroPortrait}
-      alt={who.name}
-      widths={[420, 640, 900]}
-      sizes="(max-width: 900px) 90vw, 440px"
-      loading="eager"
-      fetchpriority="high"
-    />
-    <div class="hero__badge">
-      <p class="hero__badge-name">{who.name}</p>
-      <p class="hero__badge-role">{who.role}</p>
-    </div>
-  </div>
+  <ul class="hero__facts container stagger" style="--s: 6">
+    {t.hero.facts.map((fact) => <li>{fact}</li>)}
+  </ul>
 </section>
 
 <style>
   .hero {
-    padding-block: 84px 64px;
+    padding-block: clamp(48px, 7vw, 96px) 0;
+  }
+
+  .hero__inner {
     display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 56px;
+    grid-template-columns: 1.35fr 0.65fr;
+    gap: clamp(32px, 5vw, 64px);
     align-items: center;
   }
 
@@ -80,7 +96,7 @@ const who = owner(lang);
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin: 0;
+    margin: 0 0 22px;
     background: var(--panel);
     border: 1px solid var(--line);
     padding: 7px 14px;
@@ -98,33 +114,25 @@ const who = owner(lang);
     flex: none;
   }
 
-  .hero__title {
-    /*
-     * Размерът се мери спрямо КОЛОНАТА, не спрямо екрана — затова `cqw`, а
-     * не `vw`. На десктоп текстовата колона е около 57% от контейнера, тоест
-     * при 1280px екран тя е 614px, докато 6vw даваше 58px за дума, която иска
-     * 642px. Резултатът беше „Автоматизира / м“ на всяка ширина над 900px.
-     * При 8.5cqw най-дългата дума винаги остава с резерв в колоната.
-     */
-    font-size: clamp(25px, 8.5cqw, 56px);
-    line-height: 1.04;
-    letter-spacing: -0.035em;
-    margin: 22px 0 0;
-    /* Клапан за екрани под 340px; над тях не се задейства. */
-    overflow-wrap: break-word;
-  }
-
   /*
-   * Прави колоната мерна единица за заглавието. Ограничението по ширина
-   * заедно с това пази клетката на решетката да не се разтяга до
-   * min-content на текста — иначе началната страница се плъзга настрани.
+   * Размерът се мери спрямо КОЛОНАТА, не спрямо екрана — затова `cqw`, а не
+   * `vw`. Най-дългата българска дума („Автоматизирам“) иска цялата ширина на
+   * колоната; при `vw` тя се чупеше на „Автоматизира / м“ на всяка ширина
+   * над 900px. Ограничението важи с още по-голяма сила сега, когато
+   * заглавието е с една трета по-едро.
    */
   .hero__copy {
     container-type: inline-size;
   }
 
-  .hero__media {
-    min-width: 0;
+  .hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 8.4cqw, 76px);
+    line-height: 1.01;
+    letter-spacing: -0.045em;
+    margin: 0;
+    /* Клапан за екрани под 340px; над тях не се задейства. */
+    overflow-wrap: break-word;
   }
 
   .accent {
@@ -132,59 +140,58 @@ const who = owner(lang);
   }
 
   .hero__lead {
-    font-size: 19px;
+    font-size: clamp(17px, 1.8vw, 20px);
     line-height: 1.55;
     color: var(--ink-body);
-    max-width: 520px;
-    margin: 24px 0 0;
+    max-width: 46ch;
+    margin: 26px 0 0;
   }
 
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 32px;
+    margin-top: 34px;
   }
 
   .hero__subnote {
-    font-size: 13px;
+    font-size: 13.5px;
     line-height: 1.5;
     color: var(--ink-subtle);
-    margin: 12px 0 0;
-    max-width: 460px;
+    margin: 14px 0 0;
+    max-width: 48ch;
   }
 
   .hero__analyzer {
-    font-size: 14.5px;
-    margin: 22px 0 0;
+    font-size: 15px;
+    margin: 24px 0 0;
     color: var(--ink-body);
   }
 
   .hero__analyzer a {
     font-weight: 600;
     color: var(--accent);
+    border-bottom: 1px solid var(--accent-soft);
+    padding-bottom: 2px;
+    transition: border-color 0.18s ease;
   }
 
-  .hero__facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 28px;
-    margin: 32px 0 0;
-    padding: 0;
-    list-style: none;
-    font-size: 14px;
-    color: var(--ink-muted);
+  .hero__analyzer a:hover {
+    border-color: var(--accent);
   }
+
+  /* ---------- портретът ---------- */
 
   .hero__media {
     position: relative;
+    min-width: 0;
   }
 
   .hero__blob {
     position: absolute;
-    inset: 12% -4% -2% 6%;
+    inset: 12% -6% -2% 4%;
     background: var(--bg-blush);
-    border-radius: 32px;
+    border-radius: 28px;
   }
 
   .hero__image {
@@ -197,39 +204,73 @@ const who = owner(lang);
 
   .hero__badge {
     position: absolute;
-    left: -8px;
-    bottom: 18px;
+    left: -12px;
+    bottom: 14px;
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 12px 16px;
+    border-radius: 14px;
+    padding: 10px 14px;
     box-shadow: var(--shadow-card);
   }
 
   .hero__badge-name {
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13.5px;
     margin: 0;
   }
 
   .hero__badge-role {
-    font-size: 12.5px;
+    font-size: 12px;
     color: var(--ink-muted);
     margin: 2px 0 0;
   }
 
+  /* ---------- лентата с обещанията ---------- */
+
+  .hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px clamp(24px, 4vw, 52px);
+    margin: clamp(40px, 6vw, 72px) auto 0;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    list-style: none;
+    font-size: 14.5px;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- влизането ---------- */
+
+  .stagger {
+    animation: hero-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--s) * 70ms);
+  }
+
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   @media (max-width: 900px) {
-    .hero {
+    .hero__inner {
       grid-template-columns: 1fr;
-      gap: 40px;
-      padding-block: 48px 40px;
+      gap: 36px;
     }
 
     .hero__media {
       order: -1;
-      max-width: 420px;
-      margin-inline: auto;
-      width: 100%;
+      max-width: 300px;
+    }
+
+    .hero__lead,
+    .hero__subnote {
+      max-width: none;
     }
 
     .hero__badge {

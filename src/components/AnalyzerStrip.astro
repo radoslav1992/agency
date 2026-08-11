@@ -1,67 +1,193 @@
 ---
 /**
- * Лента за анализатора — стои след услугите (до „Бизнес сайтове“), не веднага
- * след hero-а, за да не размива посланието за автоматизациите.
+ * Безплатната проверка на сайтове — петото движение.
+ *
+ * Беше тънка лента между услугите. Сега е цяла секция, защото това е
+ * единственото място на сайта, на което непознат получава реална стойност,
+ * без да пише на никого: инструментът работи веднага, без регистрация и без
+ * заключени секции. Отчетът е и естественият повод за първия разговор.
+ *
+ * Анализаторът съществува само на български. Празно заглавие = секцията не
+ * се рендерира; връзка, която сменя езика под краката на читателя, е
+ * по-лоша от липсваща връзка.
  */
+import { localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const show = t.analyzerStrip.title !== '';
 ---
 
-<section class="strip-wrap container">
-  <div class="strip">
-    <div>
-      <p class="eyebrow">Безплатен инструмент</p>
-      <h2 class="strip__title">Безплатна проверка на сайта ти</h2>
-      <p class="strip__text">
-        SEO, скорост, сигурност, достъпност, използвани технологии и това дали AI търсачките могат
-        да четат сайта ти. Отнема 15 секунди. Без регистрация, без имейл и без заключени секции —
-        резултатите излизат на екрана и остават твои.
-      </p>
-      <p class="strip__text">
-        Ако не си сигурен кое от намереното е важно, преглеждам отчета лично и ти казвам кои три
-        неща да оправиш първо. Безплатно, до един работен ден.
-      </p>
-    </div>
-    <a class="btn btn--outline strip__cta" href="/analyzer/">Провери сайта си →</a>
-  </div>
-</section>
+{
+  show && (
+    <section id="analyzer" class="tool">
+      <div class="container tool__inner">
+        <div class="tool__copy">
+          <p class="eyebrow">{t.analyzerStrip.eyebrow}</p>
+          <h2 class="tool__title">{t.analyzerStrip.title}</h2>
+          <p class="tool__text">{t.analyzerStrip.body}</p>
+          <p class="tool__note">{t.analyzerStrip.note}</p>
+
+          <div class="tool__actions">
+            <a class="btn btn--primary" href="/analyzer/">
+              {t.analyzerStrip.cta}
+            </a>
+            <span class="tool__free">{t.analyzerStrip.free}</span>
+          </div>
+        </div>
+
+        <ul class="checks" aria-hidden="true">
+          {t.analyzerStrip.checks.map((check, i) => (
+            <li class="check" style={`--i: ${i}`}>
+              <span class="check__tick">✓</span>
+              {check}
+            </li>
+          ))}
+          <li class="check check--time">
+            <span class="check__tick check__tick--time">◷</span>
+            {t.analyzerStrip.seconds}
+          </li>
+        </ul>
+      </div>
+    </section>
+  )
+}
 
 <style>
-  .strip-wrap {
-    padding-block: 40px 0;
+  .tool {
+    padding-block: clamp(72px, 10vw, 128px);
+    background: var(--bg-sand);
+    border-block: 1px solid var(--line);
   }
 
-  .strip {
+  .tool__inner {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: clamp(36px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .tool__title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.2vw, 50px);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    margin: 14px 0 0;
+  }
+
+  .tool__text {
+    font-size: 16.5px;
+    line-height: 1.62;
+    color: var(--ink-body);
+    margin: 20px 0 0;
+    max-width: 54ch;
+  }
+
+  .tool__note {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 14px 0 0;
+    max-width: 54ch;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+  }
+
+  .tool__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: 30px;
+  }
+
+  .tool__free {
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+  }
+
+  /* ---------- какво проверява ---------- */
+
+  .checks {
+    list-style: none;
+    margin: 0;
+    padding: clamp(22px, 3vw, 32px);
+    display: grid;
+    gap: 2px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 24px;
-    padding: 32px 36px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .check {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    flex-wrap: wrap;
+    gap: 12px;
+    padding: 11px 4px;
+    font-size: 15.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
   }
 
-  .strip__title {
-    font-size: clamp(20px, 3vw, 26px);
-    letter-spacing: -0.025em;
-    margin: 8px 0 12px;
+  .check + .check {
+    border-top: 1px solid var(--line);
   }
 
-  .strip__text {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--ink-body);
-    margin: 0 0 8px;
-    max-width: 660px;
-  }
-
-  .strip__cta {
+  .check__tick {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
     flex: none;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
   }
 
-  @media (max-width: 680px) {
-    .strip {
-      padding: 24px 20px;
+  .check--time {
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  .check__tick--time {
+    background: var(--chip);
+    color: var(--ink-muted);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .check {
+        animation: check-in linear both;
+        animation-timeline: view();
+        /* Всеки ред тръгва малко след предишния — списъкът се „отмята“. */
+        animation-range: entry calc(6% + var(--i) * 5%) entry calc(46% + var(--i) * 5%);
+      }
+    }
+  }
+
+  @keyframes check-in {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .tool__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .tool__text,
+    .tool__note {
+      max-width: none;
     }
   }
 </style>

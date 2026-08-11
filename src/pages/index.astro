@@ -1,28 +1,35 @@
 ---
+/**
+ * Началната страница — разказ в шест движения, не каталог от единайсет секции.
+ *
+ * Беше: hero → агенти → услуги → анализатор → процес → за мен → продукти →
+ * пилот → цени → блог → CTA. Единайсет равностойни блока, през които
+ * читателят сам трябваше да си сглоби историята.
+ *
+ * Сега: закачка → напрежение → метод → каталог → безплатно доказателство →
+ * построено доказателство → кой съм → CTA. Услугите, процесът, цените,
+ * пилотът и условията се преместиха на `/services/`, където им е мястото:
+ * това е справочник, а не разказ, и вече има собствен адрес.
+ */
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/Hero.astro';
-import AgentCarousel from '../components/AgentCarousel.astro';
-import Services from '../components/Services.astro';
+import ScrollStatement from '../components/ScrollStatement.astro';
+import Journey from '../components/Journey.astro';
+import AgentIndex from '../components/AgentIndex.astro';
 import AnalyzerStrip from '../components/AnalyzerStrip.astro';
-import Process from '../components/Process.astro';
+import Proof from '../components/Proof.astro';
 import About from '../components/About.astro';
-import Products from '../components/Products.astro';
-import PilotProgram from '../components/PilotProgram.astro';
-import Pricing from '../components/Pricing.astro';
 import BlogPreview from '../components/BlogPreview.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 import { SITE } from '../data/site.mjs';
-import { TERMS } from '../data/content.ts';
-
-/** Set to `false` to hide the pricing section site-wide (the design's `showPricing` prop). */
-const SHOW_PRICING = true;
 
 /**
  * Един @graph с няколко възела вместо самотен ProfessionalService:
- * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка), а
- * FAQPage изкарва секцията с условията като двойки въпрос/отговор, които
- * отговарящите машини цитират директно. Въпросите идват от `TERMS`, за да
- * не се разминават с акордеона на страницата.
+ * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка).
+ *
+ * FAQPage вече НЕ е тук. Условията се преместиха на `/services/` заедно с
+ * акордеона си, а схема, която описва съдържание извън страницата, е
+ * грешка, която Search Console отчита.
  */
 const studioId = `${SITE.url}/#studio`;
 const structuredData = {
@@ -55,15 +62,6 @@ const structuredData = {
       inLanguage: 'bg',
       publisher: { '@id': studioId },
     },
-    {
-      '@type': 'FAQPage',
-      '@id': `${SITE.url}/#faq`,
-      mainEntity: TERMS.map((term) => ({
-        '@type': 'Question',
-        name: term.title,
-        acceptedAnswer: { '@type': 'Answer', text: term.body },
-      })),
-    },
   ],
 };
 ---
@@ -77,17 +75,13 @@ const structuredData = {
     />
   </Fragment>
 
-  {/* Редът следва финалното копие: hero → услуги (+ лентата на анализатора
-      до „Бизнес сайтове“) → процес → за мен → продукти → пилот → цени. */}
   <Hero />
-  <AgentCarousel />
-  <Services />
+  <ScrollStatement />
+  <Journey />
+  <AgentIndex />
   <AnalyzerStrip />
-  <Process />
+  <Proof />
   <About />
-  <Products />
-  <PilotProgram />
-  {SHOW_PRICING && <Pricing />}
-  <BlogPreview limit={4} />
+  <BlogPreview limit={3} />
   <CtaBanner />
 </BaseLayout>

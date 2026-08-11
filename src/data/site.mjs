@@ -86,7 +86,9 @@ export const META = {
 export const NAV_BY_LOCALE = {
   bg: [
     { label: 'Начало', href: '/' },
-    { label: 'Услуги', href: '/#services' },
+    /* Собствен адрес, не котва в началната: услугите, процесът, цените и
+       условията вече са отделна страница и могат да се класират сами. */
+    { label: 'Услуги', href: '/services/' },
     { label: 'AI агенти', href: '/agents/' },
     /** Временно „Проекти“ — връща се на „Казуси“ при първия външен казус. */
     { label: 'Проекти', href: '/projects/' },
@@ -96,7 +98,7 @@ export const NAV_BY_LOCALE = {
   ],
   en: [
     { label: 'Home', href: '/' },
-    { label: 'Services', href: '/#services' },
+    { label: 'Services', href: '/services/' },
     { label: 'AI agents', href: '/agents/' },
     { label: 'Projects', href: '/projects/' },
     { label: 'About', href: '/#about' },
