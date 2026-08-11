@@ -4,9 +4,17 @@
  * не по скрол — то е над сгъвката и никой не скролва до него).
  *
  * Посланието е същото, което вече работеше. Промени се мащабът: заглавието
- * е двойно по-едро, а всичко останало отстъпва под него. Портретът остава —
- * „работиш с мен, не с акаунт мениджър“ е обещание, което трудно се вярва
- * на сайт без лице.
+ * заема цялата ширина, а всичко останало отстъпва под него.
+ *
+ * Портретът СЛЕЗЕ от голямата снимка вдясно до кръгче до обещанието. Лицето
+ * не се маха — „работиш с мен, не с акаунт мениджър“ трудно се вярва на сайт
+ * без лице, а купувачът тук е малка фирма, която първо проверява дали насреща
+ * има истински човек. Но голямата снимка отговаряше на „кой“, докато
+ * читателят още пита „какво“, и делеше вниманието със заглавието.
+ *
+ * Сега лицето стои точно там, където е нужно: подписва изречението „ако
+ * процесът ти не става за автоматизация, ще ти го кажа“. Обещание с име и
+ * лице тежи повече от портрет, който плава встрани от текста.
  */
 import { Image } from 'astro:assets';
 import heroPortrait from '../assets/hero-portrait.png';
@@ -44,7 +52,27 @@ const who = owner(lang);
         <a class="btn btn--outline" href={localised('/services/', lang)}>{t.hero.ctaSecondary}</a>
       </div>
 
-      <p class="hero__subnote stagger" style="--s: 4">{t.hero.subnote}</p>
+      {/* Обещанието и човекът, който го дава — в един блок нарочно. */}
+      <div class="promise stagger" style="--s: 4">
+        <span class="promise__avatar">
+          <Image
+            class="promise__face"
+            src={heroPortrait}
+            alt={who.name}
+            widths={[128, 224, 336]}
+            sizes="112px"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </span>
+        <p class="promise__text">
+          {t.hero.subnote}
+          <span class="promise__who">
+            <strong>{who.name}</strong> · {who.role}
+          </span>
+        </p>
+      </div>
+
 
       {/* Анализаторът съществува само на български, затова редът към него се
           показва само там. */}
@@ -55,23 +83,6 @@ const who = owner(lang);
           </p>
         )
       }
-    </div>
-
-    <div class="hero__media stagger" style="--s: 2">
-      <div class="hero__blob" aria-hidden="true"></div>
-      <Image
-        class="hero__image"
-        src={heroPortrait}
-        alt={who.name}
-        widths={[380, 560, 780]}
-        sizes="(max-width: 900px) 70vw, 380px"
-        loading="eager"
-        fetchpriority="high"
-      />
-      <div class="hero__badge">
-        <p class="hero__badge-name">{who.name}</p>
-        <p class="hero__badge-role">{who.role}</p>
-      </div>
     </div>
   </div>
 
@@ -85,11 +96,9 @@ const who = owner(lang);
     padding-block: clamp(48px, 7vw, 96px) 0;
   }
 
+  /* Една колона: заглавието взима цялата ширина, нищо не се бори с него. */
   .hero__inner {
-    display: grid;
-    grid-template-columns: 1.35fr 0.65fr;
-    gap: clamp(32px, 5vw, 64px);
-    align-items: center;
+    display: block;
   }
 
   .availability {
@@ -115,11 +124,9 @@ const who = owner(lang);
   }
 
   /*
-   * Размерът се мери спрямо КОЛОНАТА, не спрямо екрана — затова `cqw`, а не
-   * `vw`. Най-дългата българска дума („Автоматизирам“) иска цялата ширина на
-   * колоната; при `vw` тя се чупеше на „Автоматизира / м“ на всяка ширина
-   * над 900px. Ограничението важи с още по-голяма сила сега, когато
-   * заглавието е с една трета по-едро.
+   * Размерът се мери спрямо КОНТЕЙНЕРА, не спрямо екрана — затова `cqw`, а
+   * не `vw`. Най-дългата българска дума („Автоматизирам“) иска цялата
+   * ширина; при `vw` тя се чупеше на „Автоматизира / м“ над 900px.
    */
   .hero__copy {
     container-type: inline-size;
@@ -127,7 +134,9 @@ const who = owner(lang);
 
   .hero__title {
     font-family: var(--font-display);
-    font-size: clamp(28px, 8.4cqw, 76px);
+    /* Колоната вече е цялата ширина, затова коефициентът пада — иначе
+       заглавието опира тавана още при 900px и спира да расте. */
+    font-size: clamp(28px, 6.6cqw, 80px);
     line-height: 1.01;
     letter-spacing: -0.045em;
     margin: 0;
@@ -154,12 +163,64 @@ const who = owner(lang);
     margin-top: 34px;
   }
 
-  .hero__subnote {
+  /* ---------- обещанието и лицето зад него ---------- */
+
+  .promise {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 22px 0 0;
+    max-width: 52ch;
+  }
+
+  /*
+   * Изворът е квадратен портрет до кръста: лицето заема горната трета и е
+   * леко вдясно от центъра. `object-fit: cover` върху квадрат показва
+   * ЦЕЛИЯ кадър, тоест в кръгчето лицето излиза колкото копче, а под него
+   * стои риза.
+   *
+   * Затова снимката е двойно по-голяма от рамката и е изместена така, че
+   * точката (60%, 28%) от кадъра — центърът на лицето — да падне в центъра
+   * на кръга. Видимият прозорец става горната половина: глава и рамене.
+   */
+  .promise__avatar {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    flex: none;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg-blush);
+    border: 1px solid var(--line);
+  }
+
+  .promise__face {
+    position: absolute;
+    width: 200%;
+    height: auto;
+    left: -70%;
+    top: -6%;
+    /* Глобалното `img { max-width: 100% }` иначе свива тези 200% обратно до
+       ширината на рамката и от кадъра остава само едно рамо. */
+    max-width: none;
+  }
+
+  .promise__text {
     font-size: 13.5px;
     line-height: 1.5;
     color: var(--ink-subtle);
-    margin: 14px 0 0;
-    max-width: 48ch;
+    margin: 0;
+  }
+
+  .promise__who {
+    display: block;
+    margin-top: 4px;
+    color: var(--ink-muted);
+  }
+
+  .promise__who strong {
+    color: var(--ink);
+    font-weight: 600;
   }
 
   .hero__analyzer {
@@ -178,51 +239,6 @@ const who = owner(lang);
 
   .hero__analyzer a:hover {
     border-color: var(--accent);
-  }
-
-  /* ---------- портретът ---------- */
-
-  .hero__media {
-    position: relative;
-    min-width: 0;
-  }
-
-  .hero__blob {
-    position: absolute;
-    inset: 12% -6% -2% 4%;
-    background: var(--bg-blush);
-    border-radius: 28px;
-  }
-
-  .hero__image {
-    position: relative;
-    width: 100%;
-    height: auto;
-    display: block;
-    filter: var(--shadow-hero);
-  }
-
-  .hero__badge {
-    position: absolute;
-    left: -12px;
-    bottom: 14px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 10px 14px;
-    box-shadow: var(--shadow-card);
-  }
-
-  .hero__badge-name {
-    font-weight: 700;
-    font-size: 13.5px;
-    margin: 0;
-  }
-
-  .hero__badge-role {
-    font-size: 12px;
-    color: var(--ink-muted);
-    margin: 2px 0 0;
   }
 
   /* ---------- лентата с обещанията ---------- */
@@ -258,23 +274,22 @@ const who = owner(lang);
   }
 
   @media (max-width: 900px) {
-    .hero__inner {
-      grid-template-columns: 1fr;
-      gap: 36px;
-    }
-
-    .hero__media {
-      order: -1;
-      max-width: 300px;
-    }
-
     .hero__lead,
-    .hero__subnote {
+    .promise {
       max-width: none;
     }
+  }
 
-    .hero__badge {
-      left: 0;
+  /* Под 380px кръгчето и двата реда текст до него не се събират в редица. */
+  @media (max-width: 380px) {
+    .promise {
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .promise__avatar {
+      width: 46px;
+      height: 46px;
     }
   }
 </style>
