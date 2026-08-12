@@ -30,9 +30,9 @@ export const UI = {
       analyzerQ: 'Имаш сайт?',
       analyzerA: 'Провери го безплатно за 15 секунди →',
       facts: [
-        '🤝 Работиш с мен, не с акаунт мениджър',
-        '🧪 Тръгваме с малък пилот, преди да влагаш бюджет',
-        '🎯 Целта, срокът и цената са ясни от офертата',
+        'Работиш с мен, не с акаунт мениджър',
+        'Тръгваме с малък пилот, преди да влагаш бюджет',
+        'Целта, срокът и цената са ясни от офертата',
       ],
     },
 
@@ -239,9 +239,9 @@ export const UI = {
       analyzerQ: '',
       analyzerA: '',
       facts: [
-        '🤝 You work with me, not an account manager',
-        '🧪 We start with a small pilot, before you commit a budget',
-        '🎯 Goal, deadline and price are settled in the quote',
+        'You work with me, not an account manager',
+        'We start with a small pilot, before you commit a budget',
+        'Goal, deadline and price are settled in the quote',
       ],
     },
 
