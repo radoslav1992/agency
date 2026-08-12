@@ -1,31 +1,23 @@
 ---
+/** Английското огледало на началната страница — същите шест движения. */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Hero from '../../components/Hero.astro';
-import AgentCarousel from '../../components/AgentCarousel.astro';
-import Services from '../../components/Services.astro';
-import Process from '../../components/Process.astro';
+import ScrollStatement from '../../components/ScrollStatement.astro';
+import Journey from '../../components/Journey.astro';
+import AgentIndex from '../../components/AgentIndex.astro';
+import Proof from '../../components/Proof.astro';
 import About from '../../components/About.astro';
-import Products from '../../components/Products.astro';
-import PilotProgram from '../../components/PilotProgram.astro';
-import Pricing from '../../components/Pricing.astro';
 import CtaBanner from '../../components/CtaBanner.astro';
 import { SITE } from '../../data/site.mjs';
 import { localeOf } from '../../i18n/index.ts';
-import { content, meta } from '../../i18n/content.ts';
+import { meta } from '../../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
-const { TERMS } = content(lang);
 const m = meta(lang);
 
-/** Set to `false` to hide the pricing section site-wide (the design's `showPricing` prop). */
-const SHOW_PRICING = true;
-
 /**
- * Един @graph с няколко възела вместо самотен ProfessionalService:
- * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка), а
- * FAQPage изкарва секцията с условията като двойки въпрос/отговор, които
- * отговарящите машини цитират директно. Въпросите идват от `TERMS`, за да
- * не се разминават с акордеона на страницата.
+ * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка).
+ * FAQPage се премести на `/en/services/` заедно с акордеона на условията.
  */
 const studioId = `${SITE.url}/#studio`;
 const structuredData = {
@@ -58,15 +50,6 @@ const structuredData = {
       inLanguage: 'en',
       publisher: { '@id': studioId },
     },
-    {
-      '@type': 'FAQPage',
-      '@id': `${SITE.url}/en/#faq`,
-      mainEntity: TERMS.map((term) => ({
-        '@type': 'Question',
-        name: term.title,
-        acceptedAnswer: { '@type': 'Answer', text: term.body },
-      })),
-    },
   ],
 };
 ---
@@ -83,12 +66,10 @@ const structuredData = {
   {/* Същият ред като на български, без двете секции, които съществуват
       само на български — анализаторът и блогът. */}
   <Hero />
-  <AgentCarousel />
-  <Services />
-  <Process />
+  <ScrollStatement />
+  <Journey />
+  <AgentIndex />
+  <Proof />
   <About />
-  <Products />
-  <PilotProgram />
-  {SHOW_PRICING && <Pricing />}
   <CtaBanner />
 </BaseLayout>

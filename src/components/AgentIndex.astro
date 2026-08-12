@@ -1,0 +1,523 @@
+---
+/**
+ * Каталогът с агентите — третото движение и заместникът на въртележката
+ * на началната страница.
+ *
+ * Въртележката показваше един агент и криеше останалите седем зад бутон.
+ * Указателят показва всичките наведнъж: имената стоят като списък вляво,
+ * а рисунката на посочения се сменя вдясно.
+ *
+ * Смяната е на чист CSS. Рисунките живеят ВЪТРЕ в редовете си (затова
+ * `.row:hover .row__shot` изобщо може да ги хване), но са позиционирани
+ * абсолютно върху сцената в дясната колона. Ширината им е същата променлива,
+ * с която е зададена и колоната, така че двете съвпадат на всяка ширина.
+ *
+ * Въртележката остава като компонент — ползва се на `/agents/`.
+ */
+import { Image } from 'astro:assets';
+import { agentShot } from '../data/agentShots.ts';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { agents as agentsFor, ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+const { AGENTS } = agentsFor(lang);
+---
+
+<section id="agents" class="agents">
+  <div class="container">
+    <header class="agents__head">
+      <div>
+        <p class="eyebrow">{t.agentIndex.eyebrow}</p>
+        <h2 class="agents__title">{t.agentIndex.title(AGENTS.length)}</h2>
+      </div>
+      <p class="agents__lead">{t.agentIndex.lead}</p>
+    </header>
+
+    <div class="index" data-agent-index>
+      <ol class="index__list">
+        {
+          AGENTS.map((agent, i) => {
+            const shot = agentShot(agent.id);
+            return (
+              <li class="row" style={`--i: ${i}`}>
+                <a class="row__link" href={localised(`/agents/#${agent.id}`, lang)}>
+                  <span class="row__n" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="row__ch">{agent.channel}</span>
+                  <span class="row__name">{agent.name}</span>
+                  <span class="row__arrow" aria-hidden="true">
+                    →
+                  </span>
+                </a>
+
+                {shot && (
+                  <figure class="row__shot">
+                    <Image
+                      src={shot}
+                      alt={agent.alt}
+                      widths={[420, 640, 880]}
+                      sizes="(max-width: 900px) 90vw, 560px"
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                    />
+                    <figcaption class="row__caption">{agent.short}</figcaption>
+                  </figure>
+                )}
+              </li>
+            );
+          })
+        }
+      </ol>
+
+      {/* Държи мястото на рисунките в решетката — самите те са абсолютни. */}
+      <div class="index__stage" aria-hidden="true"></div>
+    </div>
+
+    <p class="agents__foot">
+      <span class="agents__hint" aria-hidden="true">{t.agentIndex.hint}</span>
+      <a class="agents__all" href={localised('/agents/', lang)}>
+        {t.agentIndex.all(AGENTS.length)}
+      </a>
+    </p>
+  </div>
+</section>
+
+<script>
+  /*
+   * Каталогът се върти сам, докато никой не го гледа отблизо.
+   *
+   * Без това осмината агенти стоят като списък и посетителят вижда само
+   * първата рисунка — движението е и подсказка, че редовете са живи.
+   *
+   * Един източник на истина: атрибутът `data-live` върху активния ред.
+   * Таймерът го мести, посочването също го мести. Затова няма състояние,
+   * в което две рисунки светят наведнъж или сцената остава празна, докато
+   * показалецът е между два реда.
+   *
+   * Три спирачки:
+   *   • под 901px оформлението е в една колона и всяка рисунка си стои под
+   *     реда — там няма какво да се върти;
+   *   • „по-малко движение“ спира въртенето изцяло;
+   *   • извън екрана таймерът не тече.
+   *
+   * Без JavaScript секцията не се чупи: CSS показва първия агент и
+   * посочването продължава да сменя рисунката.
+   */
+  const index = document.querySelector<HTMLElement>('[data-agent-index]');
+  const rows = index ? [...index.querySelectorAll<HTMLElement>('.row')] : [];
+
+  if (index && rows.length > 1) {
+    /** Колко се задържа един агент, преди да дойде следващият. */
+    const HOLD = 3400;
+
+    const wide = matchMedia('(min-width: 901px)');
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
+    const mayRotate = () => wide.matches && !calm.matches;
+
+    let current = 0;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    let onScreen = false;
+    /** `true`, докато показалецът или клавиатурата командват избора. */
+    let held = false;
+
+    const show = (n: number) => {
+      current = n;
+      rows.forEach((row, i) => row.toggleAttribute('data-live', i === n));
+    };
+
+    const stop = () => {
+      if (timer !== null) clearInterval(timer);
+      timer = null;
+    };
+
+    const run = () => {
+      stop();
+      if (!onScreen || held || !mayRotate()) return;
+      index.setAttribute('data-rotating', '');
+      show(current);
+      timer = setInterval(() => show((current + 1) % rows.length), HOLD);
+    };
+
+    /** Посочването не спира каталога — то само поема кормилото. */
+    rows.forEach((row, i) => {
+      row.addEventListener('pointerenter', () => {
+        if (!mayRotate()) return;
+        held = true;
+        stop();
+        show(i);
+      });
+    });
+
+    index.addEventListener('pointerleave', () => {
+      held = false;
+      run();
+    });
+
+    index.addEventListener('focusin', (event) => {
+      if (!mayRotate()) return;
+      const i = rows.findIndex((row) => row.contains(event.target as Node));
+      if (i < 0) return;
+      held = true;
+      stop();
+      show(i);
+    });
+
+    index.addEventListener('focusout', (event) => {
+      if (index.contains(event.relatedTarget as Node | null)) return;
+      held = false;
+      run();
+    });
+
+    new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        run();
+      },
+      { threshold: 0.3 },
+    ).observe(index);
+
+    /* Завъртане на телефона и смяна на настройката за движение. */
+    const reset = () => {
+      if (mayRotate()) {
+        run();
+        return;
+      }
+      stop();
+      index.removeAttribute('data-rotating');
+      rows.forEach((row) => row.removeAttribute('data-live'));
+    };
+    wide.addEventListener('change', reset);
+    calm.addEventListener('change', reset);
+  }
+</script>
+
+<style>
+  .agents {
+    padding-block: clamp(72px, 10vw, 132px);
+  }
+
+  .agents__head {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+    align-items: end;
+    margin-bottom: clamp(36px, 5vw, 64px);
+  }
+
+  .agents__title {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.6vw, 56px);
+    line-height: 1.03;
+    letter-spacing: -0.04em;
+    margin: 14px 0 0;
+  }
+
+  .agents__lead {
+    font-size: 16.5px;
+    line-height: 1.62;
+    color: var(--ink-body);
+    margin: 0;
+    max-width: 44ch;
+  }
+
+  /* ---------- указателят ---------- */
+
+  .index {
+    /* Едно число за колоната И за рисунките — иначе двете се разминават. */
+    --stage: 52%;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--stage);
+    gap: clamp(28px, 4vw, 56px);
+    align-items: start;
+  }
+
+  .index__stage {
+    grid-column: 2;
+    aspect-ratio: 5 / 4;
+    border-radius: 26px;
+    background: var(--bg-sand);
+    border: 1px solid var(--line);
+  }
+
+  .index__list {
+    grid-column: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .row {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row__link {
+    display: grid;
+    grid-template-columns: auto 5.5em 1fr auto;
+    align-items: baseline;
+    gap: 14px;
+    padding: clamp(13px, 1.6vw, 19px) 4px;
+    color: var(--ink);
+    transition: color 0.2s ease;
+  }
+
+  .row__n {
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-faint);
+    transition: color 0.2s ease;
+  }
+
+  .row__ch {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    transition: color 0.2s ease;
+  }
+
+  .row__name {
+    font-family: var(--font-display);
+    font-size: clamp(15px, 1.6vw, 19px);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+  }
+
+  .row__arrow {
+    color: var(--ink-faint);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      color 0.2s ease;
+  }
+
+  /* ---------- рисунката, позиционирана върху сцената ---------- */
+
+  .row__shot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--stage);
+    aspect-ratio: 5 / 4;
+    margin: 0;
+    border-radius: 26px;
+    overflow: hidden;
+    background: var(--bg-sand);
+    border: 1px solid var(--line);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.32s ease,
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .row__shot :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .row__caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 48px 22px 18px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #fff;
+    /* Рисунките са светли — плитък градиент оставя белия текст нечетим
+       върху най-светлите им части. Затова три спирки, не две. */
+    background: linear-gradient(
+      to top,
+      rgba(22, 19, 15, 0.95) 0%,
+      rgba(22, 19, 15, 0.78) 45%,
+      rgba(22, 19, 15, 0) 100%
+    );
+  }
+
+  /*
+   * Активният ред има ЕДИН източник на истина: атрибутът `data-live`, който
+   * слага скриптът отдолу. Той го мести и сам (въртене), и при посочване.
+   *
+   * Правилата за `:hover` стоят до него за случая без JavaScript — тогава
+   * въртене няма, но посочването продължава да работи. По същата причина
+   * долното правило показва първия агент само докато скриптът не е поел
+   * (`:not([data-rotating])`).
+   */
+  .index:not([data-rotating]):not(:hover):not(:focus-within) .row:first-child .row__shot {
+    opacity: 1;
+  }
+
+  .index:not([data-rotating]):not(:hover):not(:focus-within) .row:first-child .row__name {
+    color: var(--accent);
+  }
+
+  .row[data-live] .row__shot,
+  .row:hover .row__shot,
+  .row:focus-within .row__shot {
+    opacity: 1;
+    transform: scale(1.012);
+  }
+
+  .row[data-live] .row__link,
+  .row:hover .row__link,
+  .row:focus-within .row__link {
+    color: var(--accent);
+  }
+
+  .row[data-live] .row__n,
+  .row[data-live] .row__ch,
+  .row:hover .row__n,
+  .row:focus-within .row__n,
+  .row:hover .row__ch,
+  .row:focus-within .row__ch {
+    color: var(--accent);
+  }
+
+  .row[data-live] .row__arrow,
+  .row:hover .row__arrow,
+  .row:focus-within .row__arrow {
+    opacity: 1;
+    transform: none;
+    color: var(--accent);
+  }
+
+  /* ---------- подът ---------- */
+
+  .agents__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    margin: clamp(28px, 3.5vw, 44px) 0 0;
+  }
+
+  .agents__hint {
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+  }
+
+  .agents__all {
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 3px;
+    transition:
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .agents__all:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /*
+       * Появата виси на ВРЪЗКАТА, не на реда. `transform` върху реда прави
+       * от него containing block и рисунката вътре спира да се мери спрямо
+       * `.index` — тоест каца върху списъка вляво, вместо върху сцената
+       * вдясно. Редът трябва да остане нетрансформиран.
+       */
+      .row__link {
+        animation: row-in linear both;
+        animation-timeline: view();
+        animation-range: entry 2% cover 18%;
+      }
+    }
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ---------- телефон и таблет ----------
+     Няма посочване с мишка, значи няма и сцена: всеки ред си носи
+     рисунката под себе си. */
+  @media (max-width: 900px) {
+    .agents__head {
+      grid-template-columns: 1fr;
+      align-items: start;
+      gap: 18px;
+    }
+
+    .agents__lead {
+      max-width: none;
+    }
+
+    .index {
+      display: block;
+    }
+
+    .index__stage {
+      display: none;
+    }
+
+    .index__list {
+      border-top: 0;
+    }
+
+    .row {
+      border-bottom: 0;
+      padding-bottom: 28px;
+    }
+
+    .row + .row {
+      padding-top: 4px;
+    }
+
+    .row__link {
+      grid-template-columns: auto 1fr auto;
+      padding-inline: 0;
+    }
+
+    .row__ch {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      margin-top: 2px;
+    }
+
+    .row__shot {
+      position: static;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      opacity: 1;
+      margin-top: 12px;
+    }
+
+    /* Без мишка няма посочване, значи стрелката трябва да се вижда винаги —
+       иначе нищо не подсказва, че редът е връзка. */
+    .row__arrow {
+      opacity: 1;
+      transform: none;
+    }
+
+    .row:hover .row__shot,
+    .row:focus-within .row__shot {
+      transform: none;
+    }
+
+    .agents__hint {
+      display: none;
+    }
+  }
+</style>

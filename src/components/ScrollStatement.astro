@@ -1,0 +1,154 @@
+---
+/**
+ * Изявлението веднага след hero-а — първото от четирите движения на
+ * началната страница.
+ *
+ * Секцията е висока три екрана, а съдържанието ѝ е закачено (`sticky`) в
+ * средата. Докато читателят минава през тези три екрана, редовете се
+ * появяват един по един. Няма JavaScript: `view-timeline` върху високия
+ * елемент дава на всеки ред собствен отрязък от скрола.
+ *
+ * Защо фазата е `contain`: при елемент, по-висок от екрана, `contain 0%`
+ * съвпада с мига, в който закачането започва, а `contain 100%` — с мига,
+ * в който пуска. Тоест диапазонът на анимацията е точно колкото
+ * задържането, независимо от височината на екрана.
+ */
+import { localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+---
+
+<section class="statement" aria-labelledby="statement-heading">
+  <div class="statement__track">
+    <div class="statement__pin">
+      <div class="statement__inner container">
+        <p class="eyebrow statement__eyebrow">{t.statement.eyebrow}</p>
+        {/* Едно заглавие за екранните четци и за плана на документа —
+            нарязването на редове е визуално решение, не смислово. */}
+        <h2 id="statement-heading" class="visually-hidden">
+          {t.statement.lines.map((line) => line.text).join(' ')}
+        </h2>
+        <p class="statement__lines" aria-hidden="true">
+          {
+            t.statement.lines.map((line, i) => (
+              <span
+                class:list={['statement__line', line.accent && 'statement__line--accent']}
+                style={`--i: ${i}`}
+              >
+                {line.text}
+              </span>
+            ))
+          }
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .statement {
+    background: var(--ink);
+    color: var(--dark-ink);
+  }
+
+  /* Височината е „колко скрол трае задържането“. */
+  .statement__track {
+    height: 260vh;
+    view-timeline-name: --statement;
+    view-timeline-axis: block;
+  }
+
+  .statement__pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    align-content: center;
+    overflow: hidden;
+  }
+
+  /*
+   * Заглавието се мери спрямо контейнера, не спрямо екрана — „машината
+   * върши“ е с една трета по-дълго от „a machine could do“ и при `vw`
+   * българската версия излиза извън полето.
+   */
+  .statement__inner {
+    container-type: inline-size;
+    width: 100%;
+  }
+
+  .statement__eyebrow {
+    color: var(--accent);
+    margin: 0 0 clamp(20px, 4cqw, 44px);
+  }
+
+  .statement__lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.04em;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    /*
+     * 11cqw, а не по-малко: на телефон колоната е около 350px и всичко под
+     * този коефициент свежда „изявлението“ до размера на обикновен абзац.
+     * Горе е спряно на 104px, защото най-дългият български ред („машината
+     * върши“) точно опира ръба на контейнера при широк екран.
+     */
+    font-size: clamp(34px, 11cqw, 104px);
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+
+  .statement__line {
+    display: block;
+    /* Базовото състояние е КРАЙНОТО — без поддръжка на анимация по скрол
+       читателят вижда завършеното изявление, а не празен екран. */
+    opacity: 1;
+  }
+
+  .statement__line--accent {
+    color: var(--accent);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .statement__line {
+        animation: line-in linear both;
+        animation-timeline: --statement;
+        /* Всеки ред тръгва 13% след предишния и трае 20% от задържането.
+           Последният приключва на 72% и остава четим до края. */
+        animation-range: contain calc(var(--i) * 13%) contain calc(var(--i) * 13% + 20%);
+      }
+    }
+  }
+
+  @keyframes line-in {
+    from {
+      opacity: 0.12;
+      transform: translateY(0.22em);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /*
+   * На телефон задържането е по-кратко: три екрана скрол за пет реда е
+   * дълго, когато редовете и без това заемат целия екран.
+   */
+  /*
+   * По-къса писта на телефон. Задържането трае `височина − 100vh`, тоест
+   * при 200vh закачането пуска още на половината, а останалият екран
+   * изтича празен под текста. 180vh дава 80vh задържане — достатъчно за
+   * петте реда и без увисналото тъмно поле накрая.
+   */
+  @media (max-width: 640px) {
+    .statement__track {
+      height: 180vh;
+    }
+  }
+</style>

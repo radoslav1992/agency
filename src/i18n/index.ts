@@ -56,7 +56,16 @@ export function href(path: string, locale: Locale): string {
  * `hreflang` към несъществуваща страница е грешка, която Search Console
  * отчита. Същият списък пази и превключвателя да не води в нищото.
  */
-const TRANSLATED = ['/', '/agents/', '/projects/', '/contact/', '/terms/', '/privacy/', '/cookies/'];
+const TRANSLATED = [
+  '/',
+  '/services/',
+  '/agents/',
+  '/projects/',
+  '/contact/',
+  '/terms/',
+  '/privacy/',
+  '/cookies/',
+];
 
 /** Пътят без езиков префикс — за сравнение между двата езика. */
 export function barePath(pathname: string): string {

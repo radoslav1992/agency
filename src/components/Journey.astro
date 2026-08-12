@@ -1,0 +1,246 @@
+---
+/**
+ * „Намери работата“ — второто движение: Открий → Построй → Работи.
+ *
+ * Заглавието стои закачено вляво, докато трите стъпки минават отдясно, а
+ * вертикалната релса между тях се пълни според скрола. Заменя подробния
+ * `Process` на началната страница; пълните четири стъпки и условията
+ * живеят на `/services/`.
+ */
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+---
+
+<section id="journey" class="journey">
+  <div class="journey__inner container">
+    <div class="journey__head">
+      <p class="eyebrow">{t.journey.eyebrow}</p>
+      <h2 class="journey__title">{t.journey.title}</h2>
+      <p class="journey__lead">{t.journey.lead}</p>
+      <a class="journey__link" href={localised('/services/', lang)}>
+        {t.process.title} →
+      </a>
+    </div>
+
+    <ol class="journey__steps">
+      {
+        t.journey.steps.map((step, i) => (
+          <li class="step" style={`--i: ${i}`}>
+            <span class="step__n" aria-hidden="true">
+              {step.n}
+            </span>
+            <div class="step__body">
+              <h3 class="step__title">{step.title}</h3>
+              <p class="step__kicker">{step.kicker}</p>
+              <p class="step__text">{step.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .journey {
+    background: var(--bg-sand);
+    border-block: 1px solid var(--line);
+    padding-block: clamp(72px, 10vw, 132px);
+  }
+
+  .journey__inner {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(40px, 6vw, 88px);
+    align-items: start;
+  }
+
+  .journey__head {
+    position: sticky;
+    /* Под лепкавия хедър, иначе заглавието застава под него. */
+    top: calc(var(--header-h) + 32px);
+  }
+
+  .journey__title {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.4vw, 52px);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    margin: 14px 0 0;
+  }
+
+  .journey__lead {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 18px 0 0;
+    max-width: 34ch;
+  }
+
+  .journey__link {
+    display: inline-block;
+    margin-top: 22px;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line-strong);
+    padding-bottom: 3px;
+    transition:
+      color 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .journey__link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ---------- стъпките ---------- */
+
+  .journey__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    /* Релсата отдолу се движи по този таймлайн. */
+    view-timeline-name: --journey;
+    view-timeline-axis: block;
+  }
+
+  /* Сивата релса и цветното ѝ пълнене — двата слоя на едно и също място. */
+  .journey__steps::before,
+  .journey__steps::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    bottom: 2.4em;
+    width: 2px;
+    border-radius: 2px;
+  }
+
+  .journey__steps::before {
+    background: var(--line-strong);
+  }
+
+  .journey__steps::after {
+    background: var(--accent);
+    transform-origin: top;
+    /* Без поддръжка релсата е пълна — по-добре от вечно празна. */
+    transform: scaleY(1);
+  }
+
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(20px, 3vw, 40px);
+    padding-left: clamp(26px, 4vw, 48px);
+  }
+
+  .step + .step {
+    margin-top: clamp(48px, 7vw, 92px);
+  }
+
+  .step__n {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4.6vw, 58px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--ink-faint);
+  }
+
+  .step__title {
+    font-size: clamp(24px, 3.4vw, 38px);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .step__kicker {
+    font-size: clamp(16px, 1.5vw, 19px);
+    line-height: 1.45;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 10px 0 0;
+  }
+
+  .step__text {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink-body);
+    margin: 14px 0 0;
+    max-width: 46ch;
+  }
+
+  /* ---------- движението ---------- */
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .journey__steps::after {
+        animation: rail linear both;
+        animation-timeline: --journey;
+        /* `entry 80% → exit 20%` работи и когато списъкът е по-нисък от
+           екрана, за разлика от чистата фаза `contain`. */
+        animation-range: entry 80% exit 20%;
+      }
+
+      .step {
+        animation: rise linear both;
+        animation-timeline: view();
+        animation-range: entry 4% cover 24%;
+      }
+
+      /* Числото пламва точно когато стъпката застане в екрана. */
+      .step__n {
+        animation: number-live linear both;
+        animation-timeline: view();
+        animation-range: entry 45% cover 32%;
+      }
+    }
+  }
+
+  @keyframes rail {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes number-live {
+    from {
+      color: var(--ink-faint);
+    }
+    to {
+      color: var(--accent);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .journey__inner {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .journey__head {
+      position: static;
+    }
+
+    .journey__lead {
+      max-width: none;
+    }
+
+    .step {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-left: 24px;
+    }
+  }
+</style>

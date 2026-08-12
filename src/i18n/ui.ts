@@ -44,6 +44,78 @@ export const UI = {
       pick: 'Избор на агент',
     },
 
+    /*
+     * Изявлението след hero-а. Всеки ред се появява отделно при скрол,
+     * затова текстът е нарязан по редове, а не на едно изречение —
+     * пренасянето не бива да зависи от ширината на екрана.
+     *
+     * `accent` стои изрично навсякъде, включително `false`. При `as const`
+     * пропуснатото свойство липсва в типа и `astro check` се спъва в
+     * обединението на двата езика.
+     */
+    statement: {
+      eyebrow: 'Защо изобщо',
+      lines: [
+        { text: 'Екипът ти губи', accent: false },
+        { text: 'часове', accent: true },
+        { text: 'за неща, които', accent: false },
+        { text: 'машината върши', accent: false },
+        { text: 'за секунди', accent: true },
+      ],
+    },
+
+    journey: {
+      eyebrow: 'Как става',
+      title: 'Намери работата.',
+      lead: 'Три стъпки. Всяка завършва с нещо, което можеш да пипнеш.',
+      steps: [
+        {
+          n: '01',
+          title: 'Открий',
+          kicker: 'Къде изтичат времето и парите.',
+          body: 'Минаваме процеса такъв, какъвто е днес, и броим часовете и стъпките, в които се губят. Ако нищо тук не си струва да се автоматизира, чуваш го на първия разговор — безплатно.',
+        },
+        {
+          n: '02',
+          title: 'Построй',
+          kicker: 'Процесът става система.',
+          body: 'Тръгваме с ограничен пилот върху твоите реални данни, не с демонстрация върху измислени. Виждаш работеща версия още докато я правя, а не чак накрая.',
+        },
+        {
+          n: '03',
+          title: 'Работи',
+          kicker: 'Всеки ден, без някой да натиска бутони.',
+          body: 'Пускане, документация, всички достъпи и обучение да работиш сам със системата. Какво покривам след пускането пише в офертата — преди да започнем, не после.',
+        },
+      ],
+    },
+
+    agentIndex: {
+      eyebrow: 'AI агенти',
+      /* Броят идва от `AGENTS.length` — заглавие с изписано число остарява
+         тихо в деня, в който се добави девети агент. */
+      title: (n: number) => `${n} готови агента.`,
+      lead: 'Всеки поема по един канал от край до край — глас, чат, поща, документи. Пакетирани, с познат обхват и предвидима цена.',
+      hint: 'Посочи агент, за да го видиш.',
+      all: (n: number) => `Всичките ${n} агента, с обхват и ограничения →`,
+    },
+
+    proof: {
+      eyebrow: 'Доказателството',
+      title: 'Не говоря за AI. Строя го.',
+      lead: 'Работещи продукти, които можеш да отвориш в нов раздел още сега. Не са казуси на хартия.',
+      open: 'Отвори',
+      all: (n: number) => `Всички ${n} проекта →`,
+    },
+
+    servicesPage: {
+      title: 'Услуги, процес и цени',
+      description:
+        'AI агенти, автоматизации, вътрешни системи и бизнес сайтове — с процеса, ориентировъчните бюджети и условията, казани предварително.',
+      heading: 'Какво правя и как работя',
+      lead: 'Какво правя, как протича работата, колко струва и при какви условия. Всичко на една страница, за да не го питаш по имейл.',
+    },
+
     services: {
       eyebrow: 'Услуги',
       title: 'С какво мога да помогна',
@@ -59,13 +131,15 @@ export const UI = {
       body: 'SEO, скорост, сигурност, достъпност, използвани технологии и това дали AI търсачките могат да четат сайта ти. Отнема 15 секунди. Без регистрация, без имейл и без заключени секции — резултатите излизат на екрана и остават твои.',
       note: 'Ако не си сигурен кое от намереното е важно, преглеждам отчета лично и ти казвам кои три неща да оправиш първо. Безплатно, до един работен ден.',
       cta: 'Провери сайта си →',
+      checks: ['SEO', 'Скорост', 'Сигурност', 'Достъпност', 'Технологии', 'Четимост за AI'],
+      seconds: '15 секунди',
+      free: 'Без регистрация и без имейл',
     },
 
     process: { eyebrow: 'Процес', title: 'Как протича работата', terms: 'Важните условия — ясни още в началото' },
 
     about: {
       eyebrow: 'За мен',
-      imageAlt: 'Радослав Додников на сцената на техническа конференция',
       projectsStat: (total: number, forClients: number) =>
         ({ value: String(total), label: `пуснати проекта — ${forClients} от тях за клиенти` }),
     },
@@ -179,6 +253,67 @@ export const UI = {
       pick: 'Choose an agent',
     },
 
+    statement: {
+      eyebrow: 'Why bother',
+      lines: [
+        { text: 'Your team spends', accent: false },
+        { text: 'hours', accent: true },
+        { text: 'doing things', accent: false },
+        { text: 'a machine could do', accent: false },
+        { text: 'in seconds', accent: true },
+      ],
+    },
+
+    journey: {
+      eyebrow: 'How it goes',
+      title: 'Find the work.',
+      lead: 'Three steps. Each one ends with something you can actually touch.',
+      steps: [
+        {
+          n: '01',
+          title: 'Discover',
+          kicker: 'Where the time and the money disappear.',
+          body: 'We walk the process exactly as it runs today and count the hours and the steps that leak them. If nothing here is worth automating, you hear it on the first call — free.',
+        },
+        {
+          n: '02',
+          title: 'Build',
+          kicker: 'The process becomes a system.',
+          body: 'We start with a limited pilot on your real data, not a demo on invented data. You see a working version while I am building it, not at the end.',
+        },
+        {
+          n: '03',
+          title: 'Run',
+          kicker: 'Every day, without someone pushing buttons.',
+          body: 'Launch, documentation, every access credential and training so you can run it yourself. What I cover after launch is in the quote — before we start, not after.',
+        },
+      ],
+    },
+
+    agentIndex: {
+      eyebrow: 'AI agents',
+      title: (n: number) => `${n} agents, ready to go.`,
+      lead: 'Each one takes a single channel end to end — voice, chat, inbox, documents. Packaged, with a known scope and a predictable price.',
+      hint: 'Point at an agent to see it.',
+      all: (n: number) => `All ${n} agents, with scope and limits →`,
+    },
+
+    proof: {
+      eyebrow: 'The proof',
+      title: "I don't talk about AI. I build it.",
+      lead: 'Working products you can open in a new tab right now. Not case studies on paper.',
+      open: 'Open',
+      all: (n: number) => `All ${n} projects →`,
+    },
+
+    servicesPage: {
+      title: 'Services, process and pricing',
+      description:
+        'AI agents, automation, internal systems and business websites — with the process, indicative budgets and terms stated upfront.',
+      heading: 'What I do and how I work',
+      lead: 'What I do, how the work goes, what it costs and on what terms. All on one page, so you never have to ask by email.',
+    },
+
     services: {
       eyebrow: 'Services',
       title: 'What I can help with',
@@ -188,19 +323,23 @@ export const UI = {
       change: 'What changes',
     },
 
+    /* Анализаторът съществува само на български. Празният `title` е
+       сигналът, по който секцията не се рендерира на английски. */
     analyzerStrip: {
       eyebrow: '',
       title: '',
       body: '',
       note: '',
       cta: '',
+      checks: [],
+      seconds: '',
+      free: '',
     },
 
     process: { eyebrow: 'Process', title: 'How the work goes', terms: 'The terms that matter — stated upfront' },
 
     about: {
       eyebrow: 'About me',
-      imageAlt: 'Radoslav Dodnikov speaking at a technical conference',
       projectsStat: (total: number, forClients: number) =>
         ({ value: String(total), label: `projects shipped — ${forClients} of them for clients` }),
     },
