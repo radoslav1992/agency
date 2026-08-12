@@ -194,7 +194,6 @@ export const ABOUT = {
     'Генеративен изкуствен интелект',
     'SEO & GEO',
   ],
-  imageCaption: 'Лекция на техническа конференция, София',
 };
 
 export type Plan = {

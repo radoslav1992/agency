@@ -140,7 +140,6 @@ export const UI = {
 
     about: {
       eyebrow: 'За мен',
-      imageAlt: 'Радослав Додников на сцената на техническа конференция',
       projectsStat: (total: number, forClients: number) =>
         ({ value: String(total), label: `пуснати проекта — ${forClients} от тях за клиенти` }),
     },
@@ -341,7 +340,6 @@ export const UI = {
 
     about: {
       eyebrow: 'About me',
-      imageAlt: 'Radoslav Dodnikov speaking at a technical conference',
       projectsStat: (total: number, forClients: number) =>
         ({ value: String(total), label: `projects shipped — ${forClients} of them for clients` }),
     },

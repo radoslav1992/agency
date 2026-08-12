@@ -1,11 +1,24 @@
 ---
+/**
+ * „За мен“.
+ *
+ * Портретът се върна тук — със същата рамка, която носеше в hero-а: топло
+ * петно отзад, мека сянка и табелка с името. В hero-а той отговаряше на
+ * „кой“, докато читателят още пита „какво“; тук въпросът вече е зададен и
+ * снимката е на място.
+ *
+ * Няма подпис под снимката: предишният описваше лекция на конференция и
+ * след смяната на кадъра щеше да описва нещо, което не се вижда. Името и
+ * длъжността ги казва табелката.
+ */
 import { Image } from 'astro:assets';
-import stageImage from '../assets/stage-talk.png';
+import portrait from '../assets/hero-portrait.png';
 import { localeOf } from '../i18n/index.ts';
-import { content, projects as projectsFor, ui } from '../i18n/content.ts';
+import { content, owner, projects as projectsFor, ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
 const t = ui(lang);
+const who = owner(lang);
 const { ABOUT } = content(lang);
 const { PROJECTS } = projectsFor(lang);
 
@@ -22,15 +35,19 @@ const stats = [...ABOUT.stats, t.about.projectsStat(PROJECTS.length, clientCount
 <section id="about" class="about">
   <div class="container inner">
     <figure class="figure">
+      <div class="figure__blob" aria-hidden="true"></div>
       <Image
         class="figure__image"
-        src={stageImage}
-        alt={t.about.imageAlt}
+        src={portrait}
+        alt={who.name}
         widths={[400, 620, 900]}
         sizes="(max-width: 900px) 90vw, 460px"
         loading="lazy"
       />
-      <figcaption class="figure__caption">{ABOUT.imageCaption}</figcaption>
+      <div class="figure__badge">
+        <p class="figure__badge-name">{who.name}</p>
+        <p class="figure__badge-role">{who.role}</p>
+      </div>
     </figure>
 
     <div class="copy">
@@ -74,21 +91,56 @@ const stats = [...ABOUT.stats, t.about.projectsStat(PROJECTS.length, clientCount
     align-items: center;
   }
 
+  /* ---------- портретът, с рамката от hero-а ---------- */
+
   .figure {
     margin: 0;
+    position: relative;
+    min-width: 0;
+  }
+
+  /*
+   * Петното е с тон по-тъмно от фона на секцията, не в `--bg-blush` както в
+   * hero-а. Там то лежеше върху най-светлия фон (`--bg`) и се четеше; тук
+   * фонът вече е топъл (`--bg-sand-strong`) и двата цвята се различаваха с
+   * по-малко от процент — рамката просто изчезваше.
+   */
+  .figure__blob {
+    position: absolute;
+    inset: 12% -6% -2% 4%;
+    background: var(--line);
+    border-radius: 28px;
   }
 
   .figure__image {
+    position: relative;
     width: 100%;
     height: auto;
     display: block;
-    border-radius: 24px;
+    filter: var(--shadow-hero);
   }
 
-  .figure__caption {
-    font-size: 13px;
-    color: var(--ink-subtle);
-    margin-top: 12px;
+  .figure__badge {
+    position: absolute;
+    left: -12px;
+    bottom: 14px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 10px 14px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .figure__badge-name {
+    font-weight: 700;
+    font-size: 13.5px;
+    margin: 0;
+  }
+
+  .figure__badge-role {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin: 2px 0 0;
   }
 
   .copy__text {
@@ -162,7 +214,15 @@ const stats = [...ABOUT.stats, t.about.projectsStat(PROJECTS.length, clientCount
     }
 
     .figure {
-      max-width: 460px;
+      /* Петното се подава с 6% вдясно от снимката. Без този резерв то
+         опира ръба на екрана и страницата тръгва настрани. */
+      max-width: min(420px, 100% - 26px);
+      margin-inline: auto;
+    }
+
+    /* Табелката не виси извън екрана, когато снимката е центрирана. */
+    .figure__badge {
+      left: 0;
     }
   }
 

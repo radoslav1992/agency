@@ -163,7 +163,6 @@ export const ABOUT = {
     'Generative AI',
     'SEO & GEO',
   ],
-  imageCaption: 'Speaking at a technical conference in Sofia',
 };
 
 /**
