@@ -8,7 +8,7 @@ import Footer from '../components/Footer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import { SITE } from '../data/site.mjs';
 import { alternates, HTML_LANG, localeOf, OG_LOCALE } from '../i18n/index.ts';
-import { meta, ui } from '../i18n/content.ts';
+import { brand, meta, owner, ui } from '../i18n/content.ts';
 
 interface Props {
   title?: string;
@@ -22,6 +22,8 @@ interface Props {
 const lang = localeOf(Astro.currentLocale);
 const t = ui(lang);
 const m = meta(lang);
+const studio = brand(lang);
+const who = owner(lang);
 
 const {
   title,
@@ -31,7 +33,9 @@ const {
   noindex = false,
 } = Astro.props;
 
-const pageTitle = title ? `${title} — ${SITE.name}` : m.title;
+/* Името на студиото следва езика — иначе английските подстраници
+   завършваха с „— Кова студио“. */
+const pageTitle = title ? `${title} — ${studio.name}` : m.title;
 const canonicalUrl = new URL(canonical ?? Astro.url.pathname, Astro.site ?? Astro.url.origin);
 const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
 
@@ -78,7 +82,7 @@ const origin = Astro.site ?? Astro.url.origin;
     }
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <meta name="author" content={SITE.owner.name} />
+    <meta name="author" content={who.name} />
     <link rel="canonical" href={canonicalUrl} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
@@ -107,7 +111,7 @@ const origin = Astro.site ?? Astro.url.origin;
     <meta name="theme-color" content="#F6F3EE" />
 
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:site_name" content={studio.name} />
     <meta property="og:locale" content={OG_LOCALE[lang]} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
@@ -115,7 +119,7 @@ const origin = Astro.site ?? Astro.url.origin;
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="alternate" type="application/rss+xml" title={`${t.layout.blogTitle} — ${SITE.name}`} href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${t.layout.blogTitle} — ${studio.name}`} href="/rss.xml" />
     <slot name="head" />
   </head>
   <body>

@@ -3,10 +3,12 @@ import { Image } from 'astro:assets';
 import logoMark from '../assets/brand/logo-mark.webp';
 import { SITE } from '../data/site.mjs';
 import { href as localised, localeOf } from '../i18n/index.ts';
-import { cta, legalName, nav, ui } from '../i18n/content.ts';
+import { brand, cta, legalName, location, nav, ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
 const t = ui(lang);
+const studio = brand(lang);
+const where = location(lang);
 /* Същата навигация като горе плюс контактите — на английски анализаторът
    и блогът просто липсват, защото ги няма на този език. */
 const links = [...nav(lang).filter((item) => item.href !== '/'), cta(lang)];
@@ -27,10 +29,10 @@ const year = new Date().getFullYear();
           sizes="26px"
           loading="lazy"
         />
-        <span class="brand__name">{SITE.name}</span>
+        <span class="brand__name">{studio.name}</span>
       </p>
       <p class="muted">{legalName(lang)}</p>
-      <p class="muted">{SITE.location} {t.footer.reach}</p>
+      <p class="muted">{where.full} {t.footer.reach}</p>
     </div>
 
     <div class="col">
@@ -54,7 +56,7 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="container bottom">
-    <p class="muted">© {year} {SITE.name}{t.footer.rights}</p>
+    <p class="muted">© {year} {studio.name}{t.footer.rights}</p>
   </div>
 </footer>
 

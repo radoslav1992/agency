@@ -10,10 +10,13 @@ import About from '../../components/About.astro';
 import CtaBanner from '../../components/CtaBanner.astro';
 import { SITE } from '../../data/site.mjs';
 import { localeOf } from '../../i18n/index.ts';
-import { meta } from '../../i18n/content.ts';
+import { brand, location, meta, owner } from '../../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
 const m = meta(lang);
+const studio = brand(lang);
+const where = location(lang);
+const who = owner(lang);
 
 /**
  * Organization и WebSite са „AI-friendly" типове (по-добра GEO оценка).
@@ -26,16 +29,16 @@ const structuredData = {
     {
       '@type': ['Organization', 'ProfessionalService'],
       '@id': studioId,
-      name: SITE.name,
+      name: studio.name,
       description: m.description,
       url: SITE.url,
       email: SITE.email,
       foundingDate: String(SITE.founded),
       areaServed: 'BG',
-      address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },
+      address: { '@type': 'PostalAddress', addressLocality: where.city, addressCountry: 'BG' },
       founder: {
         '@type': 'Person',
-        name: SITE.owner.name,
+        name: who.name,
         jobTitle: 'Senior AI Data Engineer',
         email: SITE.owner.email,
         sameAs: [SITE.owner.linkedin],
@@ -46,7 +49,7 @@ const structuredData = {
       '@type': 'WebSite',
       '@id': `${SITE.url}/en/#website`,
       url: `${SITE.url}/en/`,
-      name: SITE.name,
+      name: studio.name,
       inLanguage: 'en',
       publisher: { '@id': studioId },
     },
