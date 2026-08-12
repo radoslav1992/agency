@@ -34,7 +34,7 @@ const { AGENTS } = agentsFor(lang);
       <p class="agents__lead">{t.agentIndex.lead}</p>
     </header>
 
-    <div class="index">
+    <div class="index" data-agent-index>
       <ol class="index__list">
         {
           AGENTS.map((agent, i) => {
@@ -82,6 +82,115 @@ const { AGENTS } = agentsFor(lang);
     </p>
   </div>
 </section>
+
+<script>
+  /*
+   * Каталогът се върти сам, докато никой не го гледа отблизо.
+   *
+   * Без това осмината агенти стоят като списък и посетителят вижда само
+   * първата рисунка — движението е и подсказка, че редовете са живи.
+   *
+   * Един източник на истина: атрибутът `data-live` върху активния ред.
+   * Таймерът го мести, посочването също го мести. Затова няма състояние,
+   * в което две рисунки светят наведнъж или сцената остава празна, докато
+   * показалецът е между два реда.
+   *
+   * Три спирачки:
+   *   • под 901px оформлението е в една колона и всяка рисунка си стои под
+   *     реда — там няма какво да се върти;
+   *   • „по-малко движение“ спира въртенето изцяло;
+   *   • извън екрана таймерът не тече.
+   *
+   * Без JavaScript секцията не се чупи: CSS показва първия агент и
+   * посочването продължава да сменя рисунката.
+   */
+  const index = document.querySelector<HTMLElement>('[data-agent-index]');
+  const rows = index ? [...index.querySelectorAll<HTMLElement>('.row')] : [];
+
+  if (index && rows.length > 1) {
+    /** Колко се задържа един агент, преди да дойде следващият. */
+    const HOLD = 3400;
+
+    const wide = matchMedia('(min-width: 901px)');
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
+    const mayRotate = () => wide.matches && !calm.matches;
+
+    let current = 0;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    let onScreen = false;
+    /** `true`, докато показалецът или клавиатурата командват избора. */
+    let held = false;
+
+    const show = (n: number) => {
+      current = n;
+      rows.forEach((row, i) => row.toggleAttribute('data-live', i === n));
+    };
+
+    const stop = () => {
+      if (timer !== null) clearInterval(timer);
+      timer = null;
+    };
+
+    const run = () => {
+      stop();
+      if (!onScreen || held || !mayRotate()) return;
+      index.setAttribute('data-rotating', '');
+      show(current);
+      timer = setInterval(() => show((current + 1) % rows.length), HOLD);
+    };
+
+    /** Посочването не спира каталога — то само поема кормилото. */
+    rows.forEach((row, i) => {
+      row.addEventListener('pointerenter', () => {
+        if (!mayRotate()) return;
+        held = true;
+        stop();
+        show(i);
+      });
+    });
+
+    index.addEventListener('pointerleave', () => {
+      held = false;
+      run();
+    });
+
+    index.addEventListener('focusin', (event) => {
+      if (!mayRotate()) return;
+      const i = rows.findIndex((row) => row.contains(event.target as Node));
+      if (i < 0) return;
+      held = true;
+      stop();
+      show(i);
+    });
+
+    index.addEventListener('focusout', (event) => {
+      if (index.contains(event.relatedTarget as Node | null)) return;
+      held = false;
+      run();
+    });
+
+    new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        run();
+      },
+      { threshold: 0.3 },
+    ).observe(index);
+
+    /* Завъртане на телефона и смяна на настройката за движение. */
+    const reset = () => {
+      if (mayRotate()) {
+        run();
+        return;
+      }
+      stop();
+      index.removeAttribute('data-rotating');
+      rows.forEach((row) => row.removeAttribute('data-live'));
+    };
+    wide.addEventListener('change', reset);
+    calm.addEventListener('change', reset);
+  }
+</script>
 
 <style>
   .agents {
@@ -236,29 +345,37 @@ const { AGENTS } = agentsFor(lang);
   }
 
   /*
-   * Докато никой не сочи и нищо не е на фокус — вижда се първият агент.
-   * Правилото важи само в това състояние, затова не се бие с посочения
-   * ред по-долу, въпреки че е с по-висока специфичност.
+   * Активният ред има ЕДИН източник на истина: атрибутът `data-live`, който
+   * слага скриптът отдолу. Той го мести и сам (въртене), и при посочване.
+   *
+   * Правилата за `:hover` стоят до него за случая без JavaScript — тогава
+   * въртене няма, но посочването продължава да работи. По същата причина
+   * долното правило показва първия агент само докато скриптът не е поел
+   * (`:not([data-rotating])`).
    */
-  .index:not(:hover):not(:focus-within) .row:first-child .row__shot {
+  .index:not([data-rotating]):not(:hover):not(:focus-within) .row:first-child .row__shot {
     opacity: 1;
   }
 
-  .index:not(:hover):not(:focus-within) .row:first-child .row__name {
+  .index:not([data-rotating]):not(:hover):not(:focus-within) .row:first-child .row__name {
     color: var(--accent);
   }
 
+  .row[data-live] .row__shot,
   .row:hover .row__shot,
   .row:focus-within .row__shot {
     opacity: 1;
     transform: scale(1.012);
   }
 
+  .row[data-live] .row__link,
   .row:hover .row__link,
   .row:focus-within .row__link {
     color: var(--accent);
   }
 
+  .row[data-live] .row__n,
+  .row[data-live] .row__ch,
   .row:hover .row__n,
   .row:focus-within .row__n,
   .row:hover .row__ch,
@@ -266,6 +383,7 @@ const { AGENTS } = agentsFor(lang);
     color: var(--accent);
   }
 
+  .row[data-live] .row__arrow,
   .row:hover .row__arrow,
   .row:focus-within .row__arrow {
     opacity: 1;
