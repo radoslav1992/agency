@@ -29,8 +29,10 @@
  */
 import { SITE } from '../data/site.mjs';
 import { localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
 
 /*
  * Само на български и само с настроен идентификатор. Агентът говори
@@ -39,12 +41,35 @@ const lang = localeOf(Astro.currentLocale);
  * показват на `/en/`.
  */
 const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
+
+/*
+ * ⚠️ Никакви коментари ВЪТРЕ в тага отдолу. Потребителският елемент минава
+ * през HTML-разбора на Astro, не през JSX, и всяка дума от коментара се
+ * превръща в отделно свойство — `Официално="true"`, `свойство="true"` и
+ * така нататък. Обясненията стоят тук.
+ *
+ * `disable-banner` е официално свойство на приставката, обявено от
+ * ElevenLabs — маха лентата „Powered by ElevenLabs“ под балончето. Не е
+ * заобикаляне със стил: подписът живее в shadow DOM и CSS отвън и без това
+ * не го стига.
+ *
+ * Надписите идват от `ui.ts` като всички останали. Приставката говори
+ * английски по подразбиране, а тук се показва само на български.
+ */
 ---
 
 {
   show && (
     <elevenlabs-convai
       agent-id={SITE.voiceAgentId}
+      disable-banner="true"
+      action-text={t.voiceAgent.action}
+      start-call-text={t.voiceAgent.start}
+      end-call-text={t.voiceAgent.end}
+      expand-text={t.voiceAgent.expand}
+      collapse-text={t.voiceAgent.collapse}
+      listening-text={t.voiceAgent.listening}
+      speaking-text={t.voiceAgent.speaking}
       data-voice-agent
       data-src="https://unpkg.com/@elevenlabs/convai-widget-embed"
     />
