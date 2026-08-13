@@ -1,20 +1,18 @@
 ---
 /**
- * Първото движение. Заглавието влиза на етапи при зареждане (по часовник,
- * не по скрол — то е над сгъвката и никой не скролва до него).
+ * Първото движение. Всичко влиза при зареждане, по часовник, а не по скрол —
+ * hero-ът стои над сгъвката и никой не скролва до него.
  *
- * Посланието е същото, което вече работеше. Промени се мащабът: заглавието
- * заема цялата ширина, а всичко останало отстъпва под него.
+ * Композицията е на три етажа: заглавието взима цялата ширина, под него
+ * текстът и обещанията стоят рамо до рамо, а най-долу подсказката за скрол.
+ * Преди обещанията бяха лента под всичко и цялата дясна половина на екрана
+ * оставаше празна — не като въздух, а като недовършена страница.
  *
- * Портретът СЛЕЗЕ от голямата снимка вдясно до кръгче до обещанието. Лицето
- * не се маха — „работиш с мен, не с акаунт мениджър“ трудно се вярва на сайт
- * без лице, а купувачът тук е малка фирма, която първо проверява дали насреща
- * има истински човек. Но голямата снимка отговаряше на „кой“, докато
- * читателят още пита „какво“, и делеше вниманието със заглавието.
- *
- * Сега лицето стои точно там, където е нужно: подписва изречението „ако
- * процесът ти не става за автоматизация, ще ти го кажа“. Обещание с име и
- * лице тежи повече от портрет, който плава встрани от текста.
+ * Портретът е кръгчето до обещанието. Голямата снимка отговаряше на „кой“,
+ * докато читателят още пита „какво“; тя се премести в „За мен“, където
+ * въпросът вече е зададен. Тук лицето подписва изречението „ако процесът ти
+ * не става за автоматизация, ще ти го кажа“ — обещание с име тежи повече от
+ * портрет, който плава встрани от текста.
  */
 import { Image } from 'astro:assets';
 import heroPortrait from '../assets/hero-portrait.png';
@@ -28,8 +26,8 @@ const who = owner(lang);
 ---
 
 <section class="hero">
-  <div class="container hero__inner">
-    <div class="hero__copy">
+  <div class="container">
+    <div class="hero__head">
       {
         SITE.availability && (
           <p class="availability stagger" style="--s: 0">
@@ -39,68 +37,103 @@ const who = owner(lang);
         )
       }
 
-      <h1 class="hero__title stagger" style="--s: 1">
+      <h1 class="hero__title">
         {t.hero.titleLead} <span class="accent">{t.hero.titleAccent}</span>.
       </h1>
-
-      {/* „Готови агенти“ + „по мярка“ нарочно заедно: каталогът отдолу продава
-          пакетираните, но вътрешните системи не са агенти и не бива да изпаднат. */}
-      <p class="hero__lead stagger" style="--s: 2">{t.hero.lead}</p>
-
-      <div class="hero__actions stagger" style="--s: 3">
-        <a class="btn btn--primary" href={localised('/contact/', lang)}>{t.hero.ctaPrimary}</a>
-        <a class="btn btn--outline" href={localised('/services/', lang)}>{t.hero.ctaSecondary}</a>
-      </div>
-
-      {/* Обещанието и човекът, който го дава — в един блок нарочно. */}
-      <div class="promise stagger" style="--s: 4">
-        <span class="promise__avatar">
-          <Image
-            class="promise__face"
-            src={heroPortrait}
-            alt={who.name}
-            widths={[128, 224, 336]}
-            sizes="112px"
-            loading="eager"
-            fetchpriority="high"
-          />
-        </span>
-        <p class="promise__text">
-          {t.hero.subnote}
-          <span class="promise__who">
-            <strong>{who.name}</strong> · {who.role}
-          </span>
-        </p>
-      </div>
-
-
-      {/* Анализаторът съществува само на български, затова редът към него се
-          показва само там. */}
-      {
-        t.hero.analyzerQ && (
-          <p class="hero__analyzer stagger" style="--s: 5">
-            {t.hero.analyzerQ} <a href="/analyzer/">{t.hero.analyzerA}</a>
-          </p>
-        )
-      }
     </div>
-  </div>
 
-  <ul class="hero__facts container stagger" style="--s: 6">
-    {t.hero.facts.map((fact) => <li>{fact}</li>)}
-  </ul>
+    <div class="hero__body">
+      <div class="hero__copy">
+        {/* „Готови агенти“ + „по мярка“ нарочно заедно: каталогът отдолу продава
+            пакетираните, но вътрешните системи не са агенти и не бива да изпаднат. */}
+        <p class="hero__lead stagger" style="--s: 2">{t.hero.lead}</p>
+
+        <div class="hero__actions stagger" style="--s: 3">
+          <a class="btn btn--primary" href={localised('/contact/', lang)}>{t.hero.ctaPrimary}</a>
+          <a class="btn btn--outline" href={localised('/services/', lang)}>{t.hero.ctaSecondary}</a>
+        </div>
+
+        {/* Обещанието и човекът, който го дава — в един блок нарочно. */}
+        <div class="promise stagger" style="--s: 4">
+          <span class="promise__avatar">
+            <Image
+              class="promise__face"
+              src={heroPortrait}
+              alt={who.name}
+              widths={[128, 224, 336]}
+              sizes="112px"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </span>
+          <p class="promise__text">
+            {t.hero.subnote}
+            <span class="promise__who">
+              <strong>{who.name}</strong> · {who.role}
+            </span>
+          </p>
+        </div>
+
+        {/* Анализаторът съществува само на български, затова редът към него се
+            показва само там. */}
+        {
+          t.hero.analyzerQ && (
+            <p class="hero__analyzer stagger" style="--s: 5">
+              {t.hero.analyzerQ} <a href="/analyzer/">{t.hero.analyzerA}</a>
+            </p>
+          )
+        }
+      </div>
+
+      {/*
+        Обещанията заемат дясната колона. Номерата ги връзват визуално с
+        „Открий → Построй → Работи“ и с каталога на агентите — на страницата
+        вече има един и същ начин да се брои. Емоджитата отпаднаха: до
+        Unbounded те бяха единственото място, което издаваше шаблон.
+      */}
+      <ul class="facts">
+        {
+          t.hero.facts.map((fact, i) => (
+            <li class="fact stagger" style={`--s: ${5 + i}`}>
+              <span class="fact__n" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="fact__text">{fact}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="cue" aria-hidden="true"><span class="cue__line"></span></div>
+  </div>
 </section>
 
 <style>
   .hero {
-    /* Долният отстъп НЕ е нула: под лентата с обещанията започва тъмната
-       секция и без него последният ред опира плътно в ръба ѝ. */
-    padding-block: clamp(48px, 7vw, 96px) clamp(44px, 6vw, 76px);
+    position: relative;
+    /* Затваря `z-index: -1` на сиянието вътре в секцията. */
+    isolation: isolate;
+    padding-block: clamp(44px, 6vw, 84px) clamp(28px, 4vw, 48px);
   }
 
-  /* Една колона: заглавието взима цялата ширина, нищо не се бори с него. */
-  .hero__inner {
-    display: block;
+  /*
+   * Две меки петна светлина вместо равен фон. Долният ръб избледнява до
+   * нищо, за да няма видима граница там, където свършва сиянието.
+   */
+  .hero::before {
+    content: '';
+    position: absolute;
+    /* Строго в границите на секцията: подадеше ли се настрани, страницата
+       тръгва хоризонтално дори когато сиянието е невидимо. */
+    inset: -30% 0 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(52% 46% at 16% 12%, rgba(226, 84, 43, 0.11), transparent 68%),
+      radial-gradient(46% 44% at 88% 34%, rgba(226, 84, 43, 0.05), transparent 70%),
+      radial-gradient(70% 60% at 62% 0%, var(--bg-blush), transparent 72%);
+    mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
   }
 
   .availability {
@@ -130,39 +163,67 @@ const who = owner(lang);
    * не `vw`. Най-дългата българска дума („Автоматизирам“) иска цялата
    * ширина; при `vw` тя се чупеше на „Автоматизира / м“ над 900px.
    */
-  .hero__copy {
+  .hero__head {
     container-type: inline-size;
   }
 
   .hero__title {
     font-family: var(--font-display);
-    /* Колоната вече е цялата ширина, затова коефициентът пада — иначе
-       заглавието опира тавана още при 900px и спира да расте. */
     font-size: clamp(28px, 6.6cqw, 80px);
     line-height: 1.01;
     letter-spacing: -0.045em;
     margin: 0;
     /* Клапан за екрани под 340px; над тях не се задейства. */
     overflow-wrap: break-word;
+    /*
+     * Заглавието се открива изпод ръба си, вместо просто да изплува.
+     * `clip-path` работи и когато редовете се пренасят различно на двата
+     * езика — разделяне по редове тук би било чупливо.
+     */
+    animation: title-in 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: 60ms;
+  }
+
+  @keyframes title-in {
+    from {
+      opacity: 0;
+      clip-path: inset(0 0 105% 0);
+      transform: translateY(0.14em);
+    }
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 -20% 0);
+      transform: none;
+    }
   }
 
   .accent {
     color: var(--accent);
   }
 
+  /* ---------- вторият етаж ---------- */
+
+  .hero__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+    gap: clamp(32px, 5vw, 72px);
+    align-items: start;
+    margin-top: clamp(30px, 4vw, 54px);
+  }
+
   .hero__lead {
     font-size: clamp(17px, 1.8vw, 20px);
     line-height: 1.55;
     color: var(--ink-body);
-    max-width: 46ch;
-    margin: 26px 0 0;
+    max-width: 44ch;
+    margin: 0;
   }
 
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 34px;
+    margin-top: 30px;
   }
 
   /* ---------- обещанието и лицето зад него ---------- */
@@ -171,7 +232,7 @@ const who = owner(lang);
     display: flex;
     align-items: center;
     gap: 14px;
-    margin: 22px 0 0;
+    margin: 24px 0 0;
     max-width: 52ch;
   }
 
@@ -243,18 +304,74 @@ const who = owner(lang);
     border-color: var(--accent);
   }
 
-  /* ---------- лентата с обещанията ---------- */
+  /* ---------- обещанията, дясната колона ---------- */
 
-  .hero__facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px clamp(24px, 4vw, 52px);
-    margin: clamp(40px, 6vw, 72px) auto 0;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
+  .facts {
+    margin: 0;
+    padding: 0;
     list-style: none;
-    font-size: 14.5px;
-    color: var(--ink-muted);
+    border-top: 1px solid var(--line);
+  }
+
+  .fact {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: baseline;
+    padding: 15px 2px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .fact__n {
+    font-family: var(--font-display);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  .fact__text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- подсказката за скрол ---------- */
+
+  .cue {
+    margin-top: clamp(28px, 4vw, 44px);
+    height: 46px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .cue__line {
+    position: relative;
+    width: 1px;
+    height: 100%;
+    background: var(--line-strong);
+    overflow: hidden;
+  }
+
+  /* Късо ярко парче, което пада надолу по нишката. */
+  .cue__line::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 40%;
+    background: var(--accent);
+    animation: cue-fall 2.1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  @keyframes cue-fall {
+    0% {
+      transform: translateY(-100%);
+    }
+    60%,
+    100% {
+      transform: translateY(250%);
+    }
   }
 
   /* ---------- влизането ---------- */
@@ -276,9 +393,18 @@ const who = owner(lang);
   }
 
   @media (max-width: 900px) {
+    .hero__body {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+
     .hero__lead,
     .promise {
       max-width: none;
+    }
+
+    .cue {
+      display: none;
     }
   }
 

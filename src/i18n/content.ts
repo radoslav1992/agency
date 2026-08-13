@@ -16,7 +16,15 @@ import * as bgCases from '../data/cases.ts';
 import * as enCases from '../data/cases.en.ts';
 import * as enProjects from '../data/projects.en.ts';
 import { UI } from './ui.ts';
-import { META, NAV_BY_LOCALE, CTA_BY_LOCALE, OWNER_BY_LOCALE, LEGAL_NAME_BY_LOCALE } from '../data/site.mjs';
+import {
+  META,
+  NAV_BY_LOCALE,
+  CTA_BY_LOCALE,
+  OWNER_BY_LOCALE,
+  LEGAL_NAME_BY_LOCALE,
+  BRAND_BY_LOCALE,
+  LOCATION_BY_LOCALE,
+} from '../data/site.mjs';
 import type { Locale } from './index.ts';
 
 export function content(locale: Locale) {
@@ -45,6 +53,16 @@ export function owner(locale: Locale) {
 
 export function legalName(locale: Locale) {
   return LEGAL_NAME_BY_LOCALE[locale] ?? LEGAL_NAME_BY_LOCALE.bg;
+}
+
+/** Името на студиото — „Кова студио“ / „Kova Studio“. */
+export function brand(locale: Locale) {
+  return BRAND_BY_LOCALE[locale] ?? BRAND_BY_LOCALE.bg;
+}
+
+/** Седалището — „София, България“ / „Sofia, Bulgaria“. */
+export function location(locale: Locale) {
+  return LOCATION_BY_LOCALE[locale] ?? LOCATION_BY_LOCALE.bg;
 }
 
 export function meta(locale: Locale) {

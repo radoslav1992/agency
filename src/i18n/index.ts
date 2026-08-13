@@ -78,16 +78,24 @@ export function hasTranslation(pathname: string): boolean {
 }
 
 /**
- * Езиковите двойки за `hreflang` в `<head>`.
+ * Езиковите двойки за `hreflang` в `<head>`, плюс `x-default`.
  *
- * Върху непреведена страница връща само нейния собствен език: една самотна
- * двойка не носи информация, но погрешната води робота в 404.
+ * Върху непреведена страница връща празен списък: една самотна двойка не
+ * носи информация, но погрешната води робота в 404.
+ *
+ * `x-default` сочи БЪЛГАРСКАТА версия на СЪЩАТА страница, не началната.
+ * Дотук всяка страница обявяваше `https://kova.bg/` за свой резерв, тоест
+ * казваше на търсачката, че резервът на „/en/services/“ е началната
+ * страница. `x-default` описва групата, в която стои адресът, а групата на
+ * „/en/services/“ е „/services/“.
  */
 export function alternates(pathname: string): { locale: Locale; hreflang: string; path: string }[] {
   if (!hasTranslation(pathname)) return [];
+  const fallback = pathForLocale(pathname, DEFAULT_LOCALE);
   return [
     { locale: 'bg', hreflang: 'bg', path: pathForLocale(pathname, 'bg') },
     { locale: 'en', hreflang: 'en', path: pathForLocale(pathname, 'en') },
+    { locale: DEFAULT_LOCALE, hreflang: 'x-default', path: fallback },
   ];
 }
 

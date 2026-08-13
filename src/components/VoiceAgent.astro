@@ -1,0 +1,108 @@
+---
+/**
+ * Гласовият агент на ElevenLabs — плаващото балонче долу вдясно.
+ *
+ * Сайтът продава агенти, които вдигат телефона. Най-краткото доказателство,
+ * че работят, е посетителят да поговори с един от тях, преди да е писал на
+ * никого — същата логика, по която анализаторът стои безплатен и без
+ * регистрация.
+ *
+ * ⚠️ Скриптът им НЕ се зарежда със страницата. Тегли се чак при първото
+ * докосване, натискане на клавиш или скрол. Две причини:
+ *
+ *   • Скорост. Приставката е стотици килобайти, а ще я ползва малцинство.
+ *     Заредена наготово, тя утежнява първото показване на ВСЕКИ посетител —
+ *     точно предимството, заради което на този сайт няма GSAP и Three.js.
+ *   • Поверителност. Докато никой не е посегнал към страницата, към
+ *     ElevenLabs не заминава нито една заявка. Ботовете и хората, които
+ *     затварят веднага, не се свързват с трета страна изобщо.
+ *
+ * Микрофонът иска `Permissions-Policy: microphone=(self)` — виж
+ * `public/_headers`. При затворено разрешение приставката се зарежда,
+ * изглежда наред и не чува нищо.
+ *
+ * ⚠️ Източникът е пакетът `@elevenlabs/convai-widget-embed` през unpkg —
+ * този, който ElevenLabs дават за вграждане. Адресът
+ * `elevenlabs.io/convai-widget/index.js` е по-старата сглобка на
+ * приставката и ѝ липсват по-новите режими, включително текстовият чат.
+ * Не го подменяй заради това, че е „на техния домейн“.
+ */
+import { SITE } from '../data/site.mjs';
+import { localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang);
+
+/*
+ * Само на български и само с настроен идентификатор. Агентът говори
+ * български; приставка, която отговаря на друг език от този на страницата,
+ * е по-лоша от липсваща — по същата причина анализаторът и блогът не се
+ * показват на `/en/`.
+ */
+const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
+
+/*
+ * ⚠️ Никакви коментари ВЪТРЕ в тага отдолу. Потребителският елемент минава
+ * през HTML-разбора на Astro, не през JSX, и всяка дума от коментара се
+ * превръща в отделно свойство — `Официално="true"`, `свойство="true"` и
+ * така нататък. Обясненията стоят тук.
+ *
+ * `disable-banner` е официално свойство на приставката, обявено от
+ * ElevenLabs — маха лентата „Powered by ElevenLabs“ под балончето. Не е
+ * заобикаляне със стил: подписът живее в shadow DOM и CSS отвън и без това
+ * не го стига.
+ *
+ * Надписите идват от `ui.ts` като всички останали. Приставката говори
+ * английски по подразбиране, а тук се показва само на български.
+ */
+---
+
+{
+  show && (
+    <elevenlabs-convai
+      agent-id={SITE.voiceAgentId}
+      disable-banner="true"
+      action-text={t.voiceAgent.action}
+      start-call-text={t.voiceAgent.start}
+      end-call-text={t.voiceAgent.end}
+      expand-text={t.voiceAgent.expand}
+      collapse-text={t.voiceAgent.collapse}
+      listening-text={t.voiceAgent.listening}
+      speaking-text={t.voiceAgent.speaking}
+      data-voice-agent
+      data-src="https://unpkg.com/@elevenlabs/convai-widget-embed"
+    />
+  )
+}
+
+<script>
+  /*
+   * Потребителският елемент стои в разметката, но е инертен, докато скриптът
+   * на ElevenLabs не го дефинира. Затова тук няма какво да се показва или
+   * крие — само моментът, в който този скрипт се тегли.
+   */
+  const host = document.querySelector<HTMLElement>('[data-voice-agent]');
+  const src = host?.dataset.src;
+
+  if (host && src && !document.querySelector(`script[src="${src}"]`)) {
+    /** Първото истинско посягане към страницата — тогава и само тогава. */
+    const TRIGGERS = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const;
+
+    let loaded = false;
+    const load = () => {
+      if (loaded) return;
+      loaded = true;
+      TRIGGERS.forEach((event) => window.removeEventListener(event, load));
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      document.head.appendChild(script);
+    };
+
+    TRIGGERS.forEach((event) =>
+      window.addEventListener(event, load, { once: true, passive: true }),
+    );
+  }
+</script>

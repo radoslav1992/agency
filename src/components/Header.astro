@@ -1,14 +1,14 @@
 ---
 import { Image } from 'astro:assets';
 import logoMark from '../assets/brand/logo-mark.webp';
-import { SITE } from '../data/site.mjs';
 import { hasTranslation, href as localised, localeOf, pathForLocale } from '../i18n/index.ts';
-import { cta, nav, ui } from '../i18n/content.ts';
+import { brand, cta, nav, ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
 const t = ui(lang);
 const NAV = nav(lang);
 const CTA = cta(lang);
+const studio = brand(lang);
 
 const path = Astro.url.pathname;
 /** Сравнява без езиковия префикс, за да работи и на двата езика. */
@@ -34,7 +34,7 @@ const switchLabel = other === 'en'
 
 <header class="site-header">
   <div class="container bar">
-    <a class="brand" href={localised('/', lang)} aria-label={`${SITE.name} — ${t.header.home}`}>
+    <a class="brand" href={localised('/', lang)} aria-label={`${studio.name} — ${t.header.home}`}>
       {/* Марката е декоративна: името на студиото стои като текст веднага
           след нея, а линкът си има aria-label. */}
       <Image
@@ -45,8 +45,8 @@ const switchLabel = other === 'en'
         sizes="30px"
         loading="eager"
       />
-      <span class="brand__name">{SITE.shortName}</span>
-      <span class="brand__suffix">{SITE.suffix}</span>
+      <span class="brand__name">{studio.short}</span>
+      <span class="brand__suffix">{studio.suffix}</span>
     </a>
 
     <button

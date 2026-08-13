@@ -30,9 +30,9 @@ export const UI = {
       analyzerQ: 'Имаш сайт?',
       analyzerA: 'Провери го безплатно за 15 секунди →',
       facts: [
-        '🤝 Работиш с мен, не с акаунт мениджър',
-        '🧪 Тръгваме с малък пилот, преди да влагаш бюджет',
-        '🎯 Целта, срокът и цената са ясни от офертата',
+        'Работиш с мен, не с акаунт мениджър',
+        'Тръгваме с малък пилот, преди да влагаш бюджет',
+        'Целта, срокът и цената са ясни от офертата',
       ],
     },
 
@@ -134,6 +134,22 @@ export const UI = {
       checks: ['SEO', 'Скорост', 'Сигурност', 'Достъпност', 'Технологии', 'Четимост за AI'],
       seconds: '15 секунди',
       free: 'Без регистрация и без имейл',
+    },
+
+    /*
+     * Надписите по гласовия агент. Приставката идва с английски по
+     * подразбиране, а тя се показва само на български — „Start a call“ на
+     * българска страница е същото разминаване, заради което анализаторът и
+     * блогът изобщо не се показват на `/en/`.
+     */
+    voiceAgent: {
+      action: 'Говори с агента',
+      start: 'Започни разговор',
+      end: 'Приключи',
+      expand: 'Отвори',
+      collapse: 'Затвори',
+      listening: 'Слушам',
+      speaking: 'Говоря',
     },
 
     process: { eyebrow: 'Процес', title: 'Как протича работата', terms: 'Важните условия — ясни още в началото' },
@@ -239,9 +255,9 @@ export const UI = {
       analyzerQ: '',
       analyzerA: '',
       facts: [
-        '🤝 You work with me, not an account manager',
-        '🧪 We start with a small pilot, before you commit a budget',
-        '🎯 Goal, deadline and price are settled in the quote',
+        'You work with me, not an account manager',
+        'We start with a small pilot, before you commit a budget',
+        'Goal, deadline and price are settled in the quote',
       ],
     },
 
@@ -334,6 +350,18 @@ export const UI = {
       checks: [],
       seconds: '',
       free: '',
+    },
+
+    /* Не се ползват днес — приставката е само на български. Стоят готови
+       за деня, в който има и англоговорящ агент. */
+    voiceAgent: {
+      action: 'Talk to the agent',
+      start: 'Start a call',
+      end: 'End',
+      expand: 'Open',
+      collapse: 'Close',
+      listening: 'Listening',
+      speaking: 'Speaking',
     },
 
     process: { eyebrow: 'Process', title: 'How the work goes', terms: 'The terms that matter — stated upfront' },
