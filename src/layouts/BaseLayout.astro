@@ -91,11 +91,6 @@ const origin = Astro.site ?? Astro.url.origin;
         <link rel="alternate" hreflang={alt.hreflang} href={new URL(alt.path, origin).href} />
       ))
     }
-    {
-      langAlternates.length > 0 && (
-        <link rel="alternate" hreflang="x-default" href={new URL('/', origin).href} />
-      )
-    }
 
     {/*
       Растер, не SVG. Досегашният favicon.svg рисуваше буквата „К“ с шрифт;
