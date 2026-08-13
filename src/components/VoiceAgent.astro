@@ -20,6 +20,12 @@
  * Микрофонът иска `Permissions-Policy: microphone=(self)` — виж
  * `public/_headers`. При затворено разрешение приставката се зарежда,
  * изглежда наред и не чува нищо.
+ *
+ * ⚠️ Източникът е пакетът `@elevenlabs/convai-widget-embed` през unpkg —
+ * този, който ElevenLabs дават за вграждане. Адресът
+ * `elevenlabs.io/convai-widget/index.js` е по-старата сглобка на
+ * приставката и ѝ липсват по-новите режими, включително текстовият чат.
+ * Не го подменяй заради това, че е „на техния домейн“.
  */
 import { SITE } from '../data/site.mjs';
 import { localeOf } from '../i18n/index.ts';
@@ -40,7 +46,7 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
     <elevenlabs-convai
       agent-id={SITE.voiceAgentId}
       data-voice-agent
-      data-src="https://elevenlabs.io/convai-widget/index.js"
+      data-src="https://unpkg.com/@elevenlabs/convai-widget-embed"
     />
   )
 }
