@@ -52,7 +52,7 @@ export const SITE = {
    * Показва се само на български. Агентът говори български, а приставка,
    * която отговаря на друг език от този на страницата, е по-лоша от липсваща.
    */
-  voiceAgentId: null,
+  voiceAgentId: 'agent_8201kzwjcxj6fmc9bb5xrtvz3929',
   /** Booking link for the "30 минути разговор" card. `null` falls back to email. */
   bookingUrl: null,
 };
