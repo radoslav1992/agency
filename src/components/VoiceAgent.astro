@@ -56,6 +56,17 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
  * Надписите идват от `ui.ts` като всички останали. Приставката говори
  * английски по подразбиране, а тук се показва само на български.
  */
+
+/*
+ * Цветовете на кълбото.
+ *
+ * ⚠️ Шестнайсетичните стойности са ПРЕПИСАНИ от `--accent` и
+ * `--accent-darker` в `global.css`, а не взети оттам. Приставката живее в
+ * shadow DOM и не вижда нашите променливи; свойството ѝ приема само готов
+ * цвят. Смени ли се палитрата, тези два реда се сменят на ръка — затова
+ * стоят с име, а не разпръснати из разметката.
+ */
+const ORB = { from: '#e2542b', to: '#b93b16' };
 ---
 
 {
@@ -63,6 +74,8 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
     <elevenlabs-convai
       agent-id={SITE.voiceAgentId}
       disable-banner="true"
+      avatar-orb-color-1={ORB.from}
+      avatar-orb-color-2={ORB.to}
       action-text={t.voiceAgent.action}
       start-call-text={t.voiceAgent.start}
       end-call-text={t.voiceAgent.end}
