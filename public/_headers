@@ -9,7 +9,12 @@ https://agency.radoslav-dodnikov.workers.dev/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
-  Permissions-Policy: geolocation=(), microphone=(), camera=(), interest-cohort=()
+  # `microphone=(self)`, а не `microphone=()`: гласовият агент иска микрофон и
+  # при затворено разрешение браузърът му го отказва мълчаливо — приставката
+  # се зарежда, изглежда наред и просто не чува нищо. Разрешението е само за
+  # собствения адрес, а самият микрофон и без това не тръгва без изричното
+  # „позволи“ на посетителя. Камерата и геолокацията остават затворени.
+  Permissions-Policy: geolocation=(), microphone=(self), camera=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
 # Hashed build output never changes — cache it hard.
