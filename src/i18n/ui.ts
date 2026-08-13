@@ -137,19 +137,67 @@ export const UI = {
     },
 
     /*
-     * Надписите по гласовия агент. Приставката идва с английски по
-     * подразбиране, а тя се показва само на български — „Start a call“ на
-     * българска страница е същото разминаване, заради което анализаторът и
-     * блогът изобщо не се показват на `/en/`.
+     * Надписите по гласовия агент.
+     *
+     * Ключовете НЕ са измислени — те са същите, с които приставката държи
+     * своите английски стойности по подразбиране, и се подават наведнъж
+     * през свойството `text-contents`. Отделни свойства от рода на
+     * `start-call-text` НЕ съществуват: приставката ги подминава мълчаливо.
+     *
+     * Преведено е всичко, а не само видимото на пръв поглед. Пропуснат
+     * ключ се показва на английски и разговорът тръгва на два езика.
      */
     voiceAgent: {
-      action: 'Говори с агента',
-      start: 'Започни разговор',
-      end: 'Приключи',
-      expand: 'Отвори',
-      collapse: 'Затвори',
-      listening: 'Слушам',
-      speaking: 'Говоря',
+      main_label: 'Имаш въпрос?',
+      start_call: 'Започни разговор',
+      start_chat: 'Напиши съобщение',
+      send_message: 'Изпрати',
+      new_call: 'Нов разговор',
+      end_call: 'Приключи',
+      mute_microphone: 'Изключи микрофона',
+      text_mode: 'Премини към писане',
+      voice_mode: 'Премини към говорене',
+      switched_to_text_mode: 'Превключено на писане',
+      switched_to_voice_mode: 'Превключено на говорене',
+      change_language: 'Смени езика',
+      collapse: 'Свий',
+      expand: 'Разгъни',
+      copied: 'Копирано!',
+      accept_terms: 'Приемам',
+      dismiss_terms: 'Отказ',
+      listening_status: 'Слушам',
+      speaking_status: 'Говори, за да ме прекъснеш',
+      connecting_status: 'Свързвам се',
+      chatting_status: 'Разговор с AI агент',
+      input_label: 'Поле за съобщение',
+      input_placeholder: 'Напиши съобщение…',
+      input_placeholder_text_only: 'Напиши съобщение…',
+      input_placeholder_new_conversation: 'Започни нов разговор',
+      user_ended_conversation: 'Ти приключи разговора',
+      agent_ended_conversation: 'Агентът приключи разговора',
+      conversation_id: 'ID',
+      error_occurred: 'Възникна грешка',
+      copy_id: 'Копирай ID',
+      initiate_feedback: 'Как мина разговорът?',
+      request_follow_up_feedback: 'Разкажи повече',
+      thanks_for_feedback: 'Благодаря за отзива!',
+      thanks_for_feedback_details: 'Отзивът помага следващият разговор да е по-добър.',
+      follow_up_feedback_placeholder: 'Разкажи какво ти направи впечатление…',
+      submit: 'Изпрати',
+      go_back: 'Назад',
+      copy: 'Копирай',
+      download: 'Изтегли',
+      wrap: 'Пренасяй редовете',
+      agent_working: 'Работя…',
+      agent_done: 'Готово',
+      agent_error: 'Възникна грешка',
+      attach_file: 'Прикачи файл',
+      remove_file: 'Премахни файла',
+      file_upload_error: 'Файлът не се качи.',
+      file_type_unsupported: 'Неподдържан тип файл. Приемат се:',
+      file_too_large: 'Файлът е над допустимия размер.',
+      file_limit_reached: 'Достигнат е максималният брой файлове за този разговор.',
+      typing_indicator: 'Агентът пише…',
     },
 
     process: { eyebrow: 'Процес', title: 'Как протича работата', terms: 'Важните условия — ясни още в началото' },
@@ -352,17 +400,10 @@ export const UI = {
       free: '',
     },
 
-    /* Не се ползват днес — приставката е само на български. Стоят готови
-       за деня, в който има и англоговорящ агент. */
-    voiceAgent: {
-      action: 'Talk to the agent',
-      start: 'Start a call',
-      end: 'End',
-      expand: 'Open',
-      collapse: 'Close',
-      listening: 'Listening',
-      speaking: 'Speaking',
-    },
+    /* Празно нарочно. Приставката се показва само на български, а нейните
+       стойности по подразбиране и без това са английски — няма какво да се
+       подава. Ключът стои, за да е еднаква формата на двата езика. */
+    voiceAgent: {},
 
     process: { eyebrow: 'Process', title: 'How the work goes', terms: 'The terms that matter — stated upfront' },
 

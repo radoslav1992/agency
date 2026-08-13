@@ -48,13 +48,23 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
  * превръща в отделно свойство — `Официално="true"`, `свойство="true"` и
  * така нататък. Обясненията стоят тук.
  *
- * `disable-banner` е официално свойство на приставката, обявено от
- * ElevenLabs — маха лентата „Powered by ElevenLabs“ под балончето. Не е
- * заобикаляне със стил: подписът живее в shadow DOM и CSS отвън и без това
- * не го стига.
+ * ⚠️ И никакви измислени свойства. Приставката чете строго определен
+ * списък и подминава всичко останало МЪЛЧАЛИВО — без предупреждение в
+ * конзолата, без нищо. Заради това тук известно време стояха осем
+ * несъществуващи свойства, които не правеха абсолютно нищо:
+ * `disable-banner` и седем от рода на `start-call-text`.
  *
- * Надписите идват от `ui.ts` като всички останали. Приставката говори
- * английски по подразбиране, а тук се показва само на български.
+ * Истинският списък се чете от самия пакет:
+ *   npm pack @elevenlabs/convai-widget-embed
+ *   grep -o "pg(\`[a-z0-9-]*\`)" package/dist/index.js | sort -u
+ *
+ * Надписите НЕ се подават като отделни свойства, а наведнъж като JSON през
+ * `text-contents`, с ключовете, с които приставката държи английските си
+ * стойности по подразбиране.
+ *
+ * Подписът „Powered by ElevenLabs“ НЕ се маха оттук. В кода на приставката
+ * той виси на `config.disable_banner`, а тази конфигурация идва от сървъра
+ * на ElevenLabs — тоест от таблото и от плана, не от разметката.
  */
 
 /*
@@ -82,23 +92,20 @@ const ORB = { from: '#e2542b', to: '#b93b16' };
  * то е в цветовете на марката.
  */
 const AVATAR = `${SITE.url}/icon-192.png`;
+
+/** Всички надписи наведнъж — приставката ги иска като JSON, не поотделно. */
+const LABELS = JSON.stringify(t.voiceAgent);
 ---
 
 {
   show && (
     <elevenlabs-convai
       agent-id={SITE.voiceAgentId}
-      disable-banner="true"
       avatar-image-url={AVATAR}
       avatar-orb-color-1={ORB.from}
       avatar-orb-color-2={ORB.to}
-      action-text={t.voiceAgent.action}
-      start-call-text={t.voiceAgent.start}
-      end-call-text={t.voiceAgent.end}
-      expand-text={t.voiceAgent.expand}
-      collapse-text={t.voiceAgent.collapse}
-      listening-text={t.voiceAgent.listening}
-      speaking-text={t.voiceAgent.speaking}
+      text-contents={LABELS}
+      text-input="true"
       data-voice-agent
       data-src="https://unpkg.com/@elevenlabs/convai-widget-embed"
     />
