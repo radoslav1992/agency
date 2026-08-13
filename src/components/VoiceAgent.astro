@@ -29,10 +29,8 @@
  */
 import { SITE } from '../data/site.mjs';
 import { localeOf } from '../i18n/index.ts';
-import { ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
-const t = ui(lang);
 
 /*
  * Само на български и само с настроен идентификатор. Агентът говори
@@ -58,9 +56,13 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
  *   npm pack @elevenlabs/convai-widget-embed
  *   grep -o "pg(\`[a-z0-9-]*\`)" package/dist/index.js | sort -u
  *
- * Надписите НЕ се подават като отделни свойства, а наведнъж като JSON през
- * `text-contents`, с ключовете, с които приставката държи английските си
- * стойности по подразбиране.
+ * Надписите НЕ се подават оттук. Приставката ги търси по реда:
+ *   свойство `text-contents` → предварителните набори по език от таблото →
+ *   `text_contents` от таблото → английските по подразбиране.
+ * Свойството бие всичко, тоест зададено тук то ЗАГЛУШАВА преводите,
+ * писани в таблото — редакциите там просто спират да се появяват, без
+ * никакъв признак защо. Преводите се водят на едно място и то е таблото:
+ * там има и набори по език, и не иска пускане на сайта наново.
  *
  * Подписът „Powered by ElevenLabs“ НЕ се маха оттук. В кода на приставката
  * той виси на `config.disable_banner`, а тази конфигурация идва от сървъра
@@ -93,8 +95,6 @@ const ORB = { from: '#e2542b', to: '#b93b16' };
  */
 const AVATAR = `${SITE.url}/icon-192.png`;
 
-/** Всички надписи наведнъж — приставката ги иска като JSON, не поотделно. */
-const LABELS = JSON.stringify(t.voiceAgent);
 ---
 
 {
@@ -104,7 +104,6 @@ const LABELS = JSON.stringify(t.voiceAgent);
       avatar-image-url={AVATAR}
       avatar-orb-color-1={ORB.from}
       avatar-orb-color-2={ORB.to}
-      text-contents={LABELS}
       text-input="true"
       data-voice-agent
       data-src="https://unpkg.com/@elevenlabs/convai-widget-embed"
