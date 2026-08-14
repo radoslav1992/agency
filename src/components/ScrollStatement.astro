@@ -80,7 +80,9 @@ const t = ui(lang);
   }
 
   .statement__eyebrow {
-    color: var(--accent);
+    /* На тъмно приглушеното мастило не се вижда — тук приглушено значи
+       светло. Акцентът остава само за двете думи в самото изявление. */
+    color: var(--dark-ink-subtle);
     margin: 0 0 clamp(20px, 4cqw, 44px);
   }
 
