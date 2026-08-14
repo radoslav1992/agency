@@ -98,6 +98,12 @@ export const UI = {
       lead: 'Всеки поема по един канал от край до край — глас, чат, поща, документи. Пакетирани, с познат обхват и предвидима цена.',
       hint: 'Посочи агент, за да го видиш.',
       all: (n: number) => `Всичките ${n} агента, с обхват и ограничения →`,
+      /* Стои само на агентите с `demo: true` — тези, за които страницата
+         вече обещава „Мога да го покажа на живо“. */
+      demo: 'Говори с него сега',
+      /* Казва на агента какво гледа човекът, преди той да е проговорил. */
+      demoContext: (name: string) =>
+        `Посетителят разглежда „${name}“ в каталога с агенти на сайта и току-що поиска да го чуе на живо.`,
     },
 
     proof: {
@@ -296,6 +302,9 @@ export const UI = {
       lead: 'Each one takes a single channel end to end — voice, chat, inbox, documents. Packaged, with a known scope and a predictable price.',
       hint: 'Point at an agent to see it.',
       all: (n: number) => `All ${n} agents, with scope and limits →`,
+      demo: 'Talk to it now',
+      demoContext: (name: string) =>
+        `The visitor is looking at "${name}" in the agent catalogue and just asked to hear it live.`,
     },
 
     proof: {
