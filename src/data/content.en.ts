@@ -19,6 +19,31 @@ import type { Plan, ProcessStep, Service } from './content.ts';
 export const SERVICES: Service[] = [
   {
     number: '01',
+    title: 'A website and an AI agent, launched together',
+    problem:
+      'A new site brings visitors, but they write in the evening and on Saturdays, ask the same handful of questions, and half of them leave before anyone replies. A site with nobody answering is a brochure.',
+    solution:
+      'The site and the agent are built and launched at once, for the same job: the agent knows what the site says, answers from it, books a slot and takes a contact. The domain and the first year of hosting are included.',
+    changes: [
+      {
+        title: 'One price, one deadline',
+        body: 'Nothing gets negotiated twice, and the agent does not wait for the site to be finished. The published price is €1,200, once.',
+      },
+      {
+        title: 'Answers outside office hours',
+        body: 'A visitor gets an answer the moment they have a question — including in the evening, on a Sunday, and while you are on the other line.',
+      },
+      {
+        title: 'The site alone is fine too',
+        body: 'If you do not need the agent yet, the site ships on its own and the agent is added later without rebuilding anything.',
+      },
+    ],
+    link: { href: '/services/#pricing', label: "See what's included →" },
+    variant: 'dark',
+    wide: true,
+  },
+  {
+    number: '02',
     title: 'AI agents for the work that repeats',
     problem:
       'Hours disappear into routine every day: calls nobody picks up, the same questions over email and chat, invoices and quotes retyped by hand, appointments that get forgotten. Separately, minutes. Together, a full-time position a day.',
@@ -39,10 +64,9 @@ export const SERVICES: Service[] = [
       },
     ],
     link: { href: '/agents/', label: 'See the ready-made agents →' },
-    variant: 'dark',
   },
   {
-    number: '02',
+    number: '03',
     title: 'Automating the tasks that repeat',
     problem:
       'Someone copies data from emails into a spreadsheet. Every day, two hours at a time, with mistakes that only surface a month later.',
@@ -57,7 +81,8 @@ export const SERVICES: Service[] = [
     ],
   },
   {
-    number: '03',
+    number: '04',
+    wide: true,
     title: 'Internal systems and client portals',
     problem:
       'The business has outgrown spreadsheets, but off-the-shelf CRM and ERP are heavy, expensive and shaped nothing like the way you actually work. The process lives in spreadsheets, email threads and "can you send me that again".',
@@ -73,20 +98,6 @@ export const SERVICES: Service[] = [
 ];
 
 export const SECONDARY_SERVICES: Service[] = [
-  {
-    number: '04',
-    title: 'Business websites',
-    problem:
-      "The site was built five years ago. It loads slowly, it doesn't show up in search, and you can't change a phone number without emailing someone.",
-    solution: 'A fast site you update yourself. No heavy plugins that break on every update.',
-    change: "You can see what's wrong with your current site before you even ask me.",
-    points: [
-      'A design made for you, not a theme from a catalogue',
-      'Technical SEO foundations and a mobile version',
-      'Training so you can update it yourself',
-      'Managed hosting for the first year',
-    ],
-  },
   {
     number: '05',
     title: 'Generative AI training',
@@ -149,7 +160,13 @@ export const ABOUT = {
   paragraphs: [
     'I founded Kova Studio. For over six years I have been building corporate software — internal systems and AI over real business data. I teach generative AI and natural language processing at university and I am a PhD candidate in computer science.',
     'I lead every project myself. When a job needs design, security or marketing, I bring in people I have worked with before — but I stay the person you deal with, and the responsibility stays mine.',
-    'I take on few projects at a time. Otherwise I cannot know them in detail, and that detail is precisely what you are buying.',
+    /*
+     * This used to read "I take on few projects at a time" with no
+     * qualifier. It stopped being true the day the site-and-agent package
+     * launched: that one is a product, not bespoke work. A promise your own
+     * price list contradicts is worse than no promise.
+     */
+    'Bespoke projects I take on few at a time — otherwise I cannot know them in detail, and that detail is precisely what you are buying. The site-and-agent package is different: the work is described up front and does not cost the same hours.',
   ],
   stats: [
     { value: '6+', label: 'years as a software engineer' },
@@ -166,48 +183,55 @@ export const ABOUT = {
 };
 
 /**
- * Prices are higher than the Bulgarian ones, on purpose.
+ * Same three rungs as the Bulgarian ladder, at roughly 2.5× the price.
  *
- * €1,500 for an AI pilot is a sensible entry price in Sofia. Presented to a
- * buyer in London, Munich or Amsterdam the same number reads as either
- * inexperience or a hidden catch, and it attracts the price-shopping end of
- * the market — the worst possible fit for a studio whose real constraint is
- * hours, not leads.
+ * €490 for a site and an agent is a sensible entry price in Sofia. Put in
+ * front of a buyer in London, Munich or Amsterdam, that number reads as
+ * either inexperience or a hidden catch, and it attracts the price-shopping
+ * end of the market — the worst possible fit for a studio whose real
+ * constraint is hours, not leads.
+ *
+ * Monthly fees are deliberately absent here, in both languages. They differ
+ * per agent and change more often than this file does; they belong in the
+ * quote and on the product's own site.
  */
 export const PLANS: Plan[] = [
   {
-    name: 'AI pilot',
-    pitch: 'A bounded project that proves whether the idea works on real data, before you invest in a full build.',
-    price: 'from €3,500',
+    name: 'Site and agent',
+    pitch: 'A packaged offer with a published price: the site and the AI agent are built together and go live on the same day.',
+    price: '€1,200 once',
+    featured: true,
+    badge: 'Most chosen',
     features: [
-      'A pilot on your own documents and processes',
-      'Answers with cited sources',
-      'A local model where the data is sensitive',
-      'Measurement of the time actually saved',
-      'A straight recommendation: is this worth continuing',
-    ],
-  },
-  {
-    name: 'Internal system',
-    pitch: 'One system instead of spreadsheets, email threads and information moved by hand.',
-    price: 'MVP from €8,000',
-    features: [
-      'Process analysis and a prototype',
-      'Users, roles, reporting',
-      'Integrations with your existing systems',
-      'Three months of support included',
-    ],
-  },
-  {
-    name: 'Business website',
-    pitch: 'Up to five core pages, built for mobile and easy to keep updated.',
-    price: 'typically €2,500–6,000',
-    features: [
-      'A design made for you',
+      'A design made for you, not a theme from a catalogue',
       'Mobile version and technical SEO foundations',
-      'Contact form and map',
-      'Training so you can update it',
-      'Managed hosting for the first year included',
+      'Domain and managed hosting for the first year',
+      'An AI agent that knows what the site says',
+      'Training so you can update the content yourself',
+    ],
+  },
+  {
+    name: 'Agent on your site',
+    pitch: 'Your site works and we leave it alone. I put an agent on top of it and connect it to your material.',
+    price: 'setup from €400',
+    features: [
+      'Choosing the right agent for the channel',
+      'Connecting it to your content, and tuning',
+      'Going live, with the answers checked',
+      "The monthly fee belongs to the agent itself",
+      'Bespoke changes are quoted separately',
+    ],
+  },
+  {
+    name: 'Bespoke build',
+    pitch: 'For when a ready-made agent will not do: an internal system, a portal, or a process with no equivalent.',
+    price: 'from €8,000',
+    features: [
+      'We start with a bounded pilot on real data',
+      'Users, roles and reporting',
+      'Integrations with the systems you already run',
+      'A local model where the data is sensitive',
+      'Three months of support included',
     ],
   },
 ];
@@ -215,10 +239,10 @@ export const PLANS: Plan[] = [
 export const PRICING_PROMO: string | null = null;
 
 export const NEEDS = [
-  'An AI agent for a repeating channel (phone, inbox, documents)',
+  'A website and an AI agent together',
+  'An AI agent on a site I already have',
   'Automating a repetitive process',
   'An internal system or client portal',
-  'A business website',
   'Training or consulting',
   "I'm not sure yet",
 ];

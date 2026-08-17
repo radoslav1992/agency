@@ -172,8 +172,13 @@ export const UI = {
 
     pricing: {
       eyebrow: 'Цени',
-      title: 'Ориентировъчни бюджети',
-      note: 'Всеки проект е различен. Тези числа са, за да прецениш още сега дали изобщо си говорим.',
+      /*
+       * Беше „Ориентировъчни бюджети“. Пакетът сайт и агент има точна
+       * цена — заглавие, което нарича всички числа ориентировъчни, я
+       * обезсилва точно там, където тя е най-полезна.
+       */
+      title: 'Колко струва',
+      note: 'Пакетът сайт и агент има точна цена. Другите две тръгват „от“, защото зависят от обхвата — точното число го казвам в офертата, преди да започнем.',
       afterA: 'Цената на пълното решение определям след пилота и техническата оценка. Текущите разходи за сървъри, модели и външни услуги ги казвам предварително — в',
       afterLink: 'офертата на една страница',
       afterB: ', преди да започнем, не после.',
@@ -375,8 +380,8 @@ export const UI = {
 
     pricing: {
       eyebrow: 'Pricing',
-      title: 'Indicative budgets',
-      note: "Every project differs. These numbers are here so you can tell right now whether we're in the same range.",
+      title: 'What it costs',
+      note: 'The site-and-agent package has a fixed price. The other two start from, because they depend on scope — I give you the exact number in the quote, before we start.',
       /* Без връзка: статията за офертата съществува само на български. */
       afterA: 'The price of the full build is set after the pilot and the technical assessment. Running costs for servers, models and third-party services are stated upfront — in the one-page quote, before we start, not after.',
       afterLink: '',

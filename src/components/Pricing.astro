@@ -7,7 +7,9 @@ const t = ui(lang);
 const { PLANS, PRICING_PROMO } = content(lang);
 ---
 
-<section class="pricing">
+<!-- Котвата е нужна: пакетът на началната страница праща тук, не към цялата
+     страница с услугите. -->
+<section id="pricing" class="pricing">
   <div class="container inner">
     <p class="eyebrow">{t.pricing.eyebrow}</p>
     <h2 class="section-title">{t.pricing.title}</h2>

@@ -20,6 +20,15 @@ export const PROJECTS: Project[] = [
     alt: 'The Saprichastie — Pazardzhik home page, headlined "Sight is not a condition for a full life"',
   },
   {
+    name: 'Zapiski',
+    url: 'https://zapiski.bg/',
+    tagline:
+      'You upload your material and ask it directly. Answers come with the source cited, and shared notebooks and team libraries keep the same knowledge reachable for a whole team or course.',
+    tags: ['AI', 'RAG', 'Own product'],
+    own: true,
+    alt: 'A Zapiski screen with a notebook, uploaded documents and an answer citing its source',
+  },
+  {
     name: 'Routinly',
     url: 'https://routinly.org/',
     tagline:
