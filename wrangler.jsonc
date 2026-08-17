@@ -22,6 +22,16 @@
       "destination_address": "radoslav.dodnikov@gmail.com"
     }
   ],
+  // Календарът за запазване на разговор. `database_id` се попълва еднократно
+  // с това, което върне `npx wrangler d1 create kova-bookings` — вж. docs/booking.md.
+  "d1_databases": [
+    {
+      "binding": "BOOKINGS",
+      "database_name": "kova-bookings",
+      "database_id": "ЗАМЕНИ_МЕ",
+      "migrations_dir": "migrations"
+    }
+  ],
   "vars": {
     // Where submissions land — must match the binding's destination_address.
     "CONTACT_TO": "radoslav.dodnikov@gmail.com",

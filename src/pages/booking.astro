@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BookingPicker from '../components/BookingPicker.astro';
+import { ui } from '../i18n/content.ts';
+
+/**
+ * Свободните часове се менят с всяко запазване, затова страницата се
+ * изчислява при заявка. Статична версия би показвала състоянието от
+ * последния build — тоест би предлагала часове, които вече не съществуват.
+ */
+export const prerender = false;
+
+const t = ui('bg').booking;
+---
+
+<BaseLayout
+  title="Запази безплатен разговор"
+  description="Избери час за безплатен 30-минутен разговор с Кова студио. Показваш ми как върви процесът днес, аз ти казвам дали има смисъл да се автоматизира."
+  canonical="/booking/"
+  noindex={Astro.url.search !== ''}
+>
+  <div class="container wrap">
+    <header class="head">
+      <p class="eyebrow">{t.eyebrow}</p>
+      <h1 class="title">{t.title}</h1>
+      <p class="lead">{t.lead}</p>
+    </header>
+
+    <BookingPicker />
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: clamp(48px, 7vw, 88px) clamp(72px, 10vw, 120px);
+  }
+
+  .head {
+    margin-bottom: clamp(36px, 5vw, 52px);
+    max-width: 640px;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 58px);
+    line-height: 1.03;
+    letter-spacing: -0.045em;
+    margin: 14px 0 0;
+  }
+
+  .lead {
+    font-size: 17px;
+    line-height: 1.62;
+    color: var(--ink-body);
+    margin: 20px 0 0;
+  }
+</style>

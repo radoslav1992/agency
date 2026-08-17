@@ -1,0 +1,46 @@
+---
+/**
+ * Обвивка само за панела.
+ *
+ * Нарочно НЕ ползва `BaseLayout`: там влизат хедърът, футърът, банерът за
+ * бисквитки, гласовият агент и Google Analytics. На административна страница
+ * банер за съгласие е безсмислен, гласовият агент — също, а посещенията ти в
+ * панела нямат работа в статистиката на сайта.
+ */
+import '@fontsource-variable/onest';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Кова студио</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="admin">
+    <main class="admin__main">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  body.admin {
+    background: var(--bg-sand);
+  }
+
+  .admin__main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: clamp(32px, 5vw, 64px) 20px clamp(60px, 8vw, 100px);
+  }
+</style>

@@ -31,3 +31,7 @@ pnpm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Локалното състояние на wrangler (D1 база за разработка) и секретите.
+.wrangler/
+.dev.vars
