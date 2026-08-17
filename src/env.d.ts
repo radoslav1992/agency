@@ -36,8 +36,21 @@ interface D1Database {
 }
 
 interface Env {
-  /** Bound in wrangler.jsonc → `send_email`. Delivers to verified destinations. */
+  /**
+   * Вързана с `destination_address` — пише САМО в кутията на студиото и не
+   * може да пише другаде, дори при грешка в кода. Безплатна е и не влиза в
+   * месечната сметка, защото получателят е потвърден адрес в акаунта.
+   */
   SEND_EMAIL?: SendEmailBinding;
+  /**
+   * Без ограничение за получател — с нея тръгват потвържденията до
+   * посетителите. Изисква включено Email Sending (Cloudflare Email Service,
+   * публична бета) и Workers Paid. Липсва ли, потвържденията се пропускат и
+   * се записват в дневника; всичко останало продължава да работи.
+   */
+  SEND_TO_VISITOR?: SendEmailBinding;
+  /** Подателят на писмата за часове. По подразбиране `CONTACT_FROM`. */
+  BOOKING_FROM?: string;
   /** Inbox that receives contact-form submissions (a verified destination). */
   CONTACT_TO?: string;
   /** Sender address on a zone with Email Routing enabled, e.g. `hi@kova.bg`. */

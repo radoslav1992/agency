@@ -268,6 +268,10 @@ export async function bookingByToken(db: D1Database, token: string): Promise<Boo
   return db.prepare('SELECT * FROM bookings WHERE token = ?1').bind(token).first<Booking>();
 }
 
+export async function bookingById(db: D1Database, id: string): Promise<Booking | null> {
+  return db.prepare('SELECT * FROM bookings WHERE id = ?1').bind(id).first<Booking>();
+}
+
 export async function cancelBooking(db: D1Database, id: string, now: number): Promise<void> {
   await db
     .prepare(

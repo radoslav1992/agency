@@ -12,7 +12,7 @@ function clean(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
 
-export const POST: APIRoute = async ({ request, locals, redirect }) => {
+export const POST: APIRoute = async ({ request, locals, redirect, url }) => {
   const form = await request.formData().catch(() => null);
   if (!form) return new Response('Bad Request', { status: 400 });
 
@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   // тръгне, без да задържа пренасочването.
   const notifications = Promise.all([
     notifyStudio(env, result.booking),
-    notifyVisitor(env, result.booking),
+    notifyVisitor(env, result.booking, url.origin),
   ]);
   const ctx = locals.runtime?.ctx;
   if (ctx?.waitUntil) ctx.waitUntil(notifications);
