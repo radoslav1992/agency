@@ -1,6 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kova-studio",
+  /*
+   * Името ТРЯБВА да съвпада с Worker-а, който сервира kova.bg.
+   *
+   * Дълго време тук пишеше `kova-studio`, а живият Worker се казва `agency` —
+   * личи и по preview адреса в `public/_headers`. Разминаването не чупи
+   * деплоя, защото Workers Builds качва в закачения Worker независимо от това
+   * поле, и точно затова е коварно: всяка команда на wrangler отива на друго
+   * място. `wrangler secret list` връща „Worker not found“, а `wrangler
+   * deploy` от лаптоп би СЪЗДАЛ втори Worker с това име и качил сайта в него —
+   * дубликат, който после никой не разбира защо съществува.
+   */
+  "name": "agency",
   "main": "./dist/_worker.js/index.js",
   "compatibility_date": "2025-11-01",
   "compatibility_flags": ["nodejs_compat"],
