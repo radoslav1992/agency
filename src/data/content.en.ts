@@ -215,7 +215,12 @@ export const PLANS: Plan[] = [
     name: 'Agent on your site',
     pitch: 'Your site works and we leave it alone. I put an agent on top of it and connect it to your material.',
     price: 'setup from €400',
-    note: "Plus the agent's own monthly fee — it is the product's price, not a markup of mine.",
+    /*
+     * Само поддръжката следва множителя на английските цени. Ползването е
+     * това, което доставчикът взима, и е еднакво навсякъде — удвоено, то би
+     * било точно надценката, която съседното изречение отрича.
+     */
+    note: "Plus a monthly fee depending on the agent — for the AI receptionist, €85 a month: €25 usage at cost, €60 support.",
     features: [
       'Choosing the right agent for the channel',
       'Connecting it to your content, and tuning',
