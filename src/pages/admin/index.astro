@@ -116,8 +116,7 @@ function localInputValue(offsetDays: number, hour: number): string {
                       {longDateLabel(booking.start_utc, TIMEZONE, 'bg')}
                     </span>
                     <span class="row__time">
-                      {zonedTimeLabel(booking.start_utc, TIMEZONE)}–
-                      {zonedTimeLabel(booking.start_utc + booking.minutes * 60000, TIMEZONE)}
+                      {`${zonedTimeLabel(booking.start_utc, TIMEZONE)}–${zonedTimeLabel(booking.start_utc + booking.minutes * 60000, TIMEZONE)}`}
                     </span>
                   </div>
 
@@ -185,8 +184,7 @@ function localInputValue(offsetDays: number, hour: number): string {
                   <div class="row__when">
                     <span class="row__day">{longDateLabel(block.start_utc, TIMEZONE, 'bg')}</span>
                     <span class="row__time">
-                      {zonedTimeLabel(block.start_utc, TIMEZONE)}–
-                      {zonedTimeLabel(block.end_utc, TIMEZONE)}
+                      {`${zonedTimeLabel(block.start_utc, TIMEZONE)}–${zonedTimeLabel(block.end_utc, TIMEZONE)}`}
                     </span>
                   </div>
                   <div class="row__who">
