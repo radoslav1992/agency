@@ -21,6 +21,11 @@ https://agency.radoslav-dodnikov.workers.dev/*
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
+# Знакът на марката. Не е `immutable`, защото името му е фиксирано и няма
+# хеш — при смяна на логото кешът трябва да изтече сам за седмица.
+/brand/*
+  Cache-Control: public, max-age=604800
+
 /*.png
   Cache-Control: public, max-age=604800
 
