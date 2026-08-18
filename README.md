@@ -166,12 +166,12 @@ draft: false      # true = вижда се само в dev
 ### Първоначална настройка (веднъж)
 
 1. **Смени домейна** в `src/data/site.mjs` (`SITE.url`) и в `public/robots.txt`.
-2. **Име на Worker-а** — `name` в `wrangler.jsonc` (по подразбиране `kova-studio`).
+2. **Име на Worker-а** — `name` в `wrangler.jsonc` — трябва да съвпада с реалния Worker (`agency`).
 3. **API токен в Cloudflare** — Dashboard → My Profile → API Tokens → Create Token → шаблон **Edit Cloudflare Workers**.
 4. **GitHub secrets** — в repo → Settings → Secrets and variables → Actions:
    - `CLOUDFLARE_API_TOKEN`
    - `CLOUDFLARE_ACCOUNT_ID` (Dashboard → Workers & Pages → Account ID)
-5. **Домейн** — Cloudflare Dashboard → Workers & Pages → `kova-studio` → Settings → Domains & Routes → Add custom domain.
+5. **Домейн** — Cloudflare Dashboard → Workers & Pages → `agency` → Settings → Domains & Routes → Add custom domain.
 
 ### Автоматичен деплой
 

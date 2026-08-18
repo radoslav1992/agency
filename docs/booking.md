@@ -74,7 +74,7 @@ SELECT name FROM sqlite_master WHERE type='table';
 
 ### 4. Секретите — от таблото
 
-**Workers & Pages** → `kova-studio` → **Settings** → **Variables and Secrets**
+**Workers & Pages** → `agency` → **Settings** → **Variables and Secrets**
 → **Add**. За всеки: тип **Secret** (не *Text* — иначе стойността се вижда).
 
 | Име | Стойност |
@@ -125,6 +125,9 @@ npx wrangler d1 create kova-bookings                 # връща database_id
 npx wrangler d1 execute kova-bookings --remote --file=migrations/0001_booking.sql
 npx wrangler secret put ADMIN_PASSWORD
 npx wrangler secret put AGENT_TOKEN
+
+# проверка кои са зададени
+npx wrangler secret list
 ```
 
 За местна разработка базата се вдига с `--local` вместо `--remote`, а двата
