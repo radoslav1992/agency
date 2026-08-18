@@ -1,8 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
-import { Image } from 'astro:assets';
+import BrandMark from '../../components/BrandMark.astro';
 import { render } from 'astro:content';
-import logoMark from '../../assets/brand/logo-mark.webp';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getPosts, formatDate } from '../../lib/posts.ts';
 import { SITE } from '../../data/site.mjs';
@@ -62,14 +61,7 @@ const articleSchema = {
     <footer class="foot">
       <div class="author">
         {/* Декоративна: името на автора стои като текст веднага след нея. */}
-        <Image
-          class="author__mark"
-          src={logoMark}
-          alt=""
-          widths={[38, 76, 114]}
-          sizes="38px"
-          loading="lazy"
-        />
+        <BrandMark class="author__mark" size={38} loading="lazy" />
         <span>
           <span class="author__name">{SITE.owner.name}</span>
           <span class="author__role">{SITE.owner.role}</span>

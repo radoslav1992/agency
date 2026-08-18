@@ -1,6 +1,5 @@
 ---
-import { Image } from 'astro:assets';
-import logoMark from '../assets/brand/logo-mark.webp';
+import BrandMark from './BrandMark.astro';
 import { SITE } from '../data/site.mjs';
 import { href as localised, localeOf } from '../i18n/index.ts';
 import { brand, cta, legalName, location, nav, phone, ui } from '../i18n/content.ts';
@@ -22,14 +21,7 @@ const year = new Date().getFullYear();
     <div class="col col--brand">
       <p class="brand">
         {/* Декоративна: името на студиото стои като текст веднага след нея. */}
-        <Image
-          class="brand__mark"
-          src={logoMark}
-          alt=""
-          widths={[26, 52, 78]}
-          sizes="26px"
-          loading="lazy"
-        />
+        <BrandMark class="brand__mark" size={26} loading="lazy" />
         <span class="brand__name">{studio.name}</span>
       </p>
       <p class="muted">{legalName(lang)}</p>

@@ -1,6 +1,5 @@
 ---
-import { Image } from 'astro:assets';
-import logoMark from '../assets/brand/logo-mark.webp';
+import BrandMark from './BrandMark.astro';
 import { hasTranslation, href as localised, localeOf, pathForLocale } from '../i18n/index.ts';
 import { brand, cta, nav, ui } from '../i18n/content.ts';
 
@@ -37,14 +36,7 @@ const switchLabel = other === 'en'
     <a class="brand" href={localised('/', lang)} aria-label={`${studio.name} — ${t.header.home}`}>
       {/* Марката е декоративна: името на студиото стои като текст веднага
           след нея, а линкът си има aria-label. */}
-      <Image
-        class="brand__mark"
-        src={logoMark}
-        alt=""
-        widths={[30, 60, 90]}
-        sizes="30px"
-        loading="eager"
-      />
+      <BrandMark class="brand__mark" size={30} loading="eager" />
       <span class="brand__name">{studio.short}</span>
       <span class="brand__suffix">{studio.suffix}</span>
     </a>
