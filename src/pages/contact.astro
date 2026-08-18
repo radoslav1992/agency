@@ -34,11 +34,14 @@ import { SITE } from '../data/site.mjs';
       </div>
 
       <div class="panel panel--dark">
-        <p class="panel__title">Предпочиташ да пишеш по имейл?</p>
+        <p class="panel__title">Предпочиташ да ме потърсиш директно?</p>
         <p class="panel__label">Общи запитвания</p>
         <a class="panel__link" href={`mailto:${SITE.email}`}>{SITE.email}</a>
         <p class="panel__label">Директно до Радослав</p>
         <a class="panel__link" href={`mailto:${SITE.owner.email}`}>{SITE.owner.email}</a>
+        <p class="panel__label">Телефон</p>
+        <a class="panel__link" href={`tel:${SITE.phone.e164}`}>{SITE.phone.display.bg}</a>
+        <p class="panel__note">Ако не вдигна, пиши — връщам обажданията същия ден.</p>
         <a class="panel__link panel__link--secondary" href={SITE.owner.linkedin} target="_blank" rel="noopener">
           {SITE.owner.linkedinLabel}
         </a>
@@ -50,13 +53,7 @@ import { SITE } from '../data/site.mjs';
           Разговорът е безплатен и не те ангажира с поръчка. Можем да се чуем онлайн или да се
           срещнем в София.
         </p>
-        <a
-          class="panel__cta"
-          href={SITE.bookingUrl ?? `mailto:${SITE.owner.email}?subject=${encodeURIComponent('Разговор 30 мин.')}`}
-          {...SITE.bookingUrl ? { target: '_blank', rel: 'noopener' } : {}}
-        >
-          {SITE.bookingUrl ? 'Избери час в календара' : 'Предложи час за разговор'}
-        </a>
+        <a class="panel__cta" href="/booking/">Избери час в календара</a>
       </div>
 
       <div class="panel">
@@ -144,6 +141,15 @@ import { SITE } from '../data/site.mjs';
 
   .panel__label:first-of-type {
     margin-top: 0;
+  }
+
+  /* Бележката е под телефона и трябва да се чете като уговорка, не като
+     втори контакт — оттам по-дребният размер и приглушеният бял. */
+  .panel__note {
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 8px 0 0;
   }
 
   .panel__link--secondary {
