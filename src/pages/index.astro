@@ -42,6 +42,9 @@ const structuredData = {
       description: SITE.description,
       url: SITE.url,
       email: SITE.email,
+      // E.164, не изписаният вид: `02 492 0201` не значи нищо извън България,
+      // а Google чете точно това поле, за да покаже бутон „обади се“.
+      telephone: SITE.phone.e164,
       foundingDate: String(SITE.founded),
       areaServed: 'BG',
       address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },

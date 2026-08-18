@@ -127,7 +127,8 @@ const t = ui(lang);
   }
 
   .journey__steps::after {
-    background: var(--accent);
+    /* Релсата е указател за докъде си стигнал, не бутон. */
+    background: var(--ink);
     transform-origin: top;
     /* Без поддръжка релсата е пълна — по-добре от вечно празна. */
     transform: scaleY(1);
@@ -165,7 +166,9 @@ const t = ui(lang);
   .step__kicker {
     font-size: clamp(16px, 1.5vw, 19px);
     line-height: 1.45;
-    color: var(--accent);
+    /* Тъмно и получер вместо теракота: чете се като подзаглавие, а не
+       като нещо, което се натиска. */
+    color: var(--ink);
     font-weight: 600;
     margin: 10px 0 0;
   }
@@ -219,7 +222,7 @@ const t = ui(lang);
       color: var(--ink-faint);
     }
     to {
-      color: var(--accent);
+      color: var(--ink);
     }
   }
 

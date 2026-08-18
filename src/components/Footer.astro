@@ -3,12 +3,13 @@ import { Image } from 'astro:assets';
 import logoMark from '../assets/brand/logo-mark.webp';
 import { SITE } from '../data/site.mjs';
 import { href as localised, localeOf } from '../i18n/index.ts';
-import { brand, cta, legalName, location, nav, ui } from '../i18n/content.ts';
+import { brand, cta, legalName, location, nav, phone, ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
 const t = ui(lang);
 const studio = brand(lang);
 const where = location(lang);
+const tel = phone(lang);
 /* Същата навигация като горе плюс контактите — на английски анализаторът
    и блогът просто липсват, защото ги няма на този език. */
 const links = [...nav(lang).filter((item) => item.href !== '/'), cta(lang)];
@@ -38,6 +39,7 @@ const year = new Date().getFullYear();
     <div class="col">
       <p class="col__title">{t.footer.contactTitle}</p>
       <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      <a href={tel.href}>{tel.label}</a>
       <a href={SITE.owner.linkedin} rel="me noopener" target="_blank">LinkedIn</a>
     </div>
 

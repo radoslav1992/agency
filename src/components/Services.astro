@@ -25,7 +25,7 @@ const { SERVICES, SECONDARY_SERVICES } = content(lang);
           class:list={[
             'service',
             service.variant === 'dark' && 'service--dark',
-            service.variant === 'wide' && 'service--wide',
+            (service.variant === 'wide' || service.wide) && 'service--wide',
           ]}
         >
           <p class="service__number">{service.number}</p>
@@ -168,12 +168,14 @@ const { SERVICES, SECONDARY_SERVICES } = content(lang);
     grid-column: span 2;
   }
 
+  /* `auto-fit`, а не твърди две колони: откакто сайтовете се качиха горе,
+     тук остана една карта и половината ред зееше празен. */
   .grid--secondary {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     margin-top: 18px;
   }
 
-  /* По-тихи карти — сайтовете и обученията не са първото послание. */
+  /* По-тиха карта — обученията не са първото послание. */
   .service--secondary {
     background: var(--bg-sand);
     padding: 22px 24px;

@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookingPicker from '../../components/BookingPicker.astro';
+import { ui } from '../../i18n/content.ts';
+
+export const prerender = false;
+
+const t = ui('en').booking;
+---
+
+<BaseLayout
+  title="Book a free call"
+  description="Pick a time for a free 30-minute call with Kova Studio. You show me how the process runs today, I tell you whether automating it makes sense."
+  canonical="/en/booking/"
+  noindex={Astro.url.search !== ''}
+>
+  <div class="container wrap">
+    <header class="head">
+      <p class="eyebrow">{t.eyebrow}</p>
+      <h1 class="title">{t.title}</h1>
+      <p class="lead">{t.lead}</p>
+    </header>
+
+    <BookingPicker />
+  </div>
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: clamp(48px, 7vw, 88px) clamp(72px, 10vw, 120px);
+  }
+
+  .head {
+    margin-bottom: clamp(36px, 5vw, 52px);
+    max-width: 640px;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 58px);
+    line-height: 1.03;
+    letter-spacing: -0.045em;
+    margin: 14px 0 0;
+  }
+
+  .lead {
+    font-size: 17px;
+    line-height: 1.62;
+    color: var(--ink-body);
+    margin: 20px 0 0;
+  }
+</style>

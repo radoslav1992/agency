@@ -1,0 +1,566 @@
+---
+/**
+ * Изборът на час — целият без JavaScript.
+ *
+ * Три стъпки, всяка от които е адрес: `?date=` избира ден, `&slot=` избира
+ * час, формата потвърждава. Затова работи с изключен JavaScript, помни се в
+ * историята на браузъра и се споделя като връзка — гласовият агент може да
+ * прати на човека готов адрес за конкретен час.
+ *
+ * Страницата НЕ се предрендерира. Свободните часове се менят всеки път и
+ * статична версия би показвала вчерашното състояние.
+ */
+import { localeOf } from '../i18n/index.ts';
+import { ui } from '../i18n/content.ts';
+import { TIMEZONE } from '../data/booking.mjs';
+import { availability, bookingByToken, type Slot } from '../lib/booking.ts';
+import { longDateLabel, zonedTimeLabel, zoneAbbreviation, parseDateKey } from '../lib/time.ts';
+
+const lang = localeOf(Astro.currentLocale);
+const t = ui(lang).booking;
+
+const params = Astro.url.searchParams;
+const db = Astro.locals.runtime?.env?.BOOKINGS;
+const now = Date.now();
+
+/** Адрес на същата страница с други параметри — пази езиковия префикс. */
+function withParams(next: Record<string, string | undefined>): string {
+  const url = new URL(Astro.url);
+  url.search = '';
+  for (const [key, value] of Object.entries(next)) {
+    if (value) url.searchParams.set(key, value);
+  }
+  return url.pathname + url.search;
+}
+
+type View =
+  | { kind: 'unavailable' }
+  | { kind: 'done'; when: string; token: string; cancelled: boolean }
+  | { kind: 'notFound' }
+  | { kind: 'confirm'; slot: Slot; date: string }
+  | { kind: 'times'; date: string; slots: Slot[]; days: { date: string; slots: Slot[] }[] }
+  | { kind: 'days'; days: { date: string; slots: Slot[] }[] };
+
+let view: View = { kind: 'unavailable' };
+const error = params.get('error') ?? '';
+
+if (db) {
+  const done = params.get('done');
+  const cancelled = params.get('cancelled');
+  const token = done ?? cancelled;
+
+  if (token) {
+    const booking = await bookingByToken(db, token);
+    view = booking
+      ? {
+          kind: 'done',
+          token: booking.token,
+          cancelled: booking.status === 'cancelled',
+          when: `${longDateLabel(booking.start_utc, TIMEZONE, lang)}, ${zonedTimeLabel(booking.start_utc, TIMEZONE)}`,
+        }
+      : { kind: 'notFound' };
+  } else {
+    const days = await availability(db, now);
+    const wanted = params.get('date');
+    const date = wanted && parseDateKey(wanted) ? wanted : null;
+    const day = date ? days.find((entry) => entry.date === date) : null;
+    const slotParam = Number(params.get('slot'));
+
+    const chosen =
+      day && Number.isFinite(slotParam)
+        ? day.slots.find((slot) => slot.startUtc === slotParam)
+        : undefined;
+
+    if (chosen && date) view = { kind: 'confirm', slot: chosen, date };
+    else if (day) view = { kind: 'times', date: day.date, slots: day.slots, days };
+    else view = { kind: 'days', days };
+  }
+}
+
+const zone = zoneAbbreviation(now, TIMEZONE);
+---
+
+<div class="book">
+  {error && <p class="book__error" role="alert">{error}</p>}
+
+  {
+    view.kind === 'unavailable' && (
+      <div class="book__empty">
+        <p class="book__emptyText">{t.unavailable}</p>
+        <a class="btn btn--primary" href={lang === 'en' ? '/en/contact/' : '/contact/'}>
+          {t.contactInstead}
+        </a>
+      </div>
+    )
+  }
+
+  {
+    view.kind === 'notFound' && (
+      <div class="book__empty">
+        <p class="book__emptyText">{t.notFound}</p>
+        <a class="btn btn--primary" href={withParams({})}>
+          {t.pickDay}
+        </a>
+      </div>
+    )
+  }
+
+  {
+    view.kind === 'done' && (
+      <div class="done">
+        <p class="done__mark" aria-hidden="true">
+          {view.cancelled ? '×' : '✓'}
+        </p>
+        <h2 class="done__title">{view.cancelled ? t.cancelledTitle : t.doneTitle}</h2>
+        <p class="done__when">{view.when}</p>
+        <p class="done__lead">{view.cancelled ? t.cancelledLead : t.doneLead}</p>
+
+        {!view.cancelled && (
+          <div class="done__actions">
+            <a class="btn btn--primary" href={`/api/booking/${view.token}.ics`}>
+              {t.addToCalendar}
+            </a>
+            <form method="POST" action="/api/booking/cancel">
+              <input type="hidden" name="token" value={view.token} />
+              <input type="hidden" name="locale" value={lang} />
+              <button class="done__cancel" type="submit">
+                {t.cancelLink}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {view.cancelled && (
+          <a class="btn btn--primary" href={withParams({})}>
+            {t.pickDay}
+          </a>
+        )}
+      </div>
+    )
+  }
+
+  {
+    view.kind === 'days' &&
+      (view.days.length === 0 ? (
+        <div class="book__empty">
+          <p class="book__emptyText">{t.noSlots}</p>
+          <a class="btn btn--primary" href={lang === 'en' ? '/en/contact/' : '/contact/'}>
+            {t.contactInstead}
+          </a>
+        </div>
+      ) : (
+        <div class="step">
+          <p class="step__label">{t.pickDay}</p>
+          <ul class="days">
+            {view.days.map((day) => (
+              <li>
+                <a class="day" href={withParams({ date: day.date })}>
+                  <span class="day__name">{longDateLabel(day.slots[0].startUtc, TIMEZONE, lang)}</span>
+                  <span class="day__count">{t.slotsLeft(day.slots.length)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p class="book__zone">
+            {t.timezoneNote} ({zone})
+          </p>
+        </div>
+      ))
+  }
+
+  {
+    view.kind === 'times' && (
+      <div class="step">
+        <a class="step__back" href={withParams({})}>
+          {t.back}
+        </a>
+        <p class="step__label">{longDateLabel(view.slots[0].startUtc, TIMEZONE, lang)}</p>
+        <ul class="times">
+          {view.slots.map((slot) => (
+            <li>
+              <a
+                class="time"
+                href={withParams({ date: view.date, slot: String(slot.startUtc) })}
+              >
+                {zonedTimeLabel(slot.startUtc, TIMEZONE)}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="book__zone">
+          {t.timezoneNote} ({zone})
+        </p>
+      </div>
+    )
+  }
+
+  {
+    view.kind === 'confirm' && (
+      <div class="step">
+        <a class="step__back" href={withParams({ date: view.date })}>
+          {t.changeTime}
+        </a>
+
+        <p class="chosen">
+          <span class="chosen__day">{longDateLabel(view.slot.startUtc, TIMEZONE, lang)}</span>
+          <span class="chosen__time">
+            {zonedTimeLabel(view.slot.startUtc, TIMEZONE)}–{zonedTimeLabel(view.slot.endUtc, TIMEZONE)}
+          </span>
+          <span class="chosen__zone">{zone}</span>
+        </p>
+
+        <h2 class="step__label step__label--form">{t.confirmTitle}</h2>
+
+        <form class="form" method="POST" action="/api/book">
+          <input type="hidden" name="start" value={String(view.slot.startUtc)} />
+          <input type="hidden" name="locale" value={lang} />
+          {/* Примамка за ботове — човек не я вижда и не я попълва. */}
+          <div class="form__trap" aria-hidden="true">
+            <label>
+              Website
+              <input type="text" name="website" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="field__label">
+              {t.name} <span class="field__req">{t.required}</span>
+            </span>
+            <input class="field__input" type="text" name="name" required maxlength="120" autocomplete="name" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">
+              {t.email} <span class="field__req">{t.required}</span>
+            </span>
+            <input
+              class="field__input"
+              type="email"
+              name="email"
+              required
+              maxlength="180"
+              autocomplete="email"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{t.phone}</span>
+            <input class="field__input" type="tel" name="phone" maxlength="40" autocomplete="tel" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{t.note}</span>
+            <textarea class="field__input field__input--area" name="note" rows="3" maxlength="1200" />
+          </label>
+
+          <button class="btn btn--primary form__submit" type="submit">
+            {t.submit}
+          </button>
+        </form>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .book {
+    max-width: 760px;
+  }
+
+  .book__error {
+    background: var(--chip);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 18px;
+    margin: 0 0 28px;
+    font-size: 15.5px;
+    color: var(--ink);
+  }
+
+  .book__empty {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: clamp(28px, 4vw, 40px);
+  }
+
+  .book__emptyText {
+    margin: 0 0 22px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--ink-body);
+  }
+
+  .book__zone {
+    margin: 26px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+  }
+
+  .step__label {
+    font-family: var(--font-display);
+    font-size: clamp(19px, 2.2vw, 24px);
+    letter-spacing: -0.02em;
+    margin: 0 0 20px;
+  }
+
+  .step__label--form {
+    margin-top: 34px;
+  }
+
+  .step__back {
+    display: inline-block;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    margin-bottom: 18px;
+    transition: color 0.18s ease;
+  }
+
+  .step__back:hover {
+    color: var(--accent);
+  }
+
+  /* ---------- дните ---------- */
+
+  .days {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+
+  .day {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    transition:
+      border-color 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .day:hover {
+    border-color: var(--accent);
+    transform: translateX(3px);
+  }
+
+  .day__name {
+    font-size: 16.5px;
+    font-weight: 600;
+    color: var(--ink);
+    /* Първата буква на деня идва от Intl с малка буква на български. */
+    text-transform: capitalize;
+  }
+
+  .day__count {
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+    flex: none;
+  }
+
+  /* ---------- часовете ---------- */
+
+  .times {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 8px;
+  }
+
+  .time {
+    display: block;
+    text-align: center;
+    padding: 15px 8px;
+    font-size: 16px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    transition:
+      border-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .time:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ---------- потвърждението ---------- */
+
+  .chosen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+    margin: 0;
+    padding: 20px 24px;
+    background: var(--dark);
+    color: var(--dark-ink);
+    border-radius: 16px;
+  }
+
+  .chosen__day {
+    font-size: 17px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .chosen__time {
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    color: var(--dark-ink-muted);
+  }
+
+  .chosen__zone {
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    color: var(--dark-ink-faint);
+  }
+
+  .form {
+    display: grid;
+    gap: 18px;
+  }
+
+  /* Скрито от хора, но не с `display: none` — част от ботовете пропускат
+     точно това правило и не пипат полето, което го прави безполезно. */
+  .form__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .field {
+    display: grid;
+    gap: 7px;
+  }
+
+  .field__label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .field__req {
+    font-weight: 500;
+    font-size: 12.5px;
+    color: var(--ink-subtle);
+  }
+
+  .field__input {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 13px 15px;
+    width: 100%;
+    transition: border-color 0.18s ease;
+  }
+
+  .field__input:focus-visible {
+    border-color: var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .field__input--area {
+    resize: vertical;
+    line-height: 1.55;
+  }
+
+  .form__submit {
+    justify-self: start;
+    margin-top: 6px;
+  }
+
+  /* ---------- готово ---------- */
+
+  .done {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: clamp(30px, 4vw, 44px);
+  }
+
+  .done__mark {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin: 0 0 20px;
+    border-radius: 50%;
+    background: var(--chip);
+    color: var(--ink);
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .done__title {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3.2vw, 34px);
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .done__when {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 14px 0 0;
+    text-transform: capitalize;
+  }
+
+  .done__lead {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 12px 0 0;
+    max-width: 48ch;
+  }
+
+  .done__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    margin-top: 28px;
+  }
+
+  .done__cancel {
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--ink-muted);
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--line-strong);
+    padding: 0 0 2px;
+    cursor: pointer;
+    transition: color 0.18s ease;
+  }
+
+  .done__cancel:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 520px) {
+    .day {
+      flex-direction: column;
+      gap: 4px;
+    }
+  }
+</style>

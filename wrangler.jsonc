@@ -16,16 +16,49 @@
   // Contact form delivery via Cloudflare Email Routing — no third-party service
   // and no API key. `destination_address` must be a VERIFIED destination in
   // Email Routing, and it is the only address this Worker can email.
+  // Две връзки нарочно. `destination_address` е ОПЦИЯ, не изискване на
+  // платформата — сложено е тук, за да не може контактната форма да пише на
+  // никого освен на студиото. Втората връзка е без ограничение и с нея тръгват
+  // потвържденията до посетителите; тя изисква включено Email Sending
+  // (Cloudflare Email Service, публична бета) и Workers Paid.
+  //
+  // Разделени са, за да не зависи доказаният път от бетата: спре ли втората,
+  // известията до теб продължават да пристигат.
   "send_email": [
     {
       "name": "SEND_EMAIL",
       "destination_address": "radoslav.dodnikov@gmail.com"
+    },
+    {
+      "name": "SEND_TO_VISITOR",
+      // Подателите са ограничени, получателите — не. Така изтекъл код не може
+      // да праща поща от чужд адрес на твоя домейн.
+      "allowed_sender_addresses": ["forma@kova.bg", "chas@kova.bg"]
+    }
+  ],
+  // Календарът за запазване на разговор.
+  //
+  // `database_id` не е тайна — той е адрес, не ключ; достъпът минава през
+  // акаунта. Затова стои в хранилището, а не в секретите: Cloudflare строи
+  // сайта оттук и връзка, добавена от таблото, се затрива при следващия деплой.
+  // Създаването на базата и схемата са описани в docs/booking.md.
+  "d1_databases": [
+    {
+      "binding": "BOOKINGS",
+      "database_name": "kova-bookings",
+      "database_id": "ab2b6be6-8675-4192-a34f-4f8577536561",
+      "migrations_dir": "migrations"
     }
   ],
   "vars": {
     // Where submissions land — must match the binding's destination_address.
     "CONTACT_TO": "radoslav.dodnikov@gmail.com",
     // Sender. Must be on a zone in this account with Email Routing enabled.
-    "CONTACT_FROM": "forma@kova.bg"
+    "CONTACT_FROM": "forma@kova.bg",
+    // Подателят на писмата за запазен час. Различен от `forma@`, защото това
+    // не е препратено запитване, а писмо от студиото — и защото адресът, който
+    // пише на непознати, е този, който трябва да се следи за репутация.
+    // Трябва да е в списъка `allowed_sender_addresses` по-горе.
+    "BOOKING_FROM": "chas@kova.bg"
   }
 }

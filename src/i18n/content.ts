@@ -17,6 +17,7 @@ import * as enCases from '../data/cases.en.ts';
 import * as enProjects from '../data/projects.en.ts';
 import { UI } from './ui.ts';
 import {
+  SITE,
   META,
   NAV_BY_LOCALE,
   CTA_BY_LOCALE,
@@ -63,6 +64,18 @@ export function brand(locale: Locale) {
 /** Седалището — „София, България“ / „Sofia, Bulgaria“. */
 export function location(locale: Locale) {
   return LOCATION_BY_LOCALE[locale] ?? LOCATION_BY_LOCALE.bg;
+}
+
+/**
+ * Телефонът: как се набира и как се изписва.
+ *
+ * `href` е винаги E.164 — форматът за четене се мени с езика, наборът не.
+ */
+export function phone(locale: Locale) {
+  return {
+    href: `tel:${SITE.phone.e164}`,
+    label: SITE.phone.display[locale] ?? SITE.phone.display.bg,
+  };
 }
 
 export function meta(locale: Locale) {

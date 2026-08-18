@@ -133,7 +133,7 @@ const domainOf = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/,
   }
 
   .proof__eyebrow {
-    color: var(--accent);
+    color: var(--dark-ink-subtle);
   }
 
   .proof__title {
@@ -226,9 +226,11 @@ const domainOf = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/,
     padding: 5px 11px;
   }
 
+  /* Разликата „собствен / клиентски“ е важна и остава — но се носи от
+     яркостта, не от теракотата, която пази за натискане. */
   .work__origin--own {
-    color: var(--accent);
-    border-color: var(--accent);
+    color: var(--dark-ink);
+    border-color: var(--dark-ink-faint);
   }
 
   .work__name {
@@ -256,7 +258,9 @@ const domainOf = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/,
   .work__takeaway {
     font-size: clamp(17px, 1.8vw, 21px);
     line-height: 1.45;
-    color: var(--accent);
+    /* Кремаво върху тъмно е достатъчно силно; изводът няма нужда от цвят,
+       за да е първото прочетено в блока. */
+    color: var(--dark-ink);
     margin: 16px 0 0;
     max-width: 34ch;
   }

@@ -62,6 +62,7 @@ const TRANSLATED = [
   '/agents/',
   '/projects/',
   '/contact/',
+  '/booking/',
   '/terms/',
   '/privacy/',
   '/cookies/',

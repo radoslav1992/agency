@@ -29,10 +29,8 @@
  */
 import { SITE } from '../data/site.mjs';
 import { localeOf } from '../i18n/index.ts';
-import { ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
-const t = ui(lang);
 
 /*
  * Само на български и само с настроен идентификатор. Агентът говори
@@ -48,28 +46,66 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
  * превръща в отделно свойство — `Официално="true"`, `свойство="true"` и
  * така нататък. Обясненията стоят тук.
  *
- * `disable-banner` е официално свойство на приставката, обявено от
- * ElevenLabs — маха лентата „Powered by ElevenLabs“ под балончето. Не е
- * заобикаляне със стил: подписът живее в shadow DOM и CSS отвън и без това
- * не го стига.
+ * ⚠️ И никакви измислени свойства. Приставката чете строго определен
+ * списък и подминава всичко останало МЪЛЧАЛИВО — без предупреждение в
+ * конзолата, без нищо. Заради това тук известно време стояха осем
+ * несъществуващи свойства, които не правеха абсолютно нищо:
+ * `disable-banner` и седем от рода на `start-call-text`.
  *
- * Надписите идват от `ui.ts` като всички останали. Приставката говори
- * английски по подразбиране, а тук се показва само на български.
+ * Истинският списък се чете от самия пакет:
+ *   npm pack @elevenlabs/convai-widget-embed
+ *   grep -o "pg(\`[a-z0-9-]*\`)" package/dist/index.js | sort -u
+ *
+ * Надписите НЕ се подават оттук. Приставката ги търси по реда:
+ *   свойство `text-contents` → предварителните набори по език от таблото →
+ *   `text_contents` от таблото → английските по подразбиране.
+ * Свойството бие всичко, тоест зададено тук то ЗАГЛУШАВА преводите,
+ * писани в таблото — редакциите там просто спират да се появяват, без
+ * никакъв признак защо. Преводите се водят на едно място и то е таблото:
+ * там има и набори по език, и не иска пускане на сайта наново.
+ *
+ * Подписът „Powered by ElevenLabs“ НЕ се маха оттук. В кода на приставката
+ * той виси на `config.disable_banner`, а тази конфигурация идва от сървъра
+ * на ElevenLabs — тоест от таблото и от плана, не от разметката.
  */
+
+/*
+ * Цветовете на кълбото.
+ *
+ * ⚠️ Шестнайсетичните стойности са ПРЕПИСАНИ от `--accent` и
+ * `--accent-darker` в `global.css`, а не взети оттам. Приставката живее в
+ * shadow DOM и не вижда нашите променливи; свойството ѝ приема само готов
+ * цвят. Смени ли се палитрата, тези два реда се сменят на ръка — затова
+ * стоят с име, а не разпръснати из разметката.
+ */
+const ORB = { from: '#e2542b', to: '#b93b16' };
+
+/*
+ * Марката за аватара на балончето.
+ *
+ * Адресът е АБСОЛЮТЕН нарочно. Приставката подава стойността направо като
+ * източник на картинка от собствения си контекст, а относителен път би се
+ * връзвал за страницата, на която стои — тоест би се чупил при преглед от
+ * друг хост. Файлът е част от сайта отдавна (`public/icon-192.png`) и стои
+ * на канoничния домейн независимо откъде се гледа приставката.
+ *
+ * Цветовете на кълбото остават заедно с картинката: приставката ги ползва
+ * на различни места в различните си състояния и така, каквото и да покаже,
+ * то е в цветовете на марката.
+ */
+const AVATAR = `${SITE.url}/icon-192.png`;
+
 ---
 
 {
   show && (
     <elevenlabs-convai
       agent-id={SITE.voiceAgentId}
-      disable-banner="true"
-      action-text={t.voiceAgent.action}
-      start-call-text={t.voiceAgent.start}
-      end-call-text={t.voiceAgent.end}
-      expand-text={t.voiceAgent.expand}
-      collapse-text={t.voiceAgent.collapse}
-      listening-text={t.voiceAgent.listening}
-      speaking-text={t.voiceAgent.speaking}
+      allow-events="true"
+      avatar-image-url={AVATAR}
+      avatar-orb-color-1={ORB.from}
+      avatar-orb-color-2={ORB.to}
+      text-input="true"
       data-voice-agent
       data-src="https://unpkg.com/@elevenlabs/convai-widget-embed"
     />
@@ -78,31 +114,92 @@ const show = Boolean(SITE.voiceAgentId) && lang === 'bg';
 
 <script>
   /*
-   * Потребителският елемент стои в разметката, но е инертен, докато скриптът
-   * на ElevenLabs не го дефинира. Затова тук няма какво да се показва или
-   * крие — само моментът, в който този скрипт се тегли.
+   * Две задачи: да не тегли скрипта на ElevenLabs, преди някой да е посегнал
+   * към страницата, и да отваря балончето, когато в каталога натиснат
+   * „Говори с него сега“.
+   *
+   * Отварянето минава през събитие, което самата приставка слуша върху
+   * `document`:
+   *   elevenlabs-agent:expand   { action: 'expand' | 'collapse' | 'toggle' }
+   *   elevenlabs-agent:contextual-update  { message }
+   * Второто иска `allow-events` върху елемента и казва на агента какво
+   * гледа човекът, без да прекъсва разговора.
+   *
+   * Имената не са предположени — прочетени са от пакета:
+   *   npm pack @elevenlabs/convai-widget-embed
+   *   grep -o "elevenlabs-agent:[a-z-]*" package/dist/index.js | sort -u
    */
   const host = document.querySelector<HTMLElement>('[data-voice-agent]');
   const src = host?.dataset.src;
 
-  if (host && src && !document.querySelector(`script[src="${src}"]`)) {
+  if (host && src) {
     /** Първото истинско посягане към страницата — тогава и само тогава. */
     const TRIGGERS = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const;
 
-    let loaded = false;
-    const load = () => {
-      if (loaded) return;
-      loaded = true;
-      TRIGGERS.forEach((event) => window.removeEventListener(event, load));
+    /** Пази скрипта да се тегли веднъж, дори бутонът да се натисне пет пъти. */
+    let loading: Promise<void> | null = null;
 
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      document.head.appendChild(script);
+    const load = () => {
+      if (loading) return loading;
+      TRIGGERS.forEach((event) => window.removeEventListener(event, load));
+      loading = new Promise<void>((resolve, reject) => {
+        const already = document.querySelector(`script[src="${src}"]`);
+        if (already) return resolve();
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.addEventListener('load', () => resolve());
+        script.addEventListener('error', () => reject(new Error('ElevenLabs widget failed to load')));
+        document.head.appendChild(script);
+      });
+      return loading;
     };
 
     TRIGGERS.forEach((event) =>
       window.addEventListener(event, load, { once: true, passive: true }),
     );
+
+    /*
+     * Бутоните „говори с него сега“ от каталога. Слуша се на `document`,
+     * за да няма връзка между двата компонента — каталогът само маркира
+     * бутон, а приставката знае как да се отвори.
+     */
+    document.addEventListener('click', async (event) => {
+      const trigger = (event.target as Element | null)?.closest<HTMLElement>(
+        '[data-open-voice-agent]',
+      );
+      if (!trigger) return;
+      event.preventDefault();
+
+      try {
+        await load();
+        /* Скриптът може да е зареден, но елементът още да не е дефиниран.
+           Таймаут, за да не виси обещанието вечно, ако нещо се обърка. */
+        await Promise.race([
+          customElements.whenDefined('elevenlabs-convai'),
+          new Promise((_, no) => setTimeout(() => no(new Error('timeout')), 8000)),
+        ]);
+        /* Два кадъра: единият дефинира елемента, другият го монтира. */
+        await new Promise((done) =>
+          requestAnimationFrame(() => requestAnimationFrame(done)),
+        );
+
+        document.dispatchEvent(
+          new CustomEvent('elevenlabs-agent:expand', { detail: { action: 'expand' } }),
+        );
+
+        const context = trigger.dataset.agentContext;
+        if (context) {
+          document.dispatchEvent(
+            new CustomEvent('elevenlabs-agent:contextual-update', {
+              detail: { message: context },
+            }),
+          );
+        }
+      } catch {
+        /* Приставката е недостъпна — блокирана, офлайн, каквото и да е.
+           Балончето просто не се отваря; страницата остава здрава. */
+      }
+    });
   }
 </script>

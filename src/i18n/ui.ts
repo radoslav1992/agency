@@ -98,6 +98,12 @@ export const UI = {
       lead: 'Всеки поема по един канал от край до край — глас, чат, поща, документи. Пакетирани, с познат обхват и предвидима цена.',
       hint: 'Посочи агент, за да го видиш.',
       all: (n: number) => `Всичките ${n} агента, с обхват и ограничения →`,
+      /* Стои само на агентите с `demo: true` — тези, за които страницата
+         вече обещава „Мога да го покажа на живо“. */
+      demo: 'Говори с него сега',
+      /* Казва на агента какво гледа човекът, преди той да е проговорил. */
+      demoContext: (name: string) =>
+        `Посетителят разглежда „${name}“ в каталога с агенти на сайта и току-що поиска да го чуе на живо.`,
     },
 
     proof: {
@@ -136,22 +142,6 @@ export const UI = {
       free: 'Без регистрация и без имейл',
     },
 
-    /*
-     * Надписите по гласовия агент. Приставката идва с английски по
-     * подразбиране, а тя се показва само на български — „Start a call“ на
-     * българска страница е същото разминаване, заради което анализаторът и
-     * блогът изобщо не се показват на `/en/`.
-     */
-    voiceAgent: {
-      action: 'Говори с агента',
-      start: 'Започни разговор',
-      end: 'Приключи',
-      expand: 'Отвори',
-      collapse: 'Затвори',
-      listening: 'Слушам',
-      speaking: 'Говоря',
-    },
-
     process: { eyebrow: 'Процес', title: 'Как протича работата', terms: 'Важните условия — ясни още в началото' },
 
     about: {
@@ -182,8 +172,13 @@ export const UI = {
 
     pricing: {
       eyebrow: 'Цени',
-      title: 'Ориентировъчни бюджети',
-      note: 'Всеки проект е различен. Тези числа са, за да прецениш още сега дали изобщо си говорим.',
+      /*
+       * Беше „Ориентировъчни бюджети“. Пакетът сайт и агент има точна
+       * цена — заглавие, което нарича всички числа ориентировъчни, я
+       * обезсилва точно там, където тя е най-полезна.
+       */
+      title: 'Колко струва',
+      note: 'Пакетът сайт и агент има точна цена. Другите две тръгват „от“, защото зависят от обхвата — точното число го казвам в офертата, преди да започнем.',
       afterA: 'Цената на пълното решение определям след пилота и техническата оценка. Текущите разходи за сървъри, модели и външни услуги ги казвам предварително — в',
       afterLink: 'офертата на една страница',
       afterB: ', преди да започнем, не после.',
@@ -228,6 +223,42 @@ export const UI = {
       thanks: 'Благодаря! Получих запитването и ще ти отговоря до един работен ден.',
       /** `{url}` се замества с адреса, дошъл от анализатора. */
       prefill: 'Проверих {url} с безплатната проверка на сайтове. Кои три неща да оправя първо?',
+    },
+
+    booking: {
+      eyebrow: 'Запазване на час',
+      title: 'Избери кога да говорим.',
+      lead: '30 минути, безплатно и без ангажимент. Показваш ми как върви процесът днес, аз ти казвам дали има смисъл да се автоматизира — и ако няма, го казвам.',
+      timezoneNote: 'Часовете са в българско време',
+      pickDay: 'Избери ден',
+      pickTime: 'Избери час',
+      noSlots:
+        'Няма свободни часове в следващите седмици. Пиши ми и ще намерим време извън календара.',
+      back: '← Друг ден',
+      changeTime: 'Друг час',
+      confirmTitle: 'Потвърди часа',
+      name: 'Име',
+      email: 'Имейл',
+      phone: 'Телефон (по избор)',
+      note: 'За какво ще говорим? (по избор)',
+      submit: 'Запази часа',
+      submitting: 'Запазвам…',
+      required: 'задължително',
+      doneTitle: 'Готово. Часът е запазен.',
+      doneLead: 'Изпратих си известие и ще се чуем тогава. Добави часа в календара си, за да не се загуби.',
+      addToCalendar: 'Добави в календара',
+      cancelLink: 'Не мога вече — откажи часа',
+      cancelledTitle: 'Часът е отказан.',
+      cancelledLead: 'Освободих времето. Ако искаш друг час, избери от календара.',
+      cancelConfirm: 'Сигурен ли си, че искаш да откажеш този час?',
+      cancelSubmit: 'Да, откажи часа',
+      unavailable:
+        'Календарът още не е свързан. Пиши ми и ще уговорим час по имейл.',
+      taken: 'Този час току-що беше зает. Избери друг.',
+      invalid: 'Нещо не е наред с попълненото. Провери и опитай пак.',
+      notFound: 'Не намирам такова запазване. Може вече да е отказано.',
+      contactInstead: 'Пиши ми вместо това',
+      slotsLeft: (n: number) => (n === 1 ? '1 свободен час' : `${n} свободни часа`),
     },
 
     cookies: {
@@ -312,6 +343,9 @@ export const UI = {
       lead: 'Each one takes a single channel end to end — voice, chat, inbox, documents. Packaged, with a known scope and a predictable price.',
       hint: 'Point at an agent to see it.',
       all: (n: number) => `All ${n} agents, with scope and limits →`,
+      demo: 'Talk to it now',
+      demoContext: (name: string) =>
+        `The visitor is looking at "${name}" in the agent catalogue and just asked to hear it live.`,
     },
 
     proof: {
@@ -352,18 +386,6 @@ export const UI = {
       free: '',
     },
 
-    /* Не се ползват днес — приставката е само на български. Стоят готови
-       за деня, в който има и англоговорящ агент. */
-    voiceAgent: {
-      action: 'Talk to the agent',
-      start: 'Start a call',
-      end: 'End',
-      expand: 'Open',
-      collapse: 'Close',
-      listening: 'Listening',
-      speaking: 'Speaking',
-    },
-
     process: { eyebrow: 'Process', title: 'How the work goes', terms: 'The terms that matter — stated upfront' },
 
     about: {
@@ -394,8 +416,8 @@ export const UI = {
 
     pricing: {
       eyebrow: 'Pricing',
-      title: 'Indicative budgets',
-      note: "Every project differs. These numbers are here so you can tell right now whether we're in the same range.",
+      title: 'What it costs',
+      note: 'The site-and-agent package has a fixed price. The other two start from, because they depend on scope — I give you the exact number in the quote, before we start.',
       /* Без връзка: статията за офертата съществува само на български. */
       afterA: 'The price of the full build is set after the pilot and the technical assessment. Running costs for servers, models and third-party services are stated upfront — in the one-page quote, before we start, not after.',
       afterLink: '',
@@ -440,6 +462,40 @@ export const UI = {
       orEmail: 'Or just email me at ',
       thanks: 'Thank you. I have your enquiry and will reply within one working day.',
       prefill: 'I checked {url} with the free site audit. Which three things should I fix first?',
+    },
+
+    booking: {
+      eyebrow: 'Book a call',
+      title: 'Pick a time to talk.',
+      lead: 'Thirty minutes, free, no strings. You show me how the process runs today, I tell you whether automating it makes sense — and if it does not, I say so.',
+      timezoneNote: 'Times are shown in Bulgarian time',
+      pickDay: 'Pick a day',
+      pickTime: 'Pick a time',
+      noSlots: 'No free slots in the next few weeks. Email me and we will find a time outside the calendar.',
+      back: '← Another day',
+      changeTime: 'Change time',
+      confirmTitle: 'Confirm the slot',
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone (optional)',
+      note: 'What should we talk about? (optional)',
+      submit: 'Book this slot',
+      submitting: 'Booking…',
+      required: 'required',
+      doneTitle: 'Done. The slot is yours.',
+      doneLead: 'I have been notified and will be there. Add it to your calendar so it does not get lost.',
+      addToCalendar: 'Add to calendar',
+      cancelLink: 'Something came up — cancel this slot',
+      cancelledTitle: 'The slot is cancelled.',
+      cancelledLead: 'The time is free again. Pick another slot whenever you like.',
+      cancelConfirm: 'Are you sure you want to cancel this slot?',
+      cancelSubmit: 'Yes, cancel it',
+      unavailable: 'The calendar is not connected yet. Email me and we will arrange a time.',
+      taken: 'That slot was just taken. Please pick another.',
+      invalid: 'Something in the form is not right. Check it and try again.',
+      notFound: 'I cannot find that booking. It may already be cancelled.',
+      contactInstead: 'Email me instead',
+      slotsLeft: (n: number) => (n === 1 ? '1 slot free' : `${n} slots free`),
     },
 
     cookies: {

@@ -16,12 +16,21 @@
  */
 import { Image } from 'astro:assets';
 import { agentShot } from '../data/agentShots.ts';
+import { SITE } from '../data/site.mjs';
 import { href as localised, localeOf } from '../i18n/index.ts';
 import { agents as agentsFor, ui } from '../i18n/content.ts';
 
 const lang = localeOf(Astro.currentLocale);
 const t = ui(lang);
 const { AGENTS } = agentsFor(lang);
+
+/*
+ * Бутонът „говори с него сега“ се показва само там, където има какво да се
+ * отвори: агентът е обявен за демонстрируем (`demo: true`) И приставката
+ * наистина стои на страницата — тоест има идентификатор и езикът е
+ * български. Бутон, който не прави нищо, е по-лош от липсващ бутон.
+ */
+const canDemo = Boolean(SITE.voiceAgentId) && lang === 'bg';
 ---
 
 <section id="agents" class="agents">
@@ -51,6 +60,18 @@ const { AGENTS } = agentsFor(lang);
                     →
                   </span>
                 </a>
+
+                {canDemo && agent.demo && (
+                  <button
+                    class="row__demo"
+                    type="button"
+                    data-open-voice-agent
+                    data-agent-context={t.agentIndex.demoContext(agent.name)}
+                  >
+                    <span class="row__demo-dot" aria-hidden="true" />
+                    {t.agentIndex.demo}
+                  </button>
+                )}
 
                 {shot && (
                   <figure class="row__shot">
@@ -251,6 +272,72 @@ const { AGENTS } = agentsFor(lang);
 
   .row {
     border-bottom: 1px solid var(--line);
+  }
+
+  /* ---------- „говори с него сега“ ----------
+     Действие, затова носи акцента — но в мека заливка, за да отстъпи на
+     плътния бутон в hero-а. Стои само на агентите с `demo: true`. */
+  /*
+   * Бутонът стои на СОБСТВЕН ред под името, не до него. Рамо до рамо той
+   * изяждаше около 150px от колоната и „AI рецепционист по телефона“
+   * минаваше от два на три реда — заглавието на агента е по-важно от
+   * подредбата на бутона.
+   *
+   * Отстъпът го подравнява с името: число (~18px) + отстъп (14px) +
+   * канал (5.5em при 12px = 66px) + отстъп (14px). Числата са фиксирани в
+   * решетката на `.row__link` точно отгоре, затова сборът не се разминава.
+   */
+  .row__demo {
+    margin: 0 0 15px 112px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .row__demo:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .row__demo-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+  }
+
+  /* Пулсът казва „това е живо“, без да пише още една дума. */
+  @media (prefers-reduced-motion: no-preference) {
+    .row__demo-dot {
+      animation: demo-pulse 1.8s ease-in-out infinite;
+    }
+  }
+
+  @keyframes demo-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.35;
+      transform: scale(0.75);
+    }
   }
 
   .row__link {
@@ -479,6 +566,13 @@ const { AGENTS } = agentsFor(lang);
     .row {
       border-bottom: 0;
       padding-bottom: 28px;
+      /* Пак блок: тук рисунката е в потока и при флекс би застанала до
+         името вместо под него. */
+      display: block;
+    }
+
+    .row__demo {
+      margin-top: 10px;
     }
 
     .row + .row {

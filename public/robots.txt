@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+# Панелът не е за индексиране. Не е и защита — тя е паролата;
+# това само пази страницата за вход от резултатите.
+Disallow: /admin
 
 Sitemap: https://kova.bg/sitemap-index.xml
