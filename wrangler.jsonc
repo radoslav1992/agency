@@ -36,13 +36,17 @@
       "allowed_sender_addresses": ["forma@kova.bg", "chas@kova.bg"]
     }
   ],
-  // Календарът за запазване на разговор. `database_id` се попълва еднократно
-  // с това, което върне `npx wrangler d1 create kova-bookings` — вж. docs/booking.md.
+  // Календарът за запазване на разговор.
+  //
+  // `database_id` не е тайна — той е адрес, не ключ; достъпът минава през
+  // акаунта. Затова стои в хранилището, а не в секретите: Cloudflare строи
+  // сайта оттук и връзка, добавена от таблото, се затрива при следващия деплой.
+  // Създаването на базата и схемата са описани в docs/booking.md.
   "d1_databases": [
     {
       "binding": "BOOKINGS",
       "database_name": "kova-bookings",
-      "database_id": "ЗАМЕНИ_МЕ",
+      "database_id": "ab2b6be6-8675-4192-a34f-4f8577536561",
       "migrations_dir": "migrations"
     }
   ],
