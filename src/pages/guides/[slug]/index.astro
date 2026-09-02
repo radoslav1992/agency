@@ -18,10 +18,10 @@
  */
 import type { GetStaticPaths } from 'astro';
 import { Image } from 'astro:assets';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { GUIDES, isSellable, priceLabel, type Guide } from '../../data/guides.ts';
-import { coverOf } from '../../lib/guide-cover.ts';
-import { SITE } from '../../data/site.mjs';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { GUIDES, isSellable, priceLabel, type Guide } from '../../../data/guides.ts';
+import { coverOf } from '../../../lib/guide-cover.ts';
+import { SITE } from '../../../data/site.mjs';
 
 export const getStaticPaths = (() =>
   GUIDES.map((guide) => ({ params: { slug: guide.slug }, props: { guide } }))) satisfies GetStaticPaths;
@@ -83,7 +83,9 @@ const structuredData = {
               <span class="chip chip--soon">Скоро</span>
             )
           }
-          <span class="hero__edition">{guide.edition}</span>
+          <span class="hero__edition">
+            {guide.pages} страници · PDF · {guide.edition}
+          </span>
         </div>
 
         {
@@ -219,10 +221,14 @@ const structuredData = {
           <div class="notify__copy">
             <h2 class="notify__title">{price}, веднъж.</h2>
             <p class="notify__lead">
-              Плащането минава през Stripe — картата не влиза в този сайт. Файлът идва веднага
-              след плащането, а обновленията на изданието се получават без доплащане.
+              {guide.pages} страници PDF на български. Плащането минава през Stripe — картата не
+              влиза в този сайт. Файлът идва веднага след плащането и пристига и по пощата, за
+              да не се загуби.
             </p>
-            <p class="notify__meta">Актуален към {guide.current}</p>
+            <p class="notify__meta">
+              Актуален към {guide.current}. Четеш и печаташ на всичките си устройства, ползваш
+              шаблоните при твои клиенти; само файлът не се споделя и не се препродава.
+            </p>
           </div>
           <div class="notify__buy">
             <a class="btn btn--primary" href={guide.buyUrl} rel="noopener">

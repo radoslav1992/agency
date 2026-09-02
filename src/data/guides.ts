@@ -29,6 +29,18 @@ export type Guide = {
    * Липсва ли файлът, страницата показва рамка вместо да се счупи.
    */
   cover: string;
+  /**
+   * Ключът на файла в частната кофа R2 (`GUIDE_FILES`) и името, под което
+   * той пристига у купувача.
+   *
+   * Самият файл НЕ е в хранилището и не бива да бъде: то е публично, а
+   * каквото влезе в `public/`, се тегли от всеки, който познае адреса.
+   * Качва се в кофата от таблото на Cloudflare или с
+   * `wrangler r2 object put kova-guides/<key> --file …`.
+   */
+  file: { key: string; filename: string; bytes: number };
+  /** Броят страници — купувачът иска да знае какво получава. */
+  pages: number;
   /** Четирите стълба от корицата — те са и структурата на наръчника. */
   pillars: { n: string; title: string; body: string }[];
   /** Конкретни неща, които читателят може СЛЕД него. Глаголи, не теми. */
@@ -97,6 +109,12 @@ export const GUIDES: Guide[] = [
     edition: 'Българско издание — разширена версия 1.1',
     current: '1 септември 2026 г.',
     cover: 'ai-receptionist',
+    file: {
+      key: 'ai-receptionist/v1.1.pdf',
+      filename: '24-7-AI-asistenti-v1.1.pdf',
+      bytes: 7_518_427,
+    },
+    pages: 35,
     pillars: [
       {
         n: '01',

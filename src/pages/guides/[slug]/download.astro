@@ -1,0 +1,279 @@
+---
+/**
+ * Страницата, на която Stripe връща купувача.
+ *
+ * Тя не е доставката — доставката е webhook-ът, който идва при мен независимо
+ * от браузъра. Тази страница е за нетърпеливите: човекът току-що е платил и
+ * иска файла СЕГА, а не когато пощата реши да го достави.
+ *
+ * Затова се смята при заявка: сесията се проверява в Stripe при всяко
+ * отваряне. Така връзката, която купувачът си е запазил, продължава да издава
+ * нова връзка за сваляне и след като старата изтече — без регистрация, без
+ * парола, без „забравена парола“.
+ *
+ * Стойността от адреса НЕ доказва нищо. Тя е идентификатор, който всеки може
+ * да напише; доказателството идва от отговора на Stripe.
+ */
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { GUIDES, isSellable } from '../../../data/guides.ts';
+import { fulfil, saleFrom } from '../../../lib/guide-sale.ts';
+import { isPaid, retrieveSession } from '../../../lib/stripe.ts';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const guide = GUIDES.find((item) => item.slug === slug);
+/* Непознат наръчник → рафтът. Не `rewrite` към `/404`: тя е предрендерирана
+   и пренаписването ѝ от смятана при заявка страница гърми с
+   „module.page is not a function“. Пък и адресът тук се стига само от
+   препратката на Stripe — сгрешен, той е печатна грешка, а не липсваща
+   страница, и списъкът е по-полезен от съобщение за грешка. */
+if (!guide) return Astro.redirect('/guides/', 302);
+
+const env = Astro.locals.runtime?.env ?? ({} as Env);
+const sessionId = Astro.url.searchParams.get('session_id') ?? '';
+
+type State = 'ok' | 'pending' | 'unconfigured' | 'unknown';
+let state: State = 'unknown';
+let link: string | null = null;
+let email: string | null = null;
+
+if (!env.STRIPE_SECRET_KEY || !env.DOWNLOAD_SECRET) {
+  /* Отказва СЕ ЗАТВОРЕНО. Без ключ проверка няма, а страница, която раздава
+     файла „щом липсва настройка“, е по-лоша от временно недоволен купувач —
+     писмото по webhook-а така или иначе ще пристигне. */
+  console.error('Свалянето не е настроено — липсва STRIPE_SECRET_KEY или DOWNLOAD_SECRET.');
+  state = 'unconfigured';
+} else if (sessionId) {
+  const session = await retrieveSession(env.STRIPE_SECRET_KEY, sessionId);
+  if (session && isPaid(session)) {
+    /* Наръчникът в плащането трябва да е ТОЗИ. Иначе платил за единия
+       би свалил другия, като си смени адреса в лентата. */
+    const paidFor = session.metadata?.guide;
+    if (paidFor && paidFor !== guide.slug) {
+      state = 'unknown';
+    } else {
+      const sale = saleFrom(session, guide);
+      if (sale) {
+        email = sale.email;
+        link = await fulfil(
+          env,
+          sale,
+          Astro.url.origin,
+          Astro.locals.runtime?.ctx?.waitUntil?.bind(Astro.locals.runtime.ctx),
+        );
+        state = link ? 'ok' : 'unconfigured';
+      }
+    }
+  } else if (session) {
+    // Плащане, което банката още не е потвърдила. Случва се при някои методи.
+    state = 'pending';
+  }
+}
+
+/* Страницата не се индексира: адресът ѝ съдържа идентификатор на плащане. */
+---
+
+<BaseLayout
+  title={state === 'ok' ? 'Наръчникът е твой' : 'Сваляне'}
+  description="Свали купения наръчник."
+  canonical={`/guides/${guide.slug}/download/`}
+  noindex
+>
+  <section class="wrap">
+    <div class="container inner">
+      {
+        state === 'ok' && link && (
+          <>
+            <p class="eyebrow">Благодаря</p>
+            <h1 class="title">Наръчникът е твой.</h1>
+            <p class="lead">
+              {guide.title} · {guide.pages} страници · PDF ·{' '}
+              {(guide.file.bytes / 1024 / 1024).toFixed(1)} MB
+            </p>
+
+            <a class="btn btn--primary big" href={link} download>
+              Свали наръчника →
+            </a>
+
+            <p class="note">
+              Изпратих ти същата връзка и на <strong>{email}</strong> — ако файлът се загуби,
+              писмото остава. Връзката е валидна една седмица; изтече ли,
+              отвори тази страница пак и ще получиш нова.
+            </p>
+
+            <div class="terms">
+              <h2 class="terms__title">Какво може да правиш с него</h2>
+              <ul>
+                <li>Да го четеш и пазиш на всичките си устройства.</li>
+                <li>Да си отпечаташ копие.</li>
+                <li>
+                  Да ползваш шаблоните — промптове, чеклисти, ценови рамки — в собствения си
+                  бизнес и при твои клиенти, без ограничение.
+                </li>
+              </ul>
+              <p class="terms__not">
+                Само файлът не се споделя, не се качва и не се препродава. Купил си съдържанието,
+                не правото да го раздаваш.
+              </p>
+            </div>
+
+            <p class="help">
+              Нещо не се отваря или имаш въпрос по някоя глава? Пиши ми на{' '}
+              <a href="mailto:info@kova.bg">info@kova.bg</a> — отговарям лично.
+            </p>
+          </>
+        )
+      }
+
+      {
+        state === 'pending' && (
+          <>
+            <p class="eyebrow">Още малко</p>
+            <h1 class="title">Плащането се потвърждава.</h1>
+            <p class="lead">
+              Банката още не е потвърдила превода — при някои методи това отнема до няколко
+              часа. Не е нужно да чакаш тук: щом мине, наръчникът тръгва към пощата ти сам.
+            </p>
+            <a class="btn btn--ghost" href={`/guides/${guide.slug}/`}>
+              Към наръчника
+            </a>
+          </>
+        )
+      }
+
+      {
+        state === 'unconfigured' && (
+          <>
+            <p class="eyebrow">Момент</p>
+            <h1 class="title">Плащането мина, доставката се бави.</h1>
+            <p class="lead">
+              Нещо в моята настройка не е наред и не мога да ти дам връзката оттук. Парите са
+              при Stripe и покупката е записана — пиши ми на{' '}
+              <a href="mailto:info@kova.bg">info@kova.bg</a> и ти пращам файла веднага.
+            </p>
+          </>
+        )
+      }
+
+      {
+        state === 'unknown' && (
+          <>
+            <p class="eyebrow">Сваляне</p>
+            <h1 class="title">Тази връзка не води до покупка.</h1>
+            <p class="lead">
+              Страницата се отваря сама след плащане. Ако си купувал наръчника, потърси
+              писмото с връзката за сваляне; ако още не си — ето го наръчника.
+            </p>
+            <a class="btn btn--primary" href={`/guides/${guide.slug}/`}>
+              Към {guide.title}
+            </a>
+            {!isSellable(guide) && (
+              <p class="note">Този наръчник още не се продава.</p>
+            )}
+          </>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .wrap {
+    padding-block: clamp(56px, 9vw, 120px);
+  }
+
+  .inner {
+    max-width: 680px;
+  }
+
+  .title {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 5vw, 54px);
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    margin: 14px 0 0;
+  }
+
+  .lead {
+    font-size: clamp(16.5px, 1.8vw, 19px);
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 20px 0 0;
+  }
+
+  .lead a,
+  .help a {
+    color: var(--accent);
+    font-weight: 600;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .big {
+    margin-top: 32px;
+    font-size: 17px;
+    padding: 16px 28px;
+  }
+
+  .note {
+    font-size: 14.5px;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: 22px 0 0;
+  }
+
+  .terms {
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
+  .terms__title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: -0.03em;
+    margin: 0 0 16px;
+  }
+
+  .terms ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 12px;
+  }
+
+  .terms li {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .terms li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.66em;
+    width: 8px;
+    height: 1px;
+    background: var(--line-strong);
+  }
+
+  .terms__not {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 20px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+
+  .help {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 32px 0 0;
+  }
+</style>
