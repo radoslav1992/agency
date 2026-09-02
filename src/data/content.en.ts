@@ -27,7 +27,7 @@ export const SERVICES: Service[] = [
     changes: [
       {
         title: 'One price, one deadline',
-        body: 'Nothing gets negotiated twice, and the agent does not wait for the site to be finished. The published price is €1,200, once.',
+        body: 'Nothing gets negotiated twice, and the agent does not wait for the site to be finished. The published price is €1,200 once, plus the agent\'s monthly fee, which I state up front.',
       },
       {
         title: 'Answers outside office hours',
@@ -200,6 +200,7 @@ export const PLANS: Plan[] = [
     name: 'Site and agent',
     pitch: 'A packaged offer with a published price: the site and the AI agent are built together and go live on the same day.',
     price: '€1,200 once',
+    note: 'Plus a monthly fee for the agent — it depends which one, and I state it before you pay anything.',
     featured: true,
     badge: 'Most chosen',
     features: [
@@ -214,11 +215,16 @@ export const PLANS: Plan[] = [
     name: 'Agent on your site',
     pitch: 'Your site works and we leave it alone. I put an agent on top of it and connect it to your material.',
     price: 'setup from €400',
+    /*
+     * Само поддръжката следва множителя на английските цени. Ползването е
+     * това, което доставчикът взима, и е еднакво навсякъде — удвоено, то би
+     * било точно надценката, която съседното изречение отрича.
+     */
+    note: "Plus a monthly fee depending on the agent — for the AI receptionist, €85 a month: €25 usage at cost, €60 support.",
     features: [
       'Choosing the right agent for the channel',
       'Connecting it to your content, and tuning',
       'Going live, with the answers checked',
-      "The monthly fee belongs to the agent itself",
       'Bespoke changes are quoted separately',
     ],
   },

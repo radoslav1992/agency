@@ -34,6 +34,7 @@ const { PLANS, PRICING_PROMO } = content(lang);
             <h3 class="plan__name">{plan.name}</h3>
             <p class="plan__pitch">{plan.pitch}</p>
             <p class="plan__price">{plan.price}</p>
+            {plan.note && <p class="plan__note">{plan.note}</p>}
             {plan.timeline && <p class="plan__timeline">{plan.timeline}</p>}
             <ul class="plan__features">
               {plan.features.map((feature) => (
@@ -150,6 +151,15 @@ const { PLANS, PRICING_PROMO } = content(lang);
     font-size: 14.5px;
     color: var(--dark-ink-subtle);
     margin: 10px 0 0;
+  }
+
+  /* Под цената, не между отметките: разходът трябва да се прочете заедно с
+     числото, което уточнява. */
+  .plan__note {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--dark-ink-subtle);
+    margin: 8px 0 0;
   }
 
   .plan__price {
