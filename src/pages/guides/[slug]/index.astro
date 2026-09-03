@@ -1,0 +1,931 @@
+---
+/**
+ * Страницата на един наръчник — тук студиото продава знание вместо работа.
+ *
+ * Различава се от останалите по едно нещо и то е нарочно: тук се движи
+ * ПОВЕЧЕ. На страницата с услугите движението пречи — човек чете оферта и
+ * иска да я прочете. Тук предметът е книга, купувачът я разглежда, а
+ * корицата е най-силният аргумент. Затова тя се изправя при скрол,
+ * стълбовете минават на лепкав таймлайн, а числата пламват при влизане.
+ *
+ * Всичко остава в `animation-timeline: view()` — нула килобайта скрипт,
+ * както навсякъде другаде. Основното състояние в CSS е КРАЙНОТО: без
+ * поддръжка и при изключено движение страницата е просто статична и цяла.
+ *
+ * Само на български. Наръчниците са „Българско издание“; страница на
+ * английски за книга, която не съществува на английски, е обещание, което
+ * не се спазва.
+ */
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { GUIDES, isSellable, priceLabel, type Guide } from '../../../data/guides.ts';
+import { coverOf } from '../../../lib/guide-cover.ts';
+import { SITE } from '../../../data/site.mjs';
+
+export const getStaticPaths = (() =>
+  GUIDES.map((guide) => ({ params: { slug: guide.slug }, props: { guide } }))) satisfies GetStaticPaths;
+
+const { guide } = Astro.props as { guide: Guide };
+const cover = coverOf(guide.cover);
+const sellable = isSellable(guide);
+const price = priceLabel(guide);
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: guide.title,
+  description: guide.short,
+  inLanguage: 'bg',
+  bookEdition: guide.edition,
+  author: { '@type': 'Person', name: SITE.owner.name },
+  /* Издателят е марката, под която излиза изданието — същата, която стои в
+     авторските права във файла. Иначе структурираните данни твърдят едно, а
+     самият файл — друго. */
+  publisher: { '@type': 'Organization', name: guide.imprint ?? SITE.name, url: SITE.url },
+  numberOfPages: guide.pages,
+  bookFormat: 'https://schema.org/EBook',
+  /* Оферта само когато наистина може да се купи. Schema.org с цена за нещо,
+     което не се продава, е същата лъжа както бутон, който не води доникъде. */
+  ...(sellable && guide.price
+    ? {
+        offers: {
+          '@type': 'Offer',
+          price: guide.price.amount,
+          priceCurrency: guide.price.currency,
+          availability: 'https://schema.org/InStock',
+          url: new URL(`/guides/${guide.slug}/`, SITE.url).href,
+        },
+      }
+    : {}),
+};
+---
+
+<BaseLayout
+  title={guide.title}
+  description={`${guide.subtitle}. ${guide.short}`}
+  canonical={`/guides/${guide.slug}/`}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+  </Fragment>
+
+  {/* ---------- корицата ---------- */}
+  <section class="hero">
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <a class="back" href="/guides/">← Всички наръчници</a>
+        <h1 class="hero__title">{guide.title}</h1>
+        <p class="hero__sub">{guide.subtitle}</p>
+
+        <p class="hero__lead">{guide.lead}</p>
+
+        <div class="hero__meta">
+          {
+            sellable ? (
+              <span class="chip chip--price">{price}</span>
+            ) : (
+              <span class="chip chip--soon">Скоро</span>
+            )
+          }
+          <span class="hero__edition">
+            {guide.pages} страници · PDF · {guide.edition}
+          </span>
+        </div>
+
+        {
+          sellable ? (
+            <a class="btn btn--primary hero__cta" href={guide.buyUrl} rel="noopener">
+              Купи наръчника →
+            </a>
+          ) : (
+            <a class="btn btn--primary hero__cta" href="#notify">
+              Кажи ми, когато излезе →
+            </a>
+          )
+        }
+      </div>
+
+      <div class="hero__art">
+        <div class="cover">
+          {
+            cover ? (
+              <Image
+                class="cover__img"
+                src={cover}
+                alt={`Корица на „${guide.title}“ — ${guide.subtitle}`}
+                widths={[360, 540, 720]}
+                sizes="(max-width: 900px) 70vw, 380px"
+                loading="eager"
+              />
+            ) : (
+              <div class="cover__img cover__img--empty" aria-hidden="true">
+                <span>{guide.title}</span>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- стълбовете ---------- */}
+  <section class="pillars">
+    <div class="container pillars__inner">
+      <div class="pillars__head">
+        <p class="eyebrow">Какво има вътре</p>
+        <h2 class="pillars__title">
+          {guide.pillars.length === 4 ? 'Четири части' : `${guide.pillars.length} части`}, в реда,
+          в който се прави
+        </h2>
+        <p class="pillars__lead">
+          Не по теми, а по ход на работата. Всяка част завършва там, откъдето започва
+          следващата.
+        </p>
+      </div>
+
+      <ol class="pillars__list">
+        {
+          guide.pillars.map((pillar, i) => (
+            <li class="pillar" style={`--i: ${i}`}>
+              <span class="pillar__n" aria-hidden="true">
+                {pillar.n}
+              </span>
+              <div>
+                <h3 class="pillar__title">{pillar.title}</h3>
+                <p class="pillar__body">{pillar.body}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  {/* ---------- какво ще можеш ---------- */}
+  <section class="outcomes">
+    <div class="container">
+      <p class="eyebrow outcomes__eyebrow">След наръчника</p>
+      <h2 class="outcomes__title">Какво ще можеш, което сега не можеш</h2>
+      <ul class="outcomes__list">
+        {
+          guide.outcomes.map((item, i) => (
+            <li style={`--i: ${i}`}>
+              <span class="outcomes__tick" aria-hidden="true">
+                →
+              </span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- за кого е и за кого не ---------- */}
+  <section class="fit">
+    <div class="container fit__inner">
+      <div class="fit__col">
+        <h2 class="fit__title">За кого е</h2>
+        <ul class="fit__list">
+          {guide.forWhom.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <div class="fit__col fit__col--not">
+        <h2 class="fit__title">За кого не е</h2>
+        <ul class="fit__list">
+          {guide.notFor.map((item) => <li>{item}</li>)}
+        </ul>
+        <p class="fit__note">
+          Наръчник, купен от човек, за когото не е, струва повече от непродаден. Затова тази
+          колона я има.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- кой го пише ---------- */}
+  <section class="author">
+    <div class="container author__inner">
+      <p class="eyebrow">Кой го пише</p>
+      <p class="author__body">
+        Радослав Додников. Преподавам генеративен AI в университет и съм докторант по
+        компютърни науки — но наръчниците не са от лекциите. Написани са от нещата, които съм
+        пуснал: гласовият асистент на този сайт и <a href="/booking/">календарът, който
+        запазва часовете</a>, са същите, за които се говори вътре.
+      </p>
+      {guide.authorNotes.map((note) => <p class="author__body">{note}</p>)}
+      {
+        guide.imprint && (
+          <p class="author__imprint">
+            Излиза под марката <strong>{guide.imprint}</strong> — същият автор, същият текст.
+            Затова това име стои и в авторските права във файла.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  {/* ---------- скоро / купуване ---------- */}
+  {
+    sellable ? (
+      <section class="notify" id="buy">
+        <div class="container notify__inner">
+          <div class="notify__copy">
+            <h2 class="notify__title">{price}, веднъж.</h2>
+            <p class="notify__lead">
+              {guide.pages} страници PDF на български. Плащането минава през Stripe — картата не
+              влиза в този сайт. Файлът идва веднага след плащането и пристига и по пощата, за
+              да не се загуби.
+            </p>
+            <p class="notify__meta">
+              Актуален към {guide.current}. Четеш и печаташ на всичките си устройства, ползваш
+              шаблоните при твои клиенти; само файлът не се споделя и не се препродава.
+            </p>
+          </div>
+          <div class="notify__buy">
+            <a class="btn btn--primary" href={guide.buyUrl} rel="noopener">
+              Купи за {price} →
+            </a>
+          </div>
+        </div>
+      </section>
+    ) : (
+      <section class="notify" id="notify">
+        <div class="container notify__inner">
+          <div class="notify__copy">
+            <h2 class="notify__title">Още не се продава.</h2>
+            <p class="notify__lead">
+              Наръчникът е готов, но магазинът още не е. Остави имейл и ще ти пиша в деня, в
+              който излезе — веднъж, без списък и без нищо друго след това.
+            </p>
+            <p class="notify__meta">Актуален към {guide.current}</p>
+          </div>
+
+          <form class="notify__form" method="POST" action="/api/guide-notify">
+            <input type="hidden" name="guide" value={guide.slug} />
+            {/* Примамка за ботове — човек не я вижда и не я попълва. */}
+            <div class="notify__trap" aria-hidden="true">
+              <label>
+                Website
+                <input type="text" name="website" tabindex="-1" autocomplete="off" />
+              </label>
+            </div>
+
+            <p class="notify__done" hidden>
+              Готово. Ще ти пиша в деня, в който излезе — веднъж и нищо друго.
+            </p>
+
+            <label class="notify__field">
+              <span class="notify__label">Имейл</span>
+              <input
+                class="notify__input"
+                type="email"
+                name="email"
+                required
+                maxlength="180"
+                autocomplete="email"
+                placeholder="ти@фирмата.bg"
+              />
+            </label>
+            <button class="btn btn--primary" type="submit">Кажи ми</button>
+          </form>
+        </div>
+      </section>
+    )
+  }
+
+  {/*
+   * Страницата остава СТАТИЧНА. Потвърждението идва от адреса, прочетен от
+   * този скрипт — същият подход като контактната форма. Без него страницата
+   * би трябвало да се смята при заявка само заради едно изречение.
+   *
+   * Без JavaScript формата просто остава на екрана; адресът е изпратен и
+   * записан, а човекът вижда страницата отначало. По-лошо от потвърждение,
+   * но не счупено.
+   */}
+  <script is:inline>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const form = document.querySelector('.notify__form');
+      if (!form) return;
+
+      if (params.get('notified') === '1') {
+        const done = form.querySelector('.notify__done');
+        form.querySelector('.notify__field')?.setAttribute('hidden', '');
+        form.querySelector('button')?.setAttribute('hidden', '');
+        if (done) done.hidden = false;
+      } else if (params.get('error') === '1') {
+        const done = form.querySelector('.notify__done');
+        if (done) {
+          done.textContent = 'Нещо не се получи. Провери адреса и опитай пак.';
+          done.hidden = false;
+        }
+      }
+    })();
+  </script>
+
+  {/* ---------- останалите на рафта ---------- */}
+  {
+    GUIDES.length > 1 && (
+      <section class="more">
+        <div class="container">
+          <h2 class="more__title">Другите наръчници</h2>
+          <ul class="more__list">
+            {GUIDES.filter((other) => other.slug !== guide.slug).map((other) => (
+              <li>
+                <a class="more__link" href={`/guides/${other.slug}/`}>
+                  <span class="more__name">{other.title}</span>
+                  <span class="more__short">{other.short}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /* ---------- корицата ---------- */
+
+  .hero {
+    padding-block: clamp(40px, 6vw, 80px) clamp(64px, 9vw, 120px);
+    /* Корицата е тъмносиня, а сайтът е кремав. Вместо да се борим с това,
+       под нея стои студено сияние — контрастът става композиция. */
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 55% at 78% 42%, rgba(46, 92, 173, 0.16), transparent 70%),
+      radial-gradient(45% 40% at 88% 70%, rgba(226, 84, 43, 0.09), transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: clamp(36px, 6vw, 88px);
+    align-items: center;
+  }
+
+  .back {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    margin-bottom: 18px;
+  }
+
+  .back:hover {
+    color: var(--accent);
+  }
+
+  .hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6.4vw, 76px);
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    margin: 0;
+  }
+
+  .hero__sub {
+    font-size: clamp(17px, 2vw, 21px);
+    line-height: 1.45;
+    color: var(--ink);
+    font-weight: 500;
+    margin: 20px 0 0;
+    max-width: 30ch;
+  }
+
+  .hero__lead {
+    font-size: 16.5px;
+    line-height: 1.62;
+    color: var(--ink-body);
+    margin: 18px 0 0;
+    max-width: 44ch;
+  }
+
+  .hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .chip--soon,
+  .chip--price {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+
+  .chip--price {
+    letter-spacing: 0.02em;
+    font-size: 14px;
+  }
+
+  .hero__edition {
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+  }
+
+  .hero__cta {
+    margin-top: 26px;
+  }
+
+  .hero__art {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+  }
+
+  .cover {
+    width: min(380px, 78%);
+    /* Лека перспектива — книгата стои на масата, не е залепена за екрана. */
+    transform: rotate(-2.2deg);
+    filter: drop-shadow(0 26px 44px rgba(12, 24, 48, 0.3));
+  }
+
+  .cover__img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 10px;
+  }
+
+  .cover__img--empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 2 / 3;
+    padding: 24px;
+    text-align: center;
+    background: #0b1830;
+    color: #cfe0ff;
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- стълбовете ---------- */
+
+  .pillars {
+    background: var(--bg-sand);
+    border-block: 1px solid var(--line);
+    padding-block: clamp(72px, 10vw, 132px);
+  }
+
+  .pillars__inner {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(40px, 6vw, 88px);
+    align-items: start;
+  }
+
+  .pillars__head {
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+  }
+
+  .pillars__title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.2vw, 48px);
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+    margin: 14px 0 0;
+  }
+
+  .pillars__lead {
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 18px 0 0;
+    max-width: 34ch;
+  }
+
+  .pillars__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pillar {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(18px, 3vw, 36px);
+  }
+
+  .pillar + .pillar {
+    margin-top: clamp(40px, 6vw, 72px);
+    padding-top: clamp(40px, 6vw, 72px);
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .pillar__n {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 4vw, 46px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: var(--ink-faint);
+  }
+
+  .pillar__title {
+    font-size: clamp(21px, 2.8vw, 30px);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .pillar__body {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink-body);
+    margin: 12px 0 0;
+    max-width: 48ch;
+  }
+
+  /* ---------- какво ще можеш ---------- */
+
+  .outcomes {
+    background: var(--dark);
+    color: var(--dark-ink);
+    padding-block: clamp(72px, 10vw, 128px);
+  }
+
+  .outcomes__eyebrow {
+    color: var(--dark-ink-subtle);
+  }
+
+  .outcomes__title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.6vw, 54px);
+    line-height: 1.03;
+    letter-spacing: -0.045em;
+    margin: 16px 0 0;
+    max-width: 16em;
+  }
+
+  .outcomes__list {
+    list-style: none;
+    margin: clamp(36px, 5vw, 56px) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+    max-width: 900px;
+  }
+
+  .outcomes__list li {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 20px 0;
+    font-size: clamp(16px, 1.7vw, 19px);
+    line-height: 1.5;
+    color: var(--dark-ink);
+    border-top: 1px solid var(--dark-line);
+  }
+
+  .outcomes__tick {
+    flex: none;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ---------- за кого ---------- */
+
+  .fit {
+    padding-block: clamp(72px, 10vw, 128px);
+  }
+
+  .fit__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: start;
+  }
+
+  .fit__title {
+    font-family: var(--font-display);
+    font-size: clamp(21px, 2.6vw, 28px);
+    letter-spacing: -0.03em;
+    margin: 0 0 20px;
+  }
+
+  .fit__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .fit__list li {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .fit__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.66em;
+    width: 8px;
+    height: 1px;
+    background: var(--line-strong);
+  }
+
+  .fit__col--not .fit__list li::before {
+    background: var(--accent);
+  }
+
+  .fit__note {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 24px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- авторът ---------- */
+
+  .author {
+    background: var(--bg-sand);
+    border-block: 1px solid var(--line);
+    padding-block: clamp(60px, 8vw, 104px);
+  }
+
+  .author__inner {
+    max-width: 720px;
+  }
+
+  .author__body {
+    font-size: clamp(17px, 1.9vw, 20px);
+    line-height: 1.62;
+    color: var(--ink-body);
+    margin: 18px 0 0;
+  }
+
+  .author__body a {
+    color: var(--accent);
+    font-weight: 600;
+    border-bottom: 1px solid currentColor;
+  }
+
+  .author__imprint {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 28px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- скоро / купуване ---------- */
+
+  .notify {
+    padding-block: clamp(72px, 10vw, 128px);
+  }
+
+  .notify__inner {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    padding: clamp(30px, 4.5vw, 56px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .notify__title {
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.6vw, 40px);
+    letter-spacing: -0.04em;
+    margin: 0;
+  }
+
+  .notify__lead {
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--ink-body);
+    margin: 16px 0 0;
+    max-width: 46ch;
+  }
+
+  .notify__meta {
+    font-size: 13.5px;
+    color: var(--ink-subtle);
+    margin: 16px 0 0;
+  }
+
+  .notify__form {
+    display: grid;
+    gap: 14px;
+  }
+
+  .notify__buy {
+    display: grid;
+    justify-items: start;
+  }
+
+  .notify__trap {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .notify__done {
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--chip);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 14px 16px;
+    margin: 0;
+  }
+
+  .notify__field {
+    display: grid;
+    gap: 7px;
+  }
+
+  .notify__label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .notify__input {
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--field);
+    border: 1px solid var(--line-field);
+    border-radius: 12px;
+    padding: 13px 15px;
+    width: 100%;
+  }
+
+  .notify__input:focus-visible {
+    border-color: var(--accent);
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .notify__form .btn {
+    justify-self: start;
+  }
+
+  /* ---------- другите наръчници ---------- */
+
+  .more {
+    padding-block: clamp(48px, 7vw, 88px);
+    border-top: 1px solid var(--line);
+  }
+
+  .more__title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: -0.03em;
+    margin: 0 0 22px;
+  }
+
+  .more__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+  }
+
+  .more__link {
+    display: block;
+    color: inherit;
+  }
+
+  .more__link:hover .more__name {
+    color: var(--accent);
+  }
+
+  .more__name {
+    display: block;
+    font-weight: 600;
+    font-size: 17px;
+  }
+
+  .more__short {
+    font-size: 15px;
+    color: var(--ink-muted);
+  }
+
+  /* ---------- движението ----------
+   *
+   * Всичко е в `@supports` + `prefers-reduced-motion`. Основното състояние
+   * отгоре е КРАЙНОТО: без поддръжка страницата е просто статична, не празна.
+   */
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* Корицата се изправя, докато се превърта покрай нея. */
+      .cover {
+        animation: cover-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 45%;
+      }
+
+      .pillar {
+        animation: rise linear both;
+        animation-timeline: view();
+        animation-range: entry 6% cover 28%;
+      }
+
+      .pillar__n {
+        animation: pillar-live linear both;
+        animation-timeline: view();
+        animation-range: entry 40% cover 30%;
+      }
+
+      .outcomes__list li {
+        animation: line-in linear both;
+        animation-timeline: view();
+        animation-range: entry calc(4% + var(--i) * 4%) entry calc(44% + var(--i) * 4%);
+      }
+    }
+  }
+
+  @keyframes cover-rise {
+    from {
+      transform: rotate(-6deg) translateY(26px) scale(0.94);
+    }
+    to {
+      transform: rotate(-2.2deg) translateY(0) scale(1);
+    }
+  }
+
+  @keyframes pillar-live {
+    from {
+      color: var(--ink-faint);
+    }
+    to {
+      color: var(--accent);
+    }
+  }
+
+  @keyframes line-in {
+    from {
+      opacity: 0;
+      transform: translateX(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .hero__inner,
+    .pillars__inner,
+    .fit__inner,
+    .notify__inner {
+      grid-template-columns: 1fr;
+    }
+
+    .hero__art {
+      order: -1;
+    }
+
+    .pillars__head {
+      position: static;
+    }
+
+    .cover {
+      width: min(300px, 62%);
+    }
+  }
+</style>

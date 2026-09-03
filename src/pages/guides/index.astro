@@ -1,146 +1,130 @@
 ---
 /**
- * Наръчниците — страницата, на която студиото продава знание вместо работа.
+ * Рафтът — всички наръчници на едно място.
  *
- * Различава се от останалите по едно нещо и то е нарочно: тук се движи
- * ПОВЕЧЕ. На страницата с услугите движението пречи — човек чете оферта и
- * иска да я прочете. Тук предметът е книга, купувачът я разглежда, а
- * корицата е най-силният аргумент. Затова тя има паралакс, стълбовете
- * минават на лепкав таймлайн, а числата пламват при влизане.
+ * Списък от РЕДОВЕ, а не решетка от карти, и това е нарочно: при един
+ * наръчник решетката оставя дупки и рафтът изглежда празен, а редът си стои
+ * цял. При десет реда се превърта като каталог. Едно оформление за двата
+ * случая, без „ако са повече от N“.
  *
- * Всичко остава в `animation-timeline: view()` — нула килобайта скрипт,
- * както навсякъде другаде. Основното състояние в CSS е КРАЙНОТО: без
- * поддръжка и при изключено движение страницата е просто статична и цяла.
+ * Всеки ред е цялата корица плюс четирите части — човек трябва да може да
+ * реши оттук дали да влезе, а не да отваря страници една по една.
  *
- * Само на български. Наръчникът е „Българско издание“; страница на английски
- * за книга, която не съществува на английски, е обещание, което не се спазва.
+ * Само на български. Наръчниците са „Българско издание“; страница на
+ * английски за книги, които не съществуват на английски, е обещание, което
+ * не се спазва.
  */
 import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { FEATURED, GUIDES } from '../../data/guides.ts';
+import { GUIDES, isSellable, priceLabel } from '../../data/guides.ts';
+import { coverOf } from '../../lib/guide-cover.ts';
 import { SITE } from '../../data/site.mjs';
 
-/**
- * Корицата се търси по име на файла, както в `Proof`. Глобът пази липсващ
- * файл да не счупи build-а — статичният `import` не прави това.
- */
-const covers = import.meta.glob<{ default: ImageMetadata }>(
-  '../../assets/guides/*.{png,jpg,jpeg,webp,avif}',
-  { eager: true },
-);
-const cover = Object.entries(covers).find(
-  ([path]) => path.split('/').pop()?.replace(/\.\w+$/, '') === FEATURED.cover,
-)?.[1].default;
+const shelf = GUIDES.map((guide) => ({
+  guide,
+  cover: coverOf(guide.cover),
+  sellable: isSellable(guide),
+  price: priceLabel(guide),
+}));
+
+/* „1 наръчник“, „2 наръчника“, „5 наръчника“ — българското броене след
+   числително е „наръчника“ при всяко число освен едно. */
+const count = GUIDES.length;
+const countLabel = count === 1 ? 'Един наръчник' : `${count} наръчника`;
 
 const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'Book',
-  name: FEATURED.title,
-  description: FEATURED.short,
-  inLanguage: 'bg',
-  bookEdition: FEATURED.edition,
-  author: { '@type': 'Person', name: SITE.owner.name },
-  publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  '@type': 'ItemList',
+  name: 'Наръчници на Кова студио',
+  itemListElement: GUIDES.map((guide, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Book',
+      name: guide.title,
+      description: guide.short,
+      inLanguage: 'bg',
+      bookEdition: guide.edition,
+      author: { '@type': 'Person', name: SITE.owner.name },
+      url: new URL(`/guides/${guide.slug}/`, SITE.url).href,
+    },
+  })),
 };
 ---
 
 <BaseLayout
   title="Наръчници"
-  description="Практически наръчник как се създават, поддържат и продават AI рецепционисти и гласови асистенти — стратегия, изграждане, телефония и монетизация. Българско издание."
+  description="Практически наръчници за AI на български: как се създават, поддържат и продават AI рецепционисти, гласови асистенти и автоматизации. Цялата процедура, не теория."
   canonical="/guides/"
 >
   <Fragment slot="head">
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
   </Fragment>
 
-  {/* ---------- корицата ---------- */}
+  {/* ---------- заглавие ---------- */}
   <section class="hero">
     <div class="container hero__inner">
-      <div class="hero__copy">
-        <p class="eyebrow">Наръчници</p>
-        <h1 class="hero__title">{FEATURED.title}</h1>
-        <p class="hero__sub">{FEATURED.subtitle}</p>
-
-        <p class="hero__lead">
-          Същото, което правя за клиенти — описано така, че да го направиш сам. Включително
-          частта, която обикновено липсва: телефонията и сметката.
-        </p>
-
-        <div class="hero__meta">
-          <span class="chip chip--soon">Скоро</span>
-          <span class="hero__edition">{FEATURED.edition}</span>
-        </div>
-
-        <a class="btn btn--primary hero__cta" href="#notify">Кажи ми, когато излезе →</a>
-      </div>
-
-      <div class="hero__art">
-        <div class="cover">
-          {
-            cover ? (
-              <Image
-                class="cover__img"
-                src={cover}
-                alt={`Корица на „${FEATURED.title}“ — ${FEATURED.subtitle}`}
-                widths={[360, 540, 720]}
-                sizes="(max-width: 900px) 70vw, 380px"
-                loading="eager"
-              />
-            ) : (
-              <div class="cover__img cover__img--empty" aria-hidden="true">
-                <span>{FEATURED.title}</span>
-              </div>
-            )
-          }
-        </div>
-      </div>
+      <p class="eyebrow">Наръчници</p>
+      <h1 class="hero__title">Същото, което правя за клиенти — описано, за да го направиш сам</h1>
+      <p class="hero__lead">
+        Всеки наръчник е една процедура от край до край: кога си струва, как се изгражда, къде
+        се чупи и как се остойностява. Включително частите, които обикновено липсват, защото са
+        скучни — и заради които проектите спират на две трети.
+      </p>
+      <p class="hero__count">{countLabel} · поредицата расте</p>
     </div>
   </section>
 
-  {/* ---------- четирите стълба ---------- */}
-  <section class="pillars">
-    <div class="container pillars__inner">
-      <div class="pillars__head">
-        <p class="eyebrow">Какво има вътре</p>
-        <h2 class="pillars__title">Четири части, в реда, в който се прави</h2>
-        <p class="pillars__lead">
-          Не по теми, а по ход на работата. Всяка част завършва там, откъдето започва
-          следващата.
-        </p>
-      </div>
-
-      <ol class="pillars__list">
-        {
-          FEATURED.pillars.map((pillar, i) => (
-            <li class="pillar" style={`--i: ${i}`}>
-              <span class="pillar__n" aria-hidden="true">
-                {pillar.n}
-              </span>
-              <div>
-                <h3 class="pillar__title">{pillar.title}</h3>
-                <p class="pillar__body">{pillar.body}</p>
-              </div>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-  </section>
-
-  {/* ---------- какво ще можеш ---------- */}
-  <section class="outcomes">
+  {/* ---------- рафтът ---------- */}
+  <section class="shelf" id="shelf">
     <div class="container">
-      <p class="eyebrow outcomes__eyebrow">След наръчника</p>
-      <h2 class="outcomes__title">Какво ще можеш, което сега не можеш</h2>
-      <ul class="outcomes__list">
+      <ul class="shelf__list">
         {
-          FEATURED.outcomes.map((item, i) => (
-            <li style={`--i: ${i}`}>
-              <span class="outcomes__tick" aria-hidden="true">
-                →
-              </span>
-              {item}
+          shelf.map(({ guide, cover, sellable, price }, i) => (
+            <li class="row" style={`--i: ${i}`}>
+              <a class="row__link" href={`/guides/${guide.slug}/`}>
+                <div class="row__art">
+                  {cover ? (
+                    <Image
+                      class="row__cover"
+                      src={cover}
+                      alt={`Корица на „${guide.title}“`}
+                      widths={[240, 360, 480]}
+                      sizes="(max-width: 720px) 45vw, 240px"
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                    />
+                  ) : (
+                    <div class="row__cover row__cover--empty" aria-hidden="true">
+                      <span>{guide.title}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div class="row__body">
+                  <div class="row__meta">
+                    {sellable ? (
+                      <span class="tag tag--price">{price}</span>
+                    ) : (
+                      <span class="tag tag--soon">Скоро</span>
+                    )}
+                    <span class="row__edition">{guide.edition}</span>
+                  </div>
+
+                  <h2 class="row__title">{guide.title}</h2>
+                  <p class="row__sub">{guide.subtitle}</p>
+                  <p class="row__short">{guide.short}</p>
+
+                  <ul class="row__parts">
+                    {guide.pillars.map((pillar) => (
+                      <li>{pillar.title}</li>
+                    ))}
+                  </ul>
+
+                  <span class="row__cta">
+                    {sellable ? `Виж какво има вътре — ${price}` : 'Виж какво има вътре'} →
+                  </span>
+                </div>
+              </a>
             </li>
           ))
         }
@@ -148,144 +132,42 @@ const structuredData = {
     </div>
   </section>
 
-  {/* ---------- за кого е и за кого не ---------- */}
-  <section class="fit">
-    <div class="container fit__inner">
-      <div class="fit__col">
-        <h2 class="fit__title">За кого е</h2>
-        <ul class="fit__list">
-          {FEATURED.forWhom.map((item) => <li>{item}</li>)}
-        </ul>
-      </div>
-      <div class="fit__col fit__col--not">
-        <h2 class="fit__title">За кого не е</h2>
-        <ul class="fit__list">
-          {FEATURED.notFor.map((item) => <li>{item}</li>)}
-        </ul>
-        <p class="fit__note">
-          Наръчник, купен от човек, за когото не е, струва повече от непродаден. Затова тази
-          колона я има.
+  {/* ---------- защо изобщо ги има ---------- */}
+  <section class="why">
+    <div class="container why__inner">
+      <div class="why__col">
+        <h2 class="why__title">Блогът е безплатен</h2>
+        <p class="why__body">
+          И си остава. Там пиша по теми — какво излиза, какво работи, какво не. Полезно за
+          решение, но недостатъчно за пускане в работа.
         </p>
+        <a class="why__link" href="/blog/">Към блога →</a>
+      </div>
+      <div class="why__col why__col--mid">
+        <h2 class="why__title">Наръчникът е процедурата</h2>
+        <p class="why__body">
+          От „струва ли си“ до „кой плаща минутите“ и „каква цена да сложа“. С числата, с
+          местата, където се чупи, и с това, което казвам на клиента, преди да е попитал.
+        </p>
+        <a class="why__link" href="#shelf">Виж наръчниците ↑</a>
+      </div>
+      <div class="why__col">
+        <h2 class="why__title">Или го правя аз</h2>
+        <p class="why__body">
+          Ако прочетеш съдържанието и решиш, че времето ти струва повече от разликата в цената
+          — това е напълно разумно и е другата ми работа.
+        </p>
+        <a class="why__link" href="/services/">Услуги и цени →</a>
       </div>
     </div>
   </section>
-
-  {/* ---------- кой го пише ---------- */}
-  <section class="author">
-    <div class="container author__inner">
-      <p class="eyebrow">Кой го пише</p>
-      <p class="author__body">
-        Радослав Додников. Преподавам генеративен AI в университет и съм докторант по
-        компютърни науки — но наръчникът не е от лекциите. Написан е от агентите, които съм
-        пуснал: гласовият асистент на този сайт е същият, за който се говори вътре, а
-        <a href="/booking/">календарът, който запазва часовете</a>, е този, който ще построиш.
-      </p>
-      <p class="author__body">
-        Затова частта за телефонията я има. Тя не е в ръководствата, защото е скучна — и точно
-        на нея спират повечето проекти.
-      </p>
-    </div>
-  </section>
-
-  {/* ---------- скоро ---------- */}
-  <section class="notify" id="notify">
-    <div class="container notify__inner">
-      <div class="notify__copy">
-        <h2 class="notify__title">Още не се продава.</h2>
-        <p class="notify__lead">
-          Наръчникът е готов, но магазинът още не е. Остави имейл и ще ти пиша в деня, в който
-          излезе — веднъж, без списък и без нищо друго след това.
-        </p>
-        <p class="notify__meta">Актуален към {FEATURED.current}</p>
-      </div>
-
-      <form class="notify__form" method="POST" action="/api/guide-notify">
-        <input type="hidden" name="guide" value={FEATURED.slug} />
-        {/* Примамка за ботове — човек не я вижда и не я попълва. */}
-        <div class="notify__trap" aria-hidden="true">
-          <label>
-            Website
-            <input type="text" name="website" tabindex="-1" autocomplete="off" />
-          </label>
-        </div>
-
-        <p class="notify__done" hidden>
-          Готово. Ще ти пиша в деня, в който излезе — веднъж и нищо друго.
-        </p>
-
-        <label class="notify__field">
-          <span class="notify__label">Имейл</span>
-          <input
-            class="notify__input"
-            type="email"
-            name="email"
-            required
-            maxlength="180"
-            autocomplete="email"
-            placeholder="ти@фирмата.bg"
-          />
-        </label>
-        <button class="btn btn--primary" type="submit">Кажи ми</button>
-      </form>
-    </div>
-  </section>
-
-  {/*
-   * Страницата остава СТАТИЧНА. Потвърждението идва от адреса, прочетен от
-   * този скрипт — същият подход като контактната форма. Без него страницата
-   * би трябвало да се смята при заявка само заради едно изречение.
-   *
-   * Без JavaScript формата просто остава на екрана; адресът е изпратен и
-   * записан, а човекът вижда страницата отначало. По-лошо от потвърждение,
-   * но не счупено.
-   */}
-  <script is:inline>
-    (() => {
-      const params = new URLSearchParams(location.search);
-      const form = document.querySelector('.notify__form');
-      if (!form) return;
-
-      if (params.get('notified') === '1') {
-        const done = form.querySelector('.notify__done');
-        form.querySelector('.notify__field')?.setAttribute('hidden', '');
-        form.querySelector('button')?.setAttribute('hidden', '');
-        if (done) done.hidden = false;
-      } else if (params.get('error') === '1') {
-        const done = form.querySelector('.notify__done');
-        if (done) {
-          done.textContent = 'Нещо не се получи. Провери адреса и опитай пак.';
-          done.hidden = false;
-        }
-      }
-    })();
-  </script>
-
-  {
-    GUIDES.length > 1 && (
-      <section class="more">
-        <div class="container">
-          <h2 class="more__title">Още наръчници</h2>
-          <ul class="more__list">
-            {GUIDES.filter((g) => g.slug !== FEATURED.slug).map((g) => (
-              <li>
-                <span class="more__name">{g.title}</span>
-                <span class="more__short">{g.short}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    )
-  }
 </BaseLayout>
 
 <style>
-  /* ---------- корицата ---------- */
+  /* ---------- заглавие ---------- */
 
   .hero {
-    padding-block: clamp(48px, 7vw, 96px) clamp(64px, 9vw, 120px);
-    /* Корицата е тъмносиня, а сайтът е кремав. Вместо да се борим с това,
-       под нея стои студено сияние — контрастът става композиция. */
+    padding-block: clamp(48px, 7vw, 92px) clamp(32px, 5vw, 56px);
     position: relative;
     overflow: hidden;
   }
@@ -294,529 +176,292 @@ const structuredData = {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(60% 55% at 78% 42%, rgba(46, 92, 173, 0.16), transparent 70%),
-      radial-gradient(45% 40% at 88% 70%, rgba(226, 84, 43, 0.09), transparent 70%);
+    background: radial-gradient(52% 60% at 82% 30%, rgba(46, 92, 173, 0.12), transparent 70%);
     pointer-events: none;
   }
 
   .hero__inner {
     position: relative;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: clamp(36px, 6vw, 88px);
-    align-items: center;
   }
 
   .hero__title {
     font-family: var(--font-display);
-    font-size: clamp(36px, 6.4vw, 76px);
-    line-height: 0.98;
-    letter-spacing: -0.05em;
+    font-size: clamp(32px, 5.4vw, 62px);
+    line-height: 1;
+    letter-spacing: -0.045em;
     margin: 14px 0 0;
-  }
-
-  .hero__sub {
-    font-size: clamp(17px, 2vw, 21px);
-    line-height: 1.45;
-    color: var(--ink);
-    font-weight: 500;
-    margin: 20px 0 0;
-    max-width: 30ch;
+    max-width: 17ch;
   }
 
   .hero__lead {
-    font-size: 16.5px;
-    line-height: 1.62;
+    font-size: clamp(16.5px, 1.8vw, 19px);
+    line-height: 1.6;
     color: var(--ink-body);
-    margin: 18px 0 0;
-    max-width: 44ch;
+    margin: 22px 0 0;
+    max-width: 58ch;
   }
 
-  .hero__meta {
+  .hero__count {
+    font-size: 13.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    margin: 26px 0 0;
+  }
+
+  /* ---------- рафтът ---------- */
+
+  .shelf {
+    padding-block: clamp(24px, 4vw, 48px) clamp(64px, 9vw, 112px);
+  }
+
+  .shelf__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(20px, 3vw, 32px);
+  }
+
+  .row__link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+    color: inherit;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    padding: clamp(24px, 3.4vw, 44px);
+    box-shadow: var(--shadow-card);
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .row__link:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+  }
+
+  .row__art {
+    /* Сиянието стои под корицата и тук — тъмносиньото върху кремаво иска
+       собствена среда, иначе изглежда като изрязано. */
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 8px;
+  }
+
+  .row__art::before {
+    content: '';
+    position: absolute;
+    inset: -14%;
+    background: radial-gradient(closest-side, rgba(46, 92, 173, 0.22), transparent 78%);
+    pointer-events: none;
+  }
+
+  .row__cover {
+    position: relative;
+    width: clamp(120px, 20vw, 200px);
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    transform: rotate(-2deg);
+    filter: drop-shadow(0 16px 28px rgba(12, 24, 48, 0.28));
+  }
+
+  .row__cover--empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 2 / 3;
+    padding: 16px;
+    text-align: center;
+    background: #0b1830;
+    color: #cfe0ff;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+
+  .row__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 14px;
-    margin-top: 28px;
+    gap: 12px;
   }
 
-  .chip--soon {
+  .tag--soon,
+  .tag--price {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
+    font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #fff;
     background: var(--accent);
     border-radius: 999px;
-    padding: 6px 14px;
+    padding: 5px 12px;
   }
 
-  .hero__edition {
-    font-size: 13.5px;
+  .tag--price {
+    letter-spacing: 0.02em;
+    font-size: 13px;
+  }
+
+  .row__edition {
+    font-size: 13px;
     color: var(--ink-subtle);
   }
 
-  .hero__cta {
-    margin-top: 26px;
-  }
-
-  .hero__art {
-    display: grid;
-    place-items: center;
-    min-width: 0;
-  }
-
-  .cover {
-    width: min(380px, 78%);
-    /* Лека перспектива — книгата стои на масата, не е залепена за екрана. */
-    transform: rotate(-2.2deg);
-    filter: drop-shadow(0 26px 44px rgba(12, 24, 48, 0.3));
-  }
-
-  .cover__img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 10px;
-  }
-
-  .cover__img--empty {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 2 / 3;
-    padding: 24px;
-    text-align: center;
-    background: #0b1830;
-    color: #cfe0ff;
+  .row__title {
     font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: -0.02em;
-  }
-
-  /* ---------- стълбовете ---------- */
-
-  .pillars {
-    background: var(--bg-sand);
-    border-block: 1px solid var(--line);
-    padding-block: clamp(72px, 10vw, 132px);
-  }
-
-  .pillars__inner {
-    display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
-    gap: clamp(40px, 6vw, 88px);
-    align-items: start;
-  }
-
-  .pillars__head {
-    position: sticky;
-    top: calc(var(--header-h) + 32px);
-  }
-
-  .pillars__title {
-    font-family: var(--font-display);
-    font-size: clamp(28px, 4.2vw, 48px);
-    line-height: 1.04;
+    font-size: clamp(24px, 3.4vw, 40px);
+    line-height: 1.02;
     letter-spacing: -0.04em;
     margin: 14px 0 0;
   }
 
-  .pillars__lead {
-    font-size: 16.5px;
+  .row__sub {
+    font-size: clamp(15.5px, 1.7vw, 18px);
+    line-height: 1.45;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 12px 0 0;
+    max-width: 40ch;
+  }
+
+  .row__short {
+    font-size: 15.5px;
     line-height: 1.6;
-    color: var(--ink-body);
-    margin: 18px 0 0;
-    max-width: 34ch;
-  }
-
-  .pillars__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .pillar {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: clamp(18px, 3vw, 36px);
-  }
-
-  .pillar + .pillar {
-    margin-top: clamp(40px, 6vw, 72px);
-    padding-top: clamp(40px, 6vw, 72px);
-    border-top: 1px solid var(--line-strong);
-  }
-
-  .pillar__n {
-    font-family: var(--font-display);
-    font-size: clamp(26px, 4vw, 46px);
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: -0.05em;
-    color: var(--ink-faint);
-  }
-
-  .pillar__title {
-    font-size: clamp(21px, 2.8vw, 30px);
-    line-height: 1.06;
-    letter-spacing: -0.03em;
-    margin: 0;
-    text-transform: uppercase;
-  }
-
-  .pillar__body {
-    font-size: 16px;
-    line-height: 1.65;
     color: var(--ink-body);
     margin: 12px 0 0;
-    max-width: 48ch;
+    max-width: 52ch;
   }
 
-  /* ---------- какво ще можеш ---------- */
-
-  .outcomes {
-    background: var(--dark);
-    color: var(--dark-ink);
-    padding-block: clamp(72px, 10vw, 128px);
-  }
-
-  .outcomes__eyebrow {
-    color: var(--dark-ink-subtle);
-  }
-
-  .outcomes__title {
-    font-family: var(--font-display);
-    font-size: clamp(28px, 4.6vw, 54px);
-    line-height: 1.03;
-    letter-spacing: -0.045em;
-    margin: 16px 0 0;
-    max-width: 16em;
-  }
-
-  .outcomes__list {
+  .row__parts {
     list-style: none;
-    margin: clamp(36px, 5vw, 56px) 0 0;
-    padding: 0;
-    display: grid;
-    gap: 2px;
-    max-width: 900px;
-  }
-
-  .outcomes__list li {
     display: flex;
-    align-items: baseline;
-    gap: 16px;
-    padding: 20px 0;
-    font-size: clamp(16px, 1.7vw, 19px);
-    line-height: 1.5;
-    color: var(--dark-ink);
-    border-top: 1px solid var(--dark-line);
-  }
-
-  .outcomes__tick {
-    flex: none;
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  /* ---------- за кого ---------- */
-
-  .fit {
-    padding-block: clamp(72px, 10vw, 128px);
-  }
-
-  .fit__inner {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(32px, 5vw, 72px);
-    align-items: start;
-  }
-
-  .fit__title {
-    font-family: var(--font-display);
-    font-size: clamp(21px, 2.6vw, 28px);
-    letter-spacing: -0.03em;
-    margin: 0 0 20px;
-  }
-
-  .fit__list {
-    list-style: none;
-    margin: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 0;
     padding: 0;
-    display: grid;
-    gap: 14px;
   }
 
-  .fit__list li {
-    font-size: 16px;
-    line-height: 1.6;
-    color: var(--ink-body);
-    padding-left: 20px;
-    position: relative;
-  }
-
-  .fit__list li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.66em;
-    width: 8px;
-    height: 1px;
-    background: var(--line-strong);
-  }
-
-  .fit__col--not .fit__list li::before {
-    background: var(--accent);
-  }
-
-  .fit__note {
-    font-size: 14.5px;
-    line-height: 1.55;
+  .row__parts li {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--ink-muted);
-    margin: 24px 0 0;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
+    background: var(--chip);
+    border-radius: 999px;
+    padding: 6px 12px;
   }
 
-  /* ---------- авторът ---------- */
+  .row__cta {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 22px;
+  }
 
-  .author {
+  /* ---------- защо ---------- */
+
+  .why {
     background: var(--bg-sand);
-    border-block: 1px solid var(--line);
-    padding-block: clamp(60px, 8vw, 104px);
+    border-top: 1px solid var(--line);
+    padding-block: clamp(56px, 8vw, 104px);
   }
 
-  .author__inner {
-    max-width: 720px;
+  .why__inner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(24px, 4vw, 56px);
   }
 
-  .author__body {
-    font-size: clamp(17px, 1.9vw, 20px);
+  .why__col--mid {
+    padding-inline: clamp(24px, 4vw, 56px);
+    border-inline: 1px solid var(--line);
+  }
+
+  .why__title {
+    font-family: var(--font-display);
+    font-size: clamp(19px, 2.2vw, 24px);
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .why__body {
+    font-size: 15.5px;
     line-height: 1.62;
     color: var(--ink-body);
-    margin: 18px 0 0;
+    margin: 14px 0 0;
   }
 
-  .author__body a {
+  .why__link {
+    display: inline-block;
+    font-size: 14.5px;
+    font-weight: 600;
     color: var(--accent);
-    font-weight: 600;
-    border-bottom: 1px solid currentColor;
-  }
-
-  /* ---------- скоро ---------- */
-
-  .notify {
-    padding-block: clamp(72px, 10vw, 128px);
-  }
-
-  .notify__inner {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: clamp(32px, 5vw, 72px);
-    align-items: center;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 26px;
-    padding: clamp(30px, 4.5vw, 56px);
-    box-shadow: var(--shadow-card);
-  }
-
-  .notify__title {
-    font-family: var(--font-display);
-    font-size: clamp(26px, 3.6vw, 40px);
-    letter-spacing: -0.04em;
-    margin: 0;
-  }
-
-  .notify__lead {
-    font-size: 16.5px;
-    line-height: 1.6;
-    color: var(--ink-body);
-    margin: 16px 0 0;
-    max-width: 46ch;
-  }
-
-  .notify__meta {
-    font-size: 13.5px;
-    color: var(--ink-subtle);
-    margin: 16px 0 0;
-  }
-
-  .notify__form {
-    display: grid;
-    gap: 14px;
-  }
-
-  .notify__trap {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-
-  .notify__done {
-    font-size: 15.5px;
-    line-height: 1.55;
-    color: var(--ink);
-    background: var(--chip);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 12px 12px 0;
-    padding: 14px 16px;
-    margin: 0;
-  }
-
-  .notify__field {
-    display: grid;
-    gap: 7px;
-  }
-
-  .notify__label {
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
-
-  .notify__input {
-    font: inherit;
-    font-size: 16px;
-    color: var(--ink);
-    background: var(--field);
-    border: 1px solid var(--line-field);
-    border-radius: 12px;
-    padding: 13px 15px;
-    width: 100%;
-  }
-
-  .notify__input:focus-visible {
-    border-color: var(--accent);
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
-  }
-
-  .notify__form .btn {
-    justify-self: start;
-  }
-
-  /* ---------- още наръчници ---------- */
-
-  .more {
-    padding-block: clamp(48px, 7vw, 88px);
-    border-top: 1px solid var(--line);
-  }
-
-  .more__title {
-    font-family: var(--font-display);
-    font-size: 24px;
-    letter-spacing: -0.03em;
-    margin: 0 0 22px;
-  }
-
-  .more__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: 14px;
-  }
-
-  .more__name {
-    display: block;
-    font-weight: 600;
-    font-size: 17px;
-  }
-
-  .more__short {
-    font-size: 15px;
-    color: var(--ink-muted);
+    margin-top: 16px;
   }
 
   /* ---------- движението ----------
    *
-   * Всичко е в `@supports` + `prefers-reduced-motion`. Основното състояние
-   * отгоре е КРАЙНОТО: без поддръжка страницата е просто статична, не празна.
+   * Основното състояние горе е КРАЙНОТО: без поддръжка и при изключено
+   * движение рафтът е просто статичен и цял.
    */
 
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
-      /* Корицата се изправя, докато се превърта покрай нея. */
-      .cover {
-        animation: cover-rise linear both;
-        animation-timeline: view();
-        animation-range: entry 10% cover 45%;
-      }
-
-      .pillar {
+      .row {
         animation: rise linear both;
         animation-timeline: view();
-        animation-range: entry 6% cover 28%;
+        animation-range: entry 4% cover 22%;
       }
 
-      .pillar__n {
-        animation: pillar-live linear both;
+      .row__cover {
+        animation: cover-tilt linear both;
         animation-timeline: view();
-        animation-range: entry 40% cover 30%;
-      }
-
-      .outcomes__list li {
-        animation: line-in linear both;
-        animation-timeline: view();
-        animation-range: entry calc(4% + var(--i) * 4%) entry calc(44% + var(--i) * 4%);
+        animation-range: entry 8% cover 34%;
       }
     }
   }
 
-  @keyframes cover-rise {
+  @keyframes cover-tilt {
     from {
-      transform: rotate(-6deg) translateY(26px) scale(0.94);
+      transform: rotate(-7deg) scale(0.93);
     }
     to {
-      transform: rotate(-2.2deg) translateY(0) scale(1);
+      transform: rotate(-2deg) scale(1);
     }
   }
 
-  @keyframes pillar-live {
-    from {
-      color: var(--ink-faint);
+  @media (max-width: 720px) {
+    .row__link {
+      grid-template-columns: 1fr;
+      justify-items: start;
+      gap: 24px;
     }
-    to {
-      color: var(--accent);
-    }
-  }
 
-  @keyframes line-in {
-    from {
-      opacity: 0;
-      transform: translateX(-12px);
+    /* На тесен екран корицата е единственото над сгъвката — 20vw я свиваше
+       до пощенска марка точно там, където е най-силният аргумент. */
+    .row__cover {
+      width: min(210px, 48vw);
     }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
 
-  @media (max-width: 900px) {
-    .hero__inner,
-    .pillars__inner,
-    .fit__inner,
-    .notify__inner {
+    .why__inner {
       grid-template-columns: 1fr;
     }
 
-    .hero__art {
-      order: -1;
-    }
-
-    .pillars__head {
-      position: static;
-    }
-
-    .cover {
-      width: min(300px, 62%);
+    .why__col--mid {
+      padding-inline: 0;
+      padding-block: clamp(24px, 6vw, 40px);
+      border-inline: 0;
+      border-block: 1px solid var(--line);
     }
   }
 </style>

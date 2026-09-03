@@ -19,19 +19,23 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   const form = await request.formData().catch(() => null);
   if (!form) return new Response('Bad Request', { status: 400 });
 
-  const back = (state: string) => redirect(`/guides/?${state}#notify`, 303);
+  const email = String(form.get('email') ?? '').trim().slice(0, 180);
+  const guide = String(form.get('guide') ?? '').trim();
+
+  /* Само наръчник, който наистина съществува — иначе списъкът се пълни с
+     произволни низове от подправени заявки. Проверява се ПРЕДИ адреса,
+     защото от него се строи обратният път: препращане към `/guides/<нещо>/`
+     по непроверен низ е отворено пренасочване. */
+  if (!GUIDES.some((g) => g.slug === guide)) return redirect('/guides/', 303);
+
+  /* Назад към страницата на самия наръчник, не към списъка — там е формата,
+     която показва потвърждението, и там човекът е бил преди малко. */
+  const back = (state: string) => redirect(`/guides/${guide}/?${state}#notify`, 303);
 
   // Примамката е попълнена → бот. Преструваме се, че всичко е наред.
   if (String(form.get('website') ?? '').trim()) return back('notified=1');
 
-  const email = String(form.get('email') ?? '').trim().slice(0, 180);
-  const guide = String(form.get('guide') ?? '').trim();
-
-  // Само наръчник, който наистина съществува — иначе списъкът се пълни с
-  // произволни низове от подправени заявки.
-  if (!EMAIL_RE.test(email) || !GUIDES.some((g) => g.slug === guide)) {
-    return back('error=1');
-  }
+  if (!EMAIL_RE.test(email)) return back('error=1');
 
   const env = locals.runtime?.env ?? ({} as Env);
   const db = env.BOOKINGS;
