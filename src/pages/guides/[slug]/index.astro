@@ -39,7 +39,12 @@ const structuredData = {
   inLanguage: 'bg',
   bookEdition: guide.edition,
   author: { '@type': 'Person', name: SITE.owner.name },
-  publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  /* Издателят е марката, под която излиза изданието — същата, която стои в
+     авторските права във файла. Иначе структурираните данни твърдят едно, а
+     самият файл — друго. */
+  publisher: { '@type': 'Organization', name: guide.imprint ?? SITE.name, url: SITE.url },
+  numberOfPages: guide.pages,
+  bookFormat: 'https://schema.org/EBook',
   /* Оферта само когато наистина може да се купи. Schema.org с цена за нещо,
      което не се продава, е същата лъжа както бутон, който не води доникъде. */
   ...(sellable && guide.price
@@ -210,6 +215,14 @@ const structuredData = {
         запазва часовете</a>, са същите, за които се говори вътре.
       </p>
       {guide.authorNotes.map((note) => <p class="author__body">{note}</p>)}
+      {
+        guide.imprint && (
+          <p class="author__imprint">
+            Излиза под марката <strong>{guide.imprint}</strong> — същият автор, същият текст.
+            Затова това име стои и в авторските права във файла.
+          </p>
+        )
+      }
     </div>
   </section>
 
@@ -678,6 +691,15 @@ const structuredData = {
     color: var(--accent);
     font-weight: 600;
     border-bottom: 1px solid currentColor;
+  }
+
+  .author__imprint {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    margin: 28px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
   }
 
   /* ---------- скоро / купуване ---------- */
