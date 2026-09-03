@@ -11,11 +11,11 @@
  * съществува, и не праща второ писмо.
  */
 
-import type { Guide } from '../data/guides.ts';
+import { GUIDES, type Guide } from '../data/guides.ts';
 import { signDownload } from './guide-download.ts';
 import { SITE } from '../data/site.mjs';
 import type { CheckoutSession } from './stripe.ts';
-import { buyerEmail } from './stripe.ts';
+import { buyerEmail, sessionItemIds } from './stripe.ts';
 
 export type Sale = {
   sessionId: string;
@@ -40,6 +40,40 @@ function toBase64(text: string): string {
 export function saleAmount(sale: Sale): string {
   if (sale.amountTotal == null || !sale.currency) return '—';
   return `${(sale.amountTotal / 100).toFixed(2)} ${sale.currency.toUpperCase()}`;
+}
+
+/**
+ * Кой наръчник е платен в тази сесия.
+ *
+ * Два пътя, в този ред:
+ *
+ *   1. `metadata.guide` — ако линкът е правен през API и метаданните ги има.
+ *   2. Купеният продукт или цена, сверени със `stripeIds` в данните.
+ *
+ * Вторият е истинският при линкове от таблото: то не дава поле за метаданни.
+ * Той е и по-надеждният — метаданни се забравят при всеки нов линк, а
+ * продуктът е самото нещо, което купувачът плаща.
+ *
+ * `null` значи „не знам“, а не „вземи първия“. Грешен файл на платил човек е
+ * по-лошо от никакъв файл: никаквият се оправя с едно писмо, грешният вече е
+ * у някого.
+ */
+export async function guideOfSession(
+  env: Env,
+  session: CheckoutSession,
+): Promise<Guide | null> {
+  const bySlug = GUIDES.find((guide) => guide.slug === session.metadata?.guide);
+  if (bySlug) return bySlug;
+
+  if (!env.STRIPE_SECRET_KEY) {
+    console.error('Няма STRIPE_SECRET_KEY — артикулите на сесията не могат да се проверят.');
+    return null;
+  }
+
+  const ids = await sessionItemIds(env.STRIPE_SECRET_KEY, session.id);
+  if (ids.length === 0) return null;
+
+  return GUIDES.find((guide) => guide.stripeIds?.some((id) => ids.includes(id))) ?? null;
 }
 
 /** Сесията, преведена на покупка. `null`, ако не става за доставка. */

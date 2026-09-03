@@ -16,7 +16,7 @@
  */
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { GUIDES, isSellable } from '../../../data/guides.ts';
-import { fulfil, saleFrom } from '../../../lib/guide-sale.ts';
+import { fulfil, guideOfSession, saleFrom } from '../../../lib/guide-sale.ts';
 import { isPaid, retrieveSession } from '../../../lib/stripe.ts';
 
 export const prerender = false;
@@ -47,10 +47,11 @@ if (!env.STRIPE_SECRET_KEY || !env.DOWNLOAD_SECRET) {
 } else if (sessionId) {
   const session = await retrieveSession(env.STRIPE_SECRET_KEY, sessionId);
   if (session && isPaid(session)) {
-    /* Наръчникът в плащането трябва да е ТОЗИ. Иначе платил за единия
-       би свалил другия, като си смени адреса в лентата. */
-    const paidFor = session.metadata?.guide;
-    if (paidFor && paidFor !== guide.slug) {
+    /* Наръчникът в плащането трябва да е ТОЗИ. Иначе платил за единия би
+       свалил другия, като си смени адреса в лентата. Разпознава се по същия
+       път като в webhook-а — по метаданни, а иначе по купения продукт. */
+    const paidFor = await guideOfSession(env, session);
+    if (paidFor && paidFor.slug !== guide.slug) {
       state = 'unknown';
     } else {
       const sale = saleFrom(session, guide);

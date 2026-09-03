@@ -43,6 +43,41 @@ export async function retrieveSession(
   return (await response.json()) as CheckoutSession;
 }
 
+/**
+ * Кои артикули е платил купувачът — идентификаторите на цената и на продукта.
+ *
+ * Отделна заявка, защото събитието от webhook-а НЕ носи артикулите: сесията
+ * там е без `line_items` и никакво разчоплюване на тялото няма да ги извади.
+ *
+ * Оттук се разбира кой наръчник е купен, когато липсват метаданни. Таблото на
+ * Stripe не дава поле за метаданни при създаване на Payment Link — те се
+ * слагат само през API. Продуктът обаче го има винаги.
+ */
+export async function sessionItemIds(secretKey: string, sessionId: string): Promise<string[]> {
+  if (!/^cs_[A-Za-z0-9_]{10,80}$/.test(sessionId)) return [];
+
+  const response = await fetch(
+    `${STRIPE_API}/checkout/sessions/${sessionId}/line_items?limit=20`,
+    { headers: { authorization: `Bearer ${secretKey}` } },
+  );
+  if (!response.ok) {
+    console.error(`Stripe отказа артикулите на ${sessionId}: ${response.status}`);
+    return [];
+  }
+
+  const body = (await response.json()) as {
+    data?: { price?: { id?: string; product?: string } | null }[];
+  };
+
+  const ids: string[] = [];
+  for (const item of body.data ?? []) {
+    if (item.price?.id) ids.push(item.price.id);
+    // `product` е низ, освен ако не е поискано разгъване — тук не е.
+    if (typeof item.price?.product === 'string') ids.push(item.price.product);
+  }
+  return ids;
+}
+
 /** Платена ли е сесията наистина. */
 export const isPaid = (session: CheckoutSession | null): boolean =>
   session?.payment_status === 'paid' || session?.payment_status === 'no_payment_required';

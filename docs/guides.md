@@ -56,20 +56,44 @@ Cloudflare → D1 → `kova-bookings` → Console, и пусни съдържа�
 
 ### 3. Продуктът в Stripe
 
-Stripe → Product catalogue → **Add product**: име, цена, еднократно плащане.
+Stripe → Product catalogue → **Add product**: име, цена, **еднократно**
+плащане (не „Recurring“ — иначе книгата се таксува всеки месец). Продуктовата
+категория „General - Electronically Supplied Services“ е вярната за PDF, а
+„Tax included in price“ трябва да е **Yes**: сайтът обявява 39 €, значи 39 €
+е и това, което купувачът плаща.
+
 После **Payment links** → нов линк за този продукт, и в него:
 
 | Настройка | Стойност |
 | --- | --- |
-| Metadata | ключ `guide`, стойност `ai-receptionist` |
-| After payment | Redirect to a page → `https://kova.bg/guides/ai-receptionist/download/?session_id={CHECKOUT_SESSION_ID}` |
-
-**Метаданните не са дребна работа.** По тях се разбира кой наръчник е платен.
-Липсват ли, webhook-ът отказва да гадае и не праща файл — по-добре ръчно
-писмо, отколкото грешен файл на грешен човек.
+| After payment | Don't show confirmation page → `https://kova.bg/guides/ai-receptionist/download/?session_id={CHECKOUT_SESSION_ID}` |
+| Enable Managed Payments | **изключено** — добавя 3,5% на транзакция |
+| Collect tax automatically | включено |
 
 Фигурните скоби в адреса се пишат буквално — Stripe ги замества с истинския
 идентификатор на сесията.
+
+#### Как се разбира кой наръчник е платен
+
+**По продукта, не по метаданни.** Таблото на Stripe не дава поле за метаданни
+при създаване на Payment Link — те се слагат само през API. Затова в
+`guides.ts` стоят идентификаторите от Stripe:
+
+```ts
+stripeIds: ['prod_…'],   // или 'price_…', или няколко
+```
+
+Взимат се от Product catalogue → продукта; идентификаторът на продукта е в
+адреса на страницата му, а на цената — до самата цена.
+
+Списък, а не едно поле: една книга често има няколко цени — промоционална, в
+друга валута, за кампания. Всичките водят до същия файл, стига да са изброени
+тук.
+
+`metadata.guide` продължава да работи и има предимство, ако линкът е правен
+през API. Не се ли разпознае нито по единия път, нито по другия, webhook-ът
+отказва да гадае и не праща нищо — по-добре ръчно писмо, отколкото грешен
+файл на грешен човек.
 
 ### 4. Webhook-ът
 
@@ -105,10 +129,12 @@ Workers & Pages → **agency** → Settings → Variables → Secrets:
 status: 'available',
 price: { amount: 39, currency: 'EUR' },
 buyUrl: 'https://buy.stripe.com/…',   // адресът на Payment Link-а
+stripeIds: ['prod_…'],                // за разпознаване след плащането
 ```
 
-И трите заедно. Липсва ли едно, страницата остава на „скоро“ — „в продажба“
-без адрес е бутон за никъде.
+Първите три заедно пускат бутона; липсва ли едно, страницата остава на
+„скоро“, защото „в продажба“ без адрес е бутон за никъде. `stripeIds` не
+личи отвън, но без него платилият не получава файл.
 
 ## Как тече една покупка
 
@@ -136,7 +162,7 @@ buyUrl: 'https://buy.stripe.com/…',   // адресът на Payment Link-а
 | Свалянето връща 404 | Файлът не е в кофата под ключа от `guides.ts`. Провери за разлика в пътя. |
 | Свалянето връща 403 | Изтекла или подправена връзка. Купувачът отваря пак страницата след плащането. |
 | Webhook-ът е червен в Stripe с 400 | Подписът не съвпада — `STRIPE_WEBHOOK_SECRET` е от друг endpoint или е стар. |
-| Webhook-ът връща „unknown guide“ | Payment Link-ът няма `metadata.guide` или в него пише друг `slug`. |
+| Webhook-ът връща „unknown guide“ | Купеният продукт не е в `stripeIds` на нито един наръчник. Виж в Stripe кой `prod_…` е платен и го добави. |
 | Няма писмо, но има ред в базата | `SEND_TO_VISITOR` иска включено Email Sending (Cloudflare Email Service) и Workers Paid. Виж `mailed_utc` — `NULL` значи, че писмото не е тръгнало. |
 
 Кой какво е купил:
@@ -154,6 +180,7 @@ FROM guide_purchases ORDER BY created_utc DESC;
    кого не, `cover`, `file`, `pages`.
 2. Корицата в `src/assets/guides/<cover>.png` (или webp/jpg — все едно).
 3. Файлът в кофата под `file.key`.
-4. Продукт и Payment Link в Stripe с `metadata.guide` = новия `slug`.
+4. Продукт и Payment Link в Stripe; идентификаторът на продукта влиза в
+   `stripeIds` при новия наръчник.
 
 Страница не се пипа. Адресът, рафтът, sitemap-ът и `llms.txt` тръгват сами.

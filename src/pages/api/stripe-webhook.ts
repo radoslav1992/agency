@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
-import { GUIDES } from '../../data/guides.ts';
-import { fulfil, saleFrom } from '../../lib/guide-sale.ts';
+import { fulfil, guideOfSession, saleFrom } from '../../lib/guide-sale.ts';
 import { isPaid, verifyWebhook, type CheckoutSession } from '../../lib/stripe.ts';
 import { SITE } from '../../data/site.mjs';
 
@@ -59,11 +58,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const session = event.data?.object;
   if (!session || !isPaid(session)) return new Response('unpaid', { status: 200 });
 
-  const slug = session.metadata?.guide;
-  const guide = GUIDES.find((item) => item.slug === slug);
+  const guide = await guideOfSession(env, session);
   if (!guide) {
     // Плащане без разпознаваем наръчник: не гадаем кой файл да пратим.
-    console.error(`Платена сесия ${session.id} без валиден metadata.guide: ${slug ?? '—'}`);
+    console.error(
+      `Платена сесия ${session.id}: не разпознах наръчник нито по метаданни, нито по продукт. ` +
+        'Липсва `stripeIds` в data/guides.ts?',
+    );
     return new Response('unknown guide', { status: 200 });
   }
 
