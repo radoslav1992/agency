@@ -4,6 +4,7 @@ import cloudflare from '@astrojs/cloudflare';
 import sitemap from '@astrojs/sitemap';
 
 import { SITE } from './src/data/site.mjs';
+import { FLAGS } from './src/data/flags.mjs';
 
 // Everything is prerendered at build time except `src/pages/api/contact.ts`,
 // which opts out with `export const prerender = false` and runs on the Worker.
@@ -14,6 +15,19 @@ export default defineConfig({
     imageService: 'compile',
     platformProxy: { enabled: true },
   }),
+  vite: {
+    /*
+     * Превключвателите влизат в пакета като литерали.
+     *
+     * Без това маршрутите на Worker-а четат `process.env` при заявка — вътре
+     * в workerd, където променливата от строежа не съществува — и остават
+     * включени, докато страниците изчезват. Половин изключено е по-лошо от
+     * включено: страницата я няма, а `/api/guide-file` още подава файла.
+     */
+    define: {
+      __GUIDES_ENABLED__: JSON.stringify(FLAGS.guides),
+    },
+  },
   integrations: [
     sitemap({
       /*
@@ -22,7 +36,10 @@ export default defineConfig({
        * `noindex` в самата страница не помага: sitemap и мета етикет, които
        * си противоречат, са объркан сигнал, а не по-силен.
        */
-      filter: (page) => !page.includes('/admin'),
+      /* Наръчниците изпадат и оттук при изключен превключвател. Sitemap,
+         който сочи към несъществуваща страница, е по-лош от липсващ ред:
+         търсачката отива, удря 404 и запомня, че картата лъже. */
+      filter: (page) => !page.includes('/admin') && (FLAGS.guides || !page.includes('/guides')),
       i18n: { defaultLocale: 'bg', locales: { bg: 'bg-BG', en: 'en' } },
       /**
        * Интеграцията изписва двойките за двата езика, но не и `x-default`.

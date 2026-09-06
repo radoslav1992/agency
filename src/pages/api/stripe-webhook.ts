@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { fulfil, guideOfSession, saleFrom } from '../../lib/guide-sale.ts';
 import { isPaid, verifyWebhook, type CheckoutSession } from '../../lib/stripe.ts';
 import { SITE } from '../../data/site.mjs';
+import { FLAGS } from '../../data/flags.mjs';
 
 /**
  * Stripe съобщава, че някой е платил.
@@ -24,6 +25,11 @@ import { SITE } from '../../data/site.mjs';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  /* Изключени наръчници → не приемаме и плащания. Stripe ще отбележи
+     доставката като неуспешна, което е верният сигнал: продажба не бива да
+     тече, докато магазинът е свален. */
+  if (!FLAGS.guides) return new Response('Not Found', { status: 404 });
+
   const env = locals.runtime?.env ?? ({} as Env);
   const secret = env.STRIPE_WEBHOOK_SECRET;
 

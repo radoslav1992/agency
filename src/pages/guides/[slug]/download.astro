@@ -18,8 +18,14 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { GUIDES, isSellable } from '../../../data/guides.ts';
 import { fulfil, guideOfSession, saleFrom } from '../../../lib/guide-sale.ts';
 import { isPaid, retrieveSession } from '../../../lib/stripe.ts';
+import { FLAGS } from '../../../data/flags.mjs';
 
 export const prerender = false;
+
+/* Тази страница се смята при заявка, значи оцелява в build-а и при изключен
+   превключвател — маршрутът съществува дори когато нищо не го сочи. Пази се
+   тук изрично. */
+if (!FLAGS.guides) return new Response(null, { status: 404 });
 
 const { slug } = Astro.params;
 const guide = GUIDES.find((item) => item.slug === slug);

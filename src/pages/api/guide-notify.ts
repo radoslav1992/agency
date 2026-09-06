@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { GUIDES } from '../../data/guides.ts';
+import { FLAGS } from '../../data/flags.mjs';
 
 /**
  * Записване за известие, когато наръчник излезе.
@@ -16,6 +17,8 @@ export const prerender = false;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
+  if (!FLAGS.guides) return new Response('Not Found', { status: 404 });
+
   const form = await request.formData().catch(() => null);
   if (!form) return new Response('Bad Request', { status: 400 });
 

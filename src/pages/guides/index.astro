@@ -19,6 +19,12 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { GUIDES, isSellable, priceLabel } from '../../data/guides.ts';
 import { coverOf } from '../../lib/guide-cover.ts';
 import { SITE } from '../../data/site.mjs';
+import { FLAGS } from '../../data/flags.mjs';
+
+/* Изключен превключвател → страницата НЕ се построява изобщо. Проверено:
+   предрендерирана страница, която върне 404, не се записва във `dist`, тоест
+   адресът връща истинска 404, а не скрита страница с работещ бутон „Купи“. */
+if (!FLAGS.guides) return new Response(null, { status: 404 });
 
 const shelf = GUIDES.map((guide) => ({
   guide,
