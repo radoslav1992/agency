@@ -18,6 +18,16 @@ interface Props {
   canonical?: string;
   ogType?: 'website' | 'article';
   noindex?: boolean;
+  /**
+   * Картинката при споделяне, ако общата не върши работа. Път от корена,
+   * напр. `/og/guide-ai-receptionist.png`.
+   *
+   * Има я заради продуктите. Споделена връзка към наръчник за 39 € показваше
+   * общата картинка на студиото — тоест същото, което показва и страницата за
+   * контакт. За страница, която продава книга, корицата е самата оферта, а
+   * най-често показваната ѝ версия е точно тази в чуждата емисия.
+   */
+  ogImage?: string;
 }
 
 const lang = localeOf(Astro.currentLocale);
@@ -32,13 +42,14 @@ const {
   canonical,
   ogType = 'website',
   noindex = false,
+  ogImage: ogImageOverride,
 } = Astro.props;
 
 /* Името на студиото следва езика — иначе английските подстраници
    завършваха с „— Кова студио“. */
 const pageTitle = title ? `${title} — ${studio.name}` : m.title;
 const canonicalUrl = new URL(canonical ?? Astro.url.pathname, Astro.site ?? Astro.url.origin);
-const ogImage = new URL('/og.png', Astro.site ?? Astro.url.origin);
+const ogImage = new URL(ogImageOverride ?? '/og.png', Astro.site ?? Astro.url.origin);
 
 /**
  * `hreflang` за двата езика плюс `x-default`. Каноничният адрес на всяка
@@ -113,7 +124,13 @@ const origin = Astro.site ?? Astro.url.origin;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImage} />
+    {/* Размерите спестяват на четеца едно теглене, за да разбере как да
+        подреди картата — без тях някои показват връзката без картинка,
+        докато я свалят. */}
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
 
     <link rel="alternate" type="application/rss+xml" title={`${t.layout.blogTitle} — ${studio.name}`} href="/rss.xml" />
     <slot name="head" />
