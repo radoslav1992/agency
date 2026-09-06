@@ -70,6 +70,7 @@ const structuredData = {
   title={guide.title}
   description={`${guide.subtitle}. ${guide.short}`}
   canonical={`/guides/${guide.slug}/`}
+  ogImage={guide.ogImage}
 >
   <Fragment slot="head">
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
