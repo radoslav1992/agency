@@ -22,9 +22,14 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { GUIDES, isSellable, priceLabel, type Guide } from '../../../data/guides.ts';
 import { coverOf } from '../../../lib/guide-cover.ts';
 import { SITE } from '../../../data/site.mjs';
+import { FLAGS } from '../../../data/flags.mjs';
 
+/* Изключен превключвател → нула пътища, тоест нито една страница. Адресът
+   връща 404 сам, без ред код, който да го пази. */
 export const getStaticPaths = (() =>
-  GUIDES.map((guide) => ({ params: { slug: guide.slug }, props: { guide } }))) satisfies GetStaticPaths;
+  FLAGS.guides
+    ? GUIDES.map((guide) => ({ params: { slug: guide.slug }, props: { guide } }))
+    : []) satisfies GetStaticPaths;
 
 const { guide } = Astro.props as { guide: Guide };
 const cover = coverOf(guide.cover);

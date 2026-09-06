@@ -2,6 +2,8 @@
  * Site-wide constants. Imported both by `astro.config.mjs` (hence `.mjs`)
  * and by components/pages.
  */
+import { FLAGS } from './flags.mjs';
+
 export const SITE = {
   name: 'Кова студио',
   shortName: 'Кова',
@@ -144,8 +146,9 @@ export const NAV_BY_LOCALE = {
     { label: 'Услуги', href: '/services/' },
     { label: 'AI агенти', href: '/agents/' },
     /* Наръчниците са продукт, не съдържание — затова стоят при агентите, а
-       не при блога. Само на български: изданието е българско. */
-    { label: 'Наръчници', href: '/guides/' },
+       не при блога. Само на български: изданието е българско.
+       Изпада от менюто, когато `GUIDES_ENABLED=false` при строежа. */
+    ...(FLAGS.guides ? [{ label: 'Наръчници', href: '/guides/' }] : []),
     /** Временно „Проекти“ — връща се на „Казуси“ при първия външен казус. */
     { label: 'Проекти', href: '/projects/' },
     { label: 'Анализатор', href: '/analyzer/' },

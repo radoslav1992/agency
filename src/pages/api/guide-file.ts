@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { GUIDES } from '../../data/guides.ts';
+import { FLAGS } from '../../data/flags.mjs';
 import { verifyDownload } from '../../lib/guide-download.ts';
 
 /**
@@ -16,6 +17,8 @@ import { verifyDownload } from '../../lib/guide-download.ts';
 export const prerender = false;
 
 export const GET: APIRoute = async ({ url, locals }) => {
+  if (!FLAGS.guides) return new Response('Not Found', { status: 404 });
+
   const env = locals.runtime?.env ?? ({} as Env);
   const secret = env.DOWNLOAD_SECRET;
   const bucket = env.GUIDE_FILES;
