@@ -12,6 +12,16 @@ export { PROJECTS_ON_HOME, domainOf, initialOf, slugOf } from './projects.ts';
 
 export const PROJECTS: Project[] = [
   {
+    name: 'Rech BG',
+    url: 'https://rechbg.com/',
+    tagline:
+      'A Bulgarian AI studio for text-to-speech audio, two-voice podcasts and talking-avatar videos. Choose a voice and emotion, edit captions and export an MP4 ready for social media.',
+    tags: ['AI', 'Audio & video', 'SaaS'],
+    own: true,
+    year: '2026',
+    alt: 'The Rech BG homepage featuring its Bulgarian headline and a sample talking avatar',
+  },
+  {
     name: 'Saprichastie — Pazardzhik',
     url: 'https://saprichastie.org/',
     tagline:

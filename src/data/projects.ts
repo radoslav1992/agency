@@ -32,7 +32,7 @@ export type Project = {
 };
 
 /** Колко проекта се показват на началната страница. */
-export const PROJECTS_ON_HOME = 6;
+export const PROJECTS_ON_HOME = 4;
 
 /** Домейнът без протокол и без завършваща наклонена черта — за показване. */
 export function domainOf(project: Project): string {
@@ -53,6 +53,16 @@ export function slugOf(project: Project): string {
 }
 
 export const PROJECTS: Project[] = [
+  {
+    name: 'Реч БГ',
+    url: 'https://rechbg.com/',
+    tagline:
+      'AI студио на български за аудио от текст, подкасти с два гласа и видеа с говорещ аватар. С избор на глас и емоция, редактиране на субтитри и готов MP4 за социалните мрежи.',
+    tags: ['AI', 'Аудио и видео', 'SaaS'],
+    own: true,
+    year: '2026',
+    alt: 'Началната страница на Реч БГ със заглавие „Вашите идеи. С глас. С лице. С живот.“ и примерен говорещ аватар',
+  },
   {
     name: 'Съпричастие — Пазарджик',
     url: 'https://saprichastie.org/',

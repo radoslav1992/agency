@@ -3,6 +3,9 @@ import '@fontsource-variable/onest';
 import '../styles/global.css';
 import '../styles/startup.css';
 import '../styles/inner-pages.css';
+import '../styles/aleric-source.css';
+import '../styles/aleric-swiper.css';
+import '../styles/aleric-kova.css';
 
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -159,8 +162,10 @@ const pageKind =
     <Footer />
     <CookieConsent />
     <VoiceAgent />
+    <script is:inline src="/design/aleric/motion.js" defer></script>
+    <script is:inline src="/design/aleric/swiper.js" defer></script>
     <script>
-      import '../scripts/inner-page-motion';
+      import '../scripts/template-motion';
     </script>
   </body>
 </html>

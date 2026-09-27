@@ -1,0 +1,37 @@
+---
+import { SITE } from '../data/site.mjs';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import Button from './TemplateButton.astro';
+const lang = localeOf(Astro.currentLocale);
+const en = lang === 'en';
+---
+
+<section class="al-template tp-cta-area p-relative pb-80 pt-100 tp-bg-common-white-2 fix">
+  <div class="tp-cta-wd-shape" aria-hidden="true">
+    <svg viewBox="0 0 733 448" fill="none">
+      <path d="M31.5 466.5L259 55.5L456 222L772.5 34" stroke="white" stroke-width="71" />
+    </svg>
+  </div>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-8">
+        <div class="tp-cta-wd-content text-center p-relative mb-30">
+          <p class="fs-18 mb-10" data-al-reveal>
+            {en ? 'Have a project in mind?' : 'Имаш идея за проект?'}
+          </p>
+          <h2 class="tp-footer-top-title text-uppercase fw-600 mb-40" data-al-reveal>
+            {en ? 'Let’s Talk' : 'Да поговорим'}
+          </h2>
+          <a class="al-cta-email" href={`mailto:${SITE.email}`}>
+            {SITE.email}
+          </a>
+          <div class="tp-rounded-btn-wrap tp-cta-sa-btn text-lg-end mb-30">
+            <Button href={localised('/contact/', lang)} round>
+              {en ? 'Start the journey' : 'Да започнем'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

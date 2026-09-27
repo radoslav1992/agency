@@ -1,0 +1,114 @@
+---
+import { Image } from 'astro:assets';
+import portrait from '../assets/hero-portrait.png';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { owner } from '../i18n/content.ts';
+import { SITE } from '../data/site.mjs';
+import Button from './TemplateButton.astro';
+const lang = localeOf(Astro.currentLocale);
+const en = lang === 'en';
+const who = owner(lang);
+const lines = en
+  ? ['We Build', 'Your Next', 'Chapter.']
+  : ['Създаваме', 'следващата', 'ти стъпка.'];
+---
+
+<section
+  class="al-template tp-hero-area tp-hero-sa-spacing tp-bg-theme-primary p-relative fix"
+  aria-labelledby="hero-title"
+>
+  <img class="al-hero-corner" src="/design/aleric/hero-corner.svg" alt="" />
+  <div class="container-fluid container-1800">
+    <div class="row align-items-center">
+      <div class="col-lg-1 col-md-1 d-none d-md-block">
+        <div class="al-social-rail">
+          <span>{en ? 'Follow' : 'Последвай'} ↓</span>
+          <a href={SITE.owner.linkedin} target="_blank" rel="noopener" aria-label="LinkedIn">
+            in
+          </a>
+          <a href={`mailto:${SITE.email}`} aria-label={en ? 'Email Kova' : 'Пиши на Кова'}>
+            @
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-7 col-md-11">
+        <div class="tp-hero-content ml-75">
+          <div class="tp-hero-sa-subtitle mb-35">
+            <div class="tp-hero-sa-subtitle-inner">
+              <span>
+                {en ? 'Create. Automate.' : 'Създавай. Автоматизирай.'}
+                <br />
+                {en ? 'Grow.' : 'Развивай се.'}
+              </span>
+              <span class="al-measure" aria-hidden="true"></span>
+            </div>
+          </div>
+          <h1
+            id="hero-title"
+            class="tp-hero-sa-title fs-100 fs-xl-80 fs-sm-60 fs-xs-40 lh-1 mb-45 al-hero-title"
+          >
+            {lines.map((line, i) => (
+              <span class="al-title-line">
+                <span style={`--line:${i}`}>{line}</span>
+              </span>
+            ))}
+          </h1>
+          <div class="tp-hero-sa-bottom-content">
+            <div class="row">
+              <div class="col-lg-2 col-md-3 d-none d-md-inline-block">
+                <img
+                  class="al-hero-star"
+                  src="/design/aleric/service-1.svg"
+                  alt=""
+                  width="120"
+                  height="120"
+                />
+              </div>
+              <div class="col-lg-10 col-md-9">
+                <div class="tp-hero-sa-customer-text ml-35">
+                  <p class="fs-20 lh-28 mb-60">
+                    {en
+                      ? 'Websites that turn visits into conversations. AI agents and automations that take the routine off your hands.'
+                      : 'Сайтове, които превръщат посещенията в разговори. AI агенти и автоматизации, които поемат рутината вместо теб.'}
+                  </p>
+                  <div class="tp-hero-sa-btn-wrap d-flex align-items-center">
+                    <div class="tp-hero-sa-btn mb-20 mr-40">
+                      <Button href={localised('/booking/', lang)}>
+                        {en ? 'Start the journey' : 'Да започнем'}
+                      </Button>
+                    </div>
+                    <p class="al-hero-note mb-20">
+                      {en ? 'Directly with the engineer.' : 'Директно с инженера.'}
+                      <br />
+                      <strong>
+                        {en ? 'A free first conversation.' : 'Безплатен първи разговор.'}
+                      </strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="tp-hero-sa-thumb mt-90 p-relative">
+          <div class="al-hero-portrait" data-al-tilt>
+            <Image
+              src={portrait}
+              alt={who.name}
+              widths={[480, 720, 960]}
+              sizes="(max-width: 991px) 75vw, 34vw"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </div>
+          <span class="al-hero-wedges" aria-hidden="true">
+            <i></i>
+            <i></i>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

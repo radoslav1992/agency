@@ -16,127 +16,47 @@ const links = [...nav(lang).filter((item) => item.href !== '/'), cta(lang)];
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer">
-  <div class="container grid">
-    <div class="col col--brand">
-      <p class="brand">
-        {/* Декоративна: името на студиото стои като текст веднага след нея. */}
-        <BrandMark class="brand__mark" size={26} loading="lazy" />
-        <span class="brand__name">{studio.name}</span>
-      </p>
-      <p class="muted">{legalName(lang)}</p>
-      <p class="muted">{where.full} {t.footer.reach}</p>
+<footer class="al-template al-footer tp-bg-common-black">
+  <div class="container">
+    <div class="al-footer-top">
+      <a class="al-footer-brand" href={localised('/', lang)}>
+        <BrandMark size={62} loading="lazy" />
+        <span>{studio.name}</span>
+      </a>
+      <a class="al-footer-invite" href={`mailto:${SITE.email}`}>
+        {SITE.email} <span aria-hidden="true">↗</span>
+      </a>
     </div>
-
-    <div class="col">
-      <p class="col__title">{t.footer.contactTitle}</p>
-      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-      <a href={tel.href}>{tel.label}</a>
-      <a href={SITE.owner.linkedin} rel="me noopener" target="_blank">LinkedIn</a>
+    <div class="al-footer-grid">
+      <div>
+        <h2>{where.full}</h2>
+        <p>{legalName(lang)}</p>
+        <p>{t.footer.reach}</p>
+        <a href={tel.href}>{tel.label}</a>
+        <a href={SITE.owner.linkedin} rel="me noopener" target="_blank">
+          LinkedIn ↗
+        </a>
+      </div>
+      <nav aria-label={t.footer.nav}>
+        <h2>{t.footer.navTitle}</h2>
+        {links.map((item) => (
+          <a href={localised(item.href, lang)}>{item.label}</a>
+        ))}
+      </nav>
+      <div>
+        <h2>{t.footer.termsTitle}</h2>
+        <a href={localised('/terms/', lang)}>{t.footer.terms}</a>
+        <a href={localised('/privacy/', lang)}>{t.footer.privacy}</a>
+        <a href={localised('/cookies/', lang)}>{t.footer.cookies}</a>
+        <p>{t.footer.promise}</p>
+      </div>
     </div>
-
-    <nav class="col" aria-label={t.footer.nav}>
-      <p class="col__title">{t.footer.navTitle}</p>
-      {links.map((item) => <a href={localised(item.href, lang)}>{item.label}</a>)}
-    </nav>
-
-    <div class="col">
-      <p class="col__title">{t.footer.termsTitle}</p>
-      <a href={localised('/terms/', lang)}>{t.footer.terms}</a>
-      <a href={localised('/privacy/', lang)}>{t.footer.privacy}</a>
-      <a href={localised('/cookies/', lang)}>{t.footer.cookies}</a>
-      <p class="muted">{t.footer.promise}</p>
+    <div class="al-footer-bottom">
+      <span>
+        © {year} {studio.name}
+        {t.footer.rights}
+      </span>
+      <span>{lang === 'en' ? 'Made with purpose.' : 'Създадено с цел.'}</span>
     </div>
-  </div>
-
-  <div class="container bottom">
-    <p class="muted">© {year} {studio.name}{t.footer.rights}</p>
   </div>
 </footer>
-
-<style>
-  .site-footer {
-    border-top: 1px solid var(--line);
-    background: var(--bg-sand);
-  }
-
-  .grid {
-    padding-block: 48px 28px;
-    display: grid;
-    grid-template-columns: 1.3fr 1fr 1fr 1.2fr;
-    gap: 32px;
-  }
-
-  .col {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 9px;
-    font-size: 14px;
-  }
-
-  .col__title {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ink);
-    margin: 0 0 4px;
-  }
-
-  .col a {
-    color: var(--ink-muted);
-    transition: color 0.16s ease;
-  }
-
-  .col a:hover {
-    color: var(--ink);
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 4px;
-  }
-
-  /* Логото си носи заобления квадрат и цвета — тук само размерът. */
-  .brand__mark {
-    width: 26px;
-    height: 26px;
-    flex: none;
-    display: block;
-  }
-
-  .brand__name {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 15px;
-  }
-
-  .muted {
-    font-size: 13.5px;
-    line-height: 1.55;
-    color: var(--ink-subtle);
-    margin: 0;
-  }
-
-  .bottom {
-    border-top: 1px solid var(--line);
-    padding-block: 18px;
-  }
-
-  @media (max-width: 900px) {
-    .grid {
-      grid-template-columns: repeat(2, 1fr);
-      padding-block: 40px 24px;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .grid {
-      grid-template-columns: 1fr;
-      gap: 28px;
-    }
-  }
-</style>

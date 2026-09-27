@@ -1,19 +1,35 @@
-# Kova — Startup Agency light design
+# Kova — Aleric Startup Agency Light
 
-Adapted from the supplied Aleric `index-startup-agency-light.html` template.
+The active home pages use `TemplateHome.astro` and `TemplateHero.astro`, ported from the supplied `index-startup-agency-light.html`. This supersedes the initial adaptation that reused the old home components.
 
-- Warm apricot hero (`#f6cba9`) with Kova's existing orange accent (`#e2542b`) and unchanged logo.
-- Split hero, circular portrait with pointer tilt, line entrances, geometric ornaments, moving dark text band, horizontal service cards, dark three-step process, staggered project gallery, technology tiles and large closing CTA.
-- Template service SVGs, decorative shapes, process ring and Clash Display fonts live in `public/design/aleric`. English headings use Clash Display; Bulgarian uses the existing self-hosted Onest font for Cyrillic support.
-- `StartupHome.astro` is shared by both locales. Existing service details, pricing, agent catalog, booking/contact routes, SEO metadata and consent controls remain in their original components/routes.
-- `startup-motion.ts` adapts the template's fades, text reveal and Atropos-style tilt to browser APIs. No template demo scripts or unrelated dependencies are loaded. Animation respects reduced-motion preferences, touch devices retain native scrolling, and content stays visible without JavaScript.
-- Shared styling is in `startup.css`. The full theme archive, demo photography placeholders and unused theme assets are not deployed.
+## Template structure
 
-## Inner pages
+- Integrated apricot header/hero, vertical social links, right-aligned subtitle, oversized three-line heading, circular founder portrait, original geometric icons and divided measurements.
+- Dark technology strip, three-column service carousel, offset about collage, circular action buttons, dark process section, staggered portfolio and circular technology tiles.
+- Editorial journal, oversized centered closing section and rebuilt dark footer. Kova's own content replaces demo claims, stock placeholders, fictitious customers and testimonials.
+- Inner pages use white editorial title areas, divided columns, portfolio/agent galleries, centered contact form, journal rows and the same typography and footer. Existing booking, analyzer, legal, guide and admin functionality remains intact.
 
-- `PageHero.astro` shares the apricot title area and localized breadcrumbs across service, agent, project, contact, booking, analyzer, journal, guide shelf, research and legal pages. Article titles use the same component; guide product pages retain their split cover hero.
-- `inner-pages.css` extends the template typography, geometric service icons, square cards, dark process sections, cream pricing, orange accents and closing calls to action to every public route in both available languages, including download and 404 states. The admin layout uses the same branding without marketing scripts.
-- `inner-page-motion.ts` progressively animates cards and image panels on entry, respects reduced motion, and never changes form or calendar state.
-- Existing text, prices, URLs, form names/actions, booking logic, consent controls and server endpoints are preserved.
+## Styles and assets
 
-Validation: production build and Astro type check; all 28 generated HTML routes at 1440, 768 and 320 pixels; mobile navigation, contact selection and mocked submission, analyzer error handling, and the Bulgarian/English booking calendar through date/time selection to the confirmation form against local D1. Admin and download fallback views were also checked. No bookings, messages or purchases were created. External voice and payment services were not exercised end to end.
+`aleric-source.css` contains the used Bootstrap, spacing and component rules from the supplied archive, scoped to `.al-template`. `aleric-kova.css` supplies the brand colors, content adjustments and responsive layouts. Primary green becomes apricot (`#f6b784`); the secondary accent is Kova orange. The existing logo is retained.
+
+English headings use the original template's Space Grotesk, self-hosted with its OFL license. Bulgarian retains the self-hosted Onest font for Cyrillic support. All project screenshots and founder photographs are Kova's; the original archive's placeholder images are not published.
+
+Rech BG is included in Bulgarian and English using the user's supplied homepage screenshot. Its description is based on the current `rech-bg/src/Landing.tsx`: Bulgarian audio, two-voice podcasts, talking avatars and captioned video exports.
+
+## Motion
+
+`public/design/aleric/motion.js` and `swiper.js` are the archive's original GSAP/ScrollTrigger bundle and Swiper library, retaining their license headers. `template-motion.ts` adapts the original reveal, scrubbed text, pinned portfolio-title scale/fade, perspective project reveals and 1/2/3-slide carousel settings to Astro components. Circular buttons respond to the pointer and the portrait tilts.
+
+Reduced-motion preferences disable the scroll animations and reduce slider transition time, including when the preference changes live. Native document scrolling, keyboard navigation, anchors and forms are preserved. Core content remains readable if JavaScript is unavailable. No external template demo scripts, forms or tracking endpoints are used.
+
+## Validation
+
+- Production build and Astro type check.
+- All 28 generated HTML routes at desktop, tablet and 320px widths; one main heading, mobile navigation and no unintended horizontal overflow.
+- Contact selection/submission and analyzer failure handling with mocked responses; no messages sent.
+- Bulgarian and English booking date/time selection through to the confirmation form against local D1; no booking created.
+- Admin and download fallback states; local GSAP and Swiper loading, carousel navigation, pointer interactions and live reduced-motion changes.
+- Rech BG links and supplied image on the home, Bulgarian project and English project pages.
+
+External voice, payment and message-delivery providers were not exercised end to end.

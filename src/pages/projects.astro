@@ -30,6 +30,20 @@ const PILOT_EXAMPLES = [
     </Fragment>
   </PageHero>
   <div class="container wrap">
+
+
+    <section class="block" aria-labelledby="own-products">
+      <h2 class="block__title" id="own-products">Проекти</h2>
+      <p class="block__note">
+        Повечето от тях са поръчани от клиенти; тези с етикет „Собствен продукт“ са мои. И в
+        двата случая проектът минава през мен от архитектурата и интерфейса до пускането и
+        ежедневната работа на системата.
+      </p>
+      <div class="grid">
+        {PROJECTS.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+
     <section class="pilot" id="pilot" aria-labelledby="pilot-title">
       <h2 class="pilot__title" id="pilot-title">Пилотна програма за компании</h2>
       <p class="pilot__body">
@@ -46,18 +60,6 @@ const PILOT_EXAMPLES = [
         резултатите като клиентски казус, но само след твоето изрично одобрение.
       </p>
       <a class="btn btn--primary" href="/contact/">Заяви място в пилотната програма →</a>
-    </section>
-
-    <section class="block" aria-labelledby="own-products">
-      <h2 class="block__title" id="own-products">Проекти</h2>
-      <p class="block__note">
-        Повечето от тях са поръчани от клиенти; двата с етикет „Собствен продукт“ са мои. И в
-        двата случая проектът минава през мен от архитектурата и интерфейса до пускането и
-        ежедневната работа на системата.
-      </p>
-      <div class="grid">
-        {PROJECTS.map((project) => <ProjectCard project={project} />)}
-      </div>
     </section>
   </div>
 

@@ -33,6 +33,20 @@ const PILOT_EXAMPLES = [
     </Fragment>
   </PageHero>
   <div class="container wrap">
+
+
+    <section class="block" aria-labelledby="own-products">
+      <h2 class="block__title" id="own-products">Projects</h2>
+      <p class="block__note">
+        Most were commissioned by clients; those marked "Own product" are mine. In either case
+        the project goes through me — from the architecture and the interface to launch and the
+        day-to-day running of the system.
+      </p>
+      <div class="grid">
+        {PROJECTS.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+
     <section class="pilot" id="pilot" aria-labelledby="pilot-title">
       <h2 class="pilot__title" id="pilot-title">A pilot programme for companies</h2>
       <p class="pilot__body">
@@ -49,18 +63,6 @@ const PILOT_EXAMPLES = [
         with your explicit approval.
       </p>
       <a class="btn btn--primary" href="/en/contact/">Claim a pilot place →</a>
-    </section>
-
-    <section class="block" aria-labelledby="own-products">
-      <h2 class="block__title" id="own-products">Projects</h2>
-      <p class="block__note">
-        Most were commissioned by clients; the two marked "Own product" are mine. In either case
-        the project goes through me — from the architecture and the interface to launch and the
-        day-to-day running of the system.
-      </p>
-      <div class="grid">
-        {PROJECTS.map((project) => <ProjectCard project={project} />)}
-      </div>
     </section>
   </div>
 

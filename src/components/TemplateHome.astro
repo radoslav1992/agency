@@ -1,0 +1,379 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Hero from './TemplateHero.astro';
+import Button from './TemplateButton.astro';
+import Cta from './TemplateCta.astro';
+import portrait from '../assets/hero-portrait.png';
+import stage from '../assets/stage-talk.png';
+import { href as localised, localeOf } from '../i18n/index.ts';
+import { content, projects as projectsFor, owner, ui } from '../i18n/content.ts';
+import { getPosts, formatDate } from '../lib/posts.ts';
+import { PROJECTS_ON_HOME } from '../data/projects';
+const lang = localeOf(Astro.currentLocale);
+const en = lang === 'en';
+const t = ui(lang);
+const { ABOUT } = content(lang);
+const who = owner(lang);
+const { PROJECTS } = projectsFor(lang);
+const posts = en ? [] : (await getPosts()).slice(0, 3);
+const shots = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/projects/*.{png,jpg,jpeg,webp,avif}',
+  { eager: true },
+);
+function shotFor(url: string) {
+  const slug = url
+    .replace(/^https?:\/\//, '')
+    .replace(/\/$/, '')
+    .replace(/\.[^.]+$/, '');
+  return Object.entries(shots).find(
+    ([path]) =>
+      path
+        .split('/')
+        .pop()
+        ?.replace(/\.\w+$/, '') === slug,
+  )?.[1].default;
+}
+const projects = PROJECTS.filter((p) => shotFor(p.url)).slice(0, PROJECTS_ON_HOME);
+const services = en
+  ? [
+      [
+        'Websites & digital experiences',
+        'A clear, fast website built around your business. Connect an AI agent from day one, or add it when you need it.',
+        '/services/#pricing',
+      ],
+      [
+        'AI agents',
+        'Voice, chat, email and documents. An agent with a defined job, your knowledge, and a clear handover to a person.',
+        '/agents/',
+      ],
+      [
+        'Automations',
+        'Connect your tools and automate repetitive tasks, with traceable results and human approval where it matters.',
+        '/services/',
+      ],
+      [
+        'Custom software',
+        'Internal systems and tools that fit how your team actually works. Built, documented and handed over to you.',
+        '/services/',
+      ],
+    ]
+  : [
+      [
+        'Сайтове с ясна цел',
+        'Бърз и красив сайт, създаден за твоя бизнес. С AI агент от първия ден или с възможност да го добавиш по-късно.',
+        '/services/#pricing',
+      ],
+      [
+        'AI агенти',
+        'Глас, чат, имейли и документи. Агент с конкретна задача, твоите материали и ясна граница кога да включи човек.',
+        '/agents/',
+      ],
+      [
+        'Автоматизации',
+        'Свързани системи и автоматизирана рутина. Проследими резултати и човешко одобрение там, където е нужно.',
+        '/services/',
+      ],
+      [
+        'Софтуер по мярка',
+        'Вътрешни системи и инструменти за начина, по който работи екипът ти. С документация и пълен достъп до кода.',
+        '/services/',
+      ],
+    ];
+const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Supabase'];
+---
+
+<Hero />
+<section class="al-template al-brands tp-bg-common-black">
+  <div class="container">
+    <p class="al-brands__title">{en ? 'The tools behind the work' : 'Технологиите зад работата'}</p>
+    <div class="al-brands__names">
+      {technologies.map((name) => (
+        <span>{name}</span>
+      ))}
+    </div>
+  </div>
+</section>
+<section class="al-template tp-service-area pt-140 pb-50">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-5">
+        <p class="al-section-label" data-al-reveal>
+          {en ? 'Our smart solutions' : 'Решения за твоя бизнес'}
+        </p>
+      </div>
+      <div class="col-lg-7">
+        <h2 class="fs-50 fs-lg-40 fs-xs-30 lh-120-per" data-al-ink>
+          {en
+            ? 'From your first website to the systems behind your next stage of growth.'
+            : 'От първия сайт до системите, с които бизнесът ти расте.'}
+        </h2>
+      </div>
+    </div>
+    <span class="al-measure al-measure--wide mt-40 mb-30" aria-hidden="true"></span>
+    <p class="fs-25 fw-500 mb-50">
+      {en
+        ? 'A clear scope. Your own code.\nA person who knows your project.'
+        : 'Ясен обхват. Твой код.\nЧовек, който познава проекта ти.'}
+    </p>
+    <div
+      class="swiper al-service-slider"
+      data-al-slider
+      tabindex="0"
+      role="region"
+      aria-label={en ? 'Services' : 'Услуги'}
+    >
+      <div class="swiper-wrapper">
+        {services.map((s, i) => (
+          <article class="swiper-slide tp-service-sa-item tp-bg-common-white-2" data-al-reveal>
+            <img
+              class="al-service-icon mb-30"
+              src={`/design/aleric/service-${i + 1}.svg`}
+              alt=""
+              width="60"
+              height="60"
+            />
+            <h3 class="tp-service-sa-item-title mb-20">{s[0]}</h3>
+            <p class="tp-service-sa-item-text mb-130">{s[1]}</p>
+            <span class="al-measure al-measure--wide mb-10" aria-hidden="true"></span>
+            <a class="al-service-link" href={localised(s[2], lang)}>
+              {en ? 'Explore service' : 'Виж услугата'} <span aria-hidden="true">↗</span>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+    <div class="al-slider-dots"></div>
+  </div>
+</section>
+<section id="about" class="al-template tp-about-area pt-120 pb-110 p-relative">
+  <div class="container">
+    <div class="row">
+      <div class="col-xl-8 col-lg-10">
+        <h2 class="fs-50 fs-sm-35 lh-120-per mb-50" data-al-ink>
+          {ABOUT.heading}
+        </h2>
+        <div class="row">
+          <div class="col-lg-6"></div>
+          <div class="col-lg-6">
+            <p class="fs-18 mb-50" data-al-reveal>
+              {ABOUT.paragraphs[0]}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4 col-lg-2">
+        <div class="al-about-shapes" aria-hidden="true">
+          <i></i>
+          <i></i>
+        </div>
+      </div>
+    </div>
+    <div class="row align-items-center al-about-collage">
+      <div class="col-lg-4 col-md-6">
+        <div class="al-about-stage" data-al-reveal>
+          <Image
+            src={stage}
+            alt={en ? 'Radoslav speaking at a conference' : 'Радослав говори на конференция'}
+            widths={[400, 600, 800]}
+            sizes="(max-width: 767px) 90vw, 32vw"
+            loading="lazy"
+          />
+        </div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="tp-about-sa-btn">
+          <div class="tp-about-expreance d-flex align-items-end mb-55">
+            <p class="fs-100 lh-1 mb-0">{ABOUT.stats[0].value}</p>
+            <p class="fs-18 ml-20">{ABOUT.stats[0].label}</p>
+          </div>
+          <Button href={localised('/contact/', lang)} round>
+            {en ? 'Meet your engineer' : 'Запознай се с инженера'}
+          </Button>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="al-about-portrait" data-al-tilt>
+          <Image
+            src={portrait}
+            alt={who.name}
+            widths={[400, 600, 800]}
+            sizes="(max-width: 767px) 90vw, 32vw"
+            loading="lazy"
+          />
+          <span>
+            {who.name}
+            <small>{who.role}</small>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="al-about-detail">
+      {ABOUT.paragraphs.slice(1).map((p) => (
+        <p>{p}</p>
+      ))}
+      <div class="al-skill-list">
+        {ABOUT.skills.map((skill) => (
+          <span>{skill}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+<section class="al-template tp-process-area pt-100 pb-60 p-relative tp-bg-common-black">
+  <div class="container">
+    <div class="row align-items-end">
+      <div class="col-lg-6">
+        <h2 class="tp-text-common-white fs-70 fs-md-52 lh-1" data-al-reveal>
+          {en ? 'From idea.\nTo launch.' : 'От идея.\nДо резултат.'}
+        </h2>
+      </div>
+      <div class="col-lg-6">
+        <p class="text-lg-end">
+          <a class="al-light-link" href={localised('/booking/', lang)}>
+            {en ? 'Ready to start? Let’s talk ↗' : 'Готов ли си? Да поговорим ↗'}
+          </a>
+        </p>
+      </div>
+    </div>
+    <span
+      class="al-measure al-measure--wide al-measure--dark mt-30 mb-60"
+      aria-hidden="true"
+    ></span>
+    <ol class="al-process-grid">
+      {t.journey.steps.map((step) => (
+        <li data-al-reveal>
+          <div class="al-process-number">
+            <img src="/design/aleric/process-circle.png" alt="" />
+            <span>{step.n}</span>
+          </div>
+          <h3>{step.title}</h3>
+          <p>{step.kicker}</p>
+          <p>{step.body}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+<section id="proof" class="al-template tp-portfolio-area portfolio__area pt-110 pb-135 p-relative">
+  <div class="container">
+    <header class="al-work-heading">
+      <span>{en ? 'Selected' : 'Избрани'}</span>
+      <h2 class="tp-portfolio-sa-title text-uppercase" data-al-work-title>
+        {en ? 'Work' : 'Проекти'}
+      </h2>
+      <span>({String(projects.length).padStart(2, '0')})</span>
+    </header>
+    <div class="al-portfolio-grid">
+      {projects.map((p) => (
+        <article class="tp-portfolio-sa-item" data-al-reveal>
+          <a
+            class="tp-portfolio-sa-thumb al-project-image"
+            href={p.url}
+            target="_blank"
+            rel="noopener"
+            aria-label={p.name}
+          >
+            <Image
+              src={shotFor(p.url)!}
+              alt={p.name}
+              widths={[500, 750, 1100]}
+              sizes="(max-width: 767px) 90vw, 43vw"
+              loading="lazy"
+            />
+            <span class="al-view-project">{en ? 'View project' : 'Виж проекта'} ↗</span>
+          </a>
+          <h3 class="fs-25 mt-25 mb-15">
+            <a href={p.url} target="_blank" rel="noopener">
+              {p.name}
+            </a>
+          </h3>
+          <span class="tp-portfolio-sa-item-tag tp-bg-common-white-2">
+            {p.own ? t.products.own : t.products.client}
+          </span>
+        </article>
+      ))}
+    </div>
+    <div class="al-work-more">
+      <Button href={localised('/projects/', lang)} round>
+        {en ? 'All projects' : 'Всички проекти'}
+      </Button>
+    </div>
+  </div>
+</section>
+<section class="al-template tp-techonolgy-area pt-100 pb-100 tp-bg-common-white-2">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-6">
+        <h2 class="fs-70 fs-md-52 lh-1 mb-40" data-al-ink>
+          {en ? 'Your tools.\nWorking together.' : 'Твоите инструменти.\nВ общ ритъм.'}
+        </h2>
+      </div>
+      <div class="col-lg-6">
+        <p class="fs-20 mb-50">
+          {en
+            ? 'Your website, customer conversations and internal systems should work together. We connect the right tools around your process.'
+            : 'Сайтът, разговорите с клиенти и вътрешните системи трябва да работят заедно. Свързваме правилните инструменти около твоя процес.'}
+        </p>
+        <div class="al-tech-grid">
+          {technologies.map((name, i) => (
+            <div data-al-reveal>
+              <img
+                src={`/design/aleric/service-${(i % 4) + 1}.svg`}
+                alt=""
+                width="36"
+                height="36"
+              />
+              <strong>{name}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{!en && (
+  <section class="al-template al-analyzer-band">
+    <div class="container">
+      <span>Безплатен анализ на сайт</span>
+      <h2>Какво виждат Google и AI в сайта ти?</h2>
+      <Button href="/analyzer/" round>
+        Провери сайта
+      </Button>
+    </div>
+  </section>
+)}
+{posts.length > 0 && (
+  <section class="al-template pt-120 pb-110">
+    <div class="container al-journal">
+      <div>
+        <p class="al-section-label">Блог</p>
+        <h2 class="fs-70 lh-1" data-al-reveal>
+          Идеи.
+          <br />
+          Опит.
+          <br />
+          Практика.
+        </h2>
+        <Button href="/blog/" round>
+          Всички публикации
+        </Button>
+      </div>
+      <div>
+        {posts.map((post) => (
+          <article class="al-journal-row" data-al-reveal>
+            <p>
+              {post.data.tag} <span>{formatDate(post.data.pubDate)}</span>
+            </p>
+            <h3>
+              <a href={`/blog/${post.id}/`}>
+                {post.data.title} <span aria-hidden="true">↗</span>
+              </a>
+            </h3>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+<Cta />

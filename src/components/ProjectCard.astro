@@ -39,8 +39,8 @@ const t = ui(lang);
         <Image
           src={shot}
           alt={project.alt ?? `${lang === 'en' ? 'A screen from' : 'Екран от'} ${project.name}`}
-          widths={[380, 560, 760]}
-          sizes="(max-width: 680px) 90vw, (max-width: 980px) 45vw, 360px"
+          widths={[400, 680, 1000, 1400]}
+          sizes="(max-width: 760px) 90vw, 45vw"
           loading={eager ? 'eager' : 'lazy'}
         />
       </span>

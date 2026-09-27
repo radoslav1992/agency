@@ -1,0 +1,25 @@
+---
+interface Props {
+  href: string;
+  round?: boolean;
+  class?: string;
+}
+const { href, round = false, class: extra = '' } = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={[
+    round ? 'tp-btn-rounded' : 'tp-btn-lg tp-round-26 tp-bg-common-black tp-text-common-white',
+    'al-button',
+    extra,
+  ]}
+  data-al-magnetic={round || undefined}
+>
+  <span class="al-button__arrow" aria-hidden="true">
+    ↗
+  </span>
+  <span>
+    <slot />
+  </span>
+</a>

@@ -13,115 +13,117 @@ const { SERVICES, SECONDARY_SERVICES } = content(lang);
       <p class="eyebrow">{t.services.eyebrow}</p>
       <h2 class="section-title">{t.services.title}</h2>
     </div>
-    <p class="head__note">
-      {t.services.note}
-    </p>
+    <p class="head__note">{t.services.note}</p>
   </header>
 
   <div class="grid">
-    {
-      SERVICES.map((service) => (
-        <article
-          class:list={[
-            'service',
-            service.variant === 'dark' && 'service--dark',
-            (service.variant === 'wide' || service.wide) && 'service--wide',
-          ]}
-        >
-          <p class="service__number">{service.number}</p>
-          <h3 class="service__title">{service.title}</h3>
-          {service.body && <p class="service__body">{service.body}</p>}
-          {service.problem && (
-            <dl class="service__rows">
-              <div class="service__row">
-                <dt>{t.services.problem}</dt>
-                <dd>{service.problem}</dd>
-              </div>
-              <div class="service__row">
-                <dt>{t.services.solution}</dt>
-                <dd>{service.solution}</dd>
-              </div>
-              {service.change && (
+    {SERVICES.map((service) => (
+      <article
+        class:list={[
+          'service',
+          service.variant === 'dark' && 'service--dark',
+          (service.variant === 'wide' || service.wide) && 'service--wide',
+        ]}
+      >
+        <p class="service__number">{service.number}</p>
+        <h3 class="service__title">{service.title}</h3>
+        {service.body && <p class="service__body">{service.body}</p>}
+        {service.problem && (
+          <>
+            <div class="service__summary">{service.problem}</div>
+            <details class="service__details">
+              <summary>
+                {lang === 'en' ? 'How it works' : 'Как работи'} <span aria-hidden="true">+</span>
+              </summary>
+              <dl class="service__rows">
                 <div class="service__row">
-                  <dt>{t.services.change}</dt>
-                  <dd set:html={service.change} />
+                  <dt>{t.services.solution}</dt>
+                  <dd>{service.solution}</dd>
                 </div>
-              )}
-              {service.changes && service.changes.length > 0 && (
-                <div class="service__row">
-                  <dt>{t.services.change}</dt>
-                  <dd>
-                    <ul class="service__changes">
-                      {service.changes.map((change) => (
-                        <li>
-                          <strong>{change.title}:</strong> {change.body}
-                        </li>
-                      ))}
-                    </ul>
-                  </dd>
-                </div>
-              )}
-            </dl>
-          )}
-          {service.points && service.points.length > 0 && (
-            <ul class="service__points">
-              {service.points.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
-          )}
-          {service.tags && service.tags.length > 0 && (
-            <ul class="service__tags">
-              {service.tags.map((tag) => (
-                <li class="pill">{tag}</li>
-              ))}
-            </ul>
-          )}
-          {service.link && (
-            <a class="service__more" href={localised(service.link.href, lang)}>
-              {service.link.label}
-            </a>
-          )}
-        </article>
-      ))
-    }
+                {service.change && (
+                  <div class="service__row">
+                    <dt>{t.services.change}</dt>
+                    <dd set:html={service.change} />
+                  </div>
+                )}
+                {service.changes && service.changes.length > 0 && (
+                  <div class="service__row">
+                    <dt>{t.services.change}</dt>
+                    <dd>
+                      <ul class="service__changes">
+                        {service.changes.map((change) => (
+                          <li>
+                            <strong>{change.title}:</strong> {change.body}
+                          </li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </details>
+          </>
+        )}
+        {service.points && service.points.length > 0 && (
+          <ul class="service__points">
+            {service.points.map((point) => (
+              <li>{point}</li>
+            ))}
+          </ul>
+        )}
+        {service.tags && service.tags.length > 0 && (
+          <ul class="service__tags">
+            {service.tags.map((tag) => (
+              <li class="pill">{tag}</li>
+            ))}
+          </ul>
+        )}
+        {service.link && (
+          <a class="service__more" href={localised(service.link.href, lang)}>
+            {service.link.label}
+          </a>
+        )}
+      </article>
+    ))}
   </div>
 
   <div class="grid grid--secondary">
-    {
-      SECONDARY_SERVICES.map((service) => (
-        <article class="service service--secondary">
-          <p class="service__number">{service.number}</p>
-          <h3 class="service__title">{service.title}</h3>
-          {service.body && <p class="service__body">{service.body}</p>}
-          {service.problem && (
-            <dl class="service__rows">
-              <div class="service__row">
-                <dt>{t.services.problem}</dt>
-                <dd>{service.problem}</dd>
-              </div>
-              <div class="service__row">
-                <dt>{t.services.solution}</dt>
-                <dd>{service.solution}</dd>
-              </div>
-              {service.change && (
+    {SECONDARY_SERVICES.map((service) => (
+      <article class="service service--secondary">
+        <p class="service__number">{service.number}</p>
+        <h3 class="service__title">{service.title}</h3>
+        {service.body && <p class="service__body">{service.body}</p>}
+        {service.problem && (
+          <>
+            <div class="service__summary">{service.problem}</div>
+            <details class="service__details">
+              <summary>
+                {lang === 'en' ? 'How it works' : 'Как работи'} <span aria-hidden="true">+</span>
+              </summary>
+              <dl class="service__rows">
                 <div class="service__row">
-                  <dt>{t.services.change}</dt>
-                  <dd set:html={service.change} />
+                  <dt>{t.services.solution}</dt>
+                  <dd>{service.solution}</dd>
                 </div>
-              )}
-            </dl>
-          )}
-          {service.points && service.points.length > 0 && (
-            <ul class="service__points">
-              {service.points.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
-          )}
-        </article>
-      ))
-    }
+                {service.change && (
+                  <div class="service__row">
+                    <dt>{t.services.change}</dt>
+                    <dd set:html={service.change} />
+                  </div>
+                )}
+              </dl>
+            </details>
+          </>
+        )}
+        {service.points && service.points.length > 0 && (
+          <ul class="service__points">
+            {service.points.map((point) => (
+              <li>{point}</li>
+            ))}
+          </ul>
+        )}
+      </article>
+    ))}
   </div>
 </section>
 
