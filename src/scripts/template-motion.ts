@@ -197,6 +197,13 @@ function initTemplateMotion() {
         });
     });
   }
+  document
+    .querySelectorAll<HTMLDetailsElement>('.agent__details')
+    .forEach((details) => {
+      details.addEventListener('toggle', () =>
+        runtime.ScrollTrigger?.refresh(),
+      );
+    });
   const coarse = matchMedia('(pointer: coarse)');
   document
     .querySelectorAll<HTMLElement>('[data-al-tilt], [data-al-magnetic]')

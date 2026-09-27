@@ -1991,3 +1991,48 @@ body.sa-page--services.sa-page .process .term__q:focus-visible {
     animation: none;
   }
 }
+
+/* Keep the catalogue easy to scan; setup and scope stay one click away. */
+body.sa-page--agents.sa-page .agent {
+  align-self: start;
+}
+body.sa-page--agents.sa-page .agent__audience {
+  margin: 0 0 20px;
+}
+body.sa-page--agents.sa-page .agent__audience strong {
+  color: var(--ink);
+}
+body.sa-page--agents.sa-page .agent__details > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 0;
+  border-top: 1px solid #ddd;
+  list-style: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+body.sa-page--agents.sa-page .agent__details > summary::-webkit-details-marker {
+  display: none;
+}
+body.sa-page--agents.sa-page .agent__details > summary::after {
+  content: '+';
+  font-size: 22px;
+}
+body.sa-page--agents.sa-page .agent__details[open] > summary::after {
+  content: '−';
+}
+body.sa-page--agents.sa-page .agent__details > summary:hover {
+  color: var(--accent-dark);
+}
+body.sa-page--agents.sa-page .agent__details > summary:focus-visible {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: 4px;
+}
+body.sa-page--agents.sa-page .agent__details .agent__cols {
+  border-top: 0;
+  padding-top: 12px;
+}

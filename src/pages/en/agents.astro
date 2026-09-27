@@ -77,34 +77,38 @@ const structuredData = {
                   {agent.demo && <span class="agent__demo">I can demo this live</span>}
                 </header>
 
-                <p class="agent__problem">{agent.problem}</p>
+                <p class="agent__problem">{agent.short}</p>
               </div>
             </div>
 
-            <div class="agent__cols">
-              <div>
-                <h3 class="agent__label">What it does</h3>
-                <ul class="agent__list">
-                  {agent.does.map((d) => (
-                    <li>{d}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 class="agent__label">What it needs from you</h3>
-                <ul class="agent__list agent__list--plain">
-                  {agent.needs.map((n) => (
-                    <li>{n}</li>
-                  ))}
-                </ul>
-                <h3 class="agent__label agent__label--spaced">Best for</h3>
-                <p class="agent__best">{agent.bestFor}</p>
-              </div>
-            </div>
-
-            <p class="agent__limits">
-              <strong>Where it does not work:</strong> {agent.limits}
+            <p class="agent__best agent__audience">
+              <strong>Best for:</strong> {agent.bestFor}
             </p>
+            <details class="agent__details">
+              <summary>Capabilities and limitations</summary>
+              <div class="agent__cols">
+                <div>
+                  <h3 class="agent__label">What it does</h3>
+                  <ul class="agent__list">
+                    {agent.does.map((d) => (
+                      <li>{d}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 class="agent__label">What it needs from you</h3>
+                  <ul class="agent__list agent__list--plain">
+                    {agent.needs.map((n) => (
+                      <li>{n}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <p class="agent__limits">
+                <strong>Where it does not work:</strong> {agent.limits}
+              </p>
+            </details>
           </article>
         ))
       }
