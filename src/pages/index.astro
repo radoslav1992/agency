@@ -1,27 +1,7 @@
 ---
-/**
- * Началната страница — разказ в шест движения, не каталог от единайсет секции.
- *
- * Беше: hero → агенти → услуги → анализатор → процес → за мен → продукти →
- * пилот → цени → блог → CTA. Единайсет равностойни блока, през които
- * читателят сам трябваше да си сглоби историята.
- *
- * Сега: закачка → напрежение → метод → каталог → безплатно доказателство →
- * построено доказателство → кой съм → CTA. Услугите, процесът, цените,
- * пилотът и условията се преместиха на `/services/`, където им е мястото:
- * това е справочник, а не разказ, и вече има собствен адрес.
- */
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Hero from '../components/Hero.astro';
-import ScrollStatement from '../components/ScrollStatement.astro';
-import Journey from '../components/Journey.astro';
-import AgentIndex from '../components/AgentIndex.astro';
-import AnalyzerStrip from '../components/AnalyzerStrip.astro';
-import Proof from '../components/Proof.astro';
-import About from '../components/About.astro';
-import BlogPreview from '../components/BlogPreview.astro';
-import CtaBanner from '../components/CtaBanner.astro';
-import { SITE } from '../data/site.mjs';
+import StartupHome from "../components/StartupHome.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../data/site.mjs";
 
 /**
  * Един @graph с няколко възела вместо самотен ProfessionalService:
@@ -33,11 +13,11 @@ import { SITE } from '../data/site.mjs';
  */
 const studioId = `${SITE.url}/#studio`;
 const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      '@type': ['Organization', 'ProfessionalService'],
-      '@id': studioId,
+      "@type": ["Organization", "ProfessionalService"],
+      "@id": studioId,
       name: SITE.name,
       description: SITE.description,
       url: SITE.url,
@@ -46,24 +26,28 @@ const structuredData = {
       // а Google чете точно това поле, за да покаже бутон „обади се“.
       telephone: SITE.phone.e164,
       foundingDate: String(SITE.founded),
-      areaServed: 'BG',
-      address: { '@type': 'PostalAddress', addressLocality: 'София', addressCountry: 'BG' },
+      areaServed: "BG",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "София",
+        addressCountry: "BG",
+      },
       founder: {
-        '@type': 'Person',
+        "@type": "Person",
         name: SITE.owner.name,
-        jobTitle: 'Senior AI Data Engineer',
+        jobTitle: "Senior AI Data Engineer",
         email: SITE.owner.email,
         sameAs: [SITE.owner.linkedin],
       },
-      knowsLanguage: ['bg', 'en'],
+      knowsLanguage: ["bg", "en"],
     },
     {
-      '@type': 'WebSite',
-      '@id': `${SITE.url}/#website`,
+      "@type": "WebSite",
+      "@id": `${SITE.url}/#website`,
       url: SITE.url,
       name: SITE.name,
-      inLanguage: 'bg',
-      publisher: { '@id': studioId },
+      inLanguage: "bg",
+      publisher: { "@id": studioId },
     },
   ],
 };
@@ -78,13 +62,5 @@ const structuredData = {
     />
   </Fragment>
 
-  <Hero />
-  <ScrollStatement />
-  <Journey />
-  <AgentIndex />
-  <AnalyzerStrip />
-  <Proof />
-  <About />
-  <BlogPreview limit={3} />
-  <CtaBanner />
+  <StartupHome />
 </BaseLayout>

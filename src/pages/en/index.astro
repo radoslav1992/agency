@@ -1,16 +1,9 @@
 ---
-/** Английското огледало на началната страница — същите шест движения. */
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Hero from '../../components/Hero.astro';
-import ScrollStatement from '../../components/ScrollStatement.astro';
-import Journey from '../../components/Journey.astro';
-import AgentIndex from '../../components/AgentIndex.astro';
-import Proof from '../../components/Proof.astro';
-import About from '../../components/About.astro';
-import CtaBanner from '../../components/CtaBanner.astro';
-import { SITE } from '../../data/site.mjs';
-import { localeOf } from '../../i18n/index.ts';
-import { brand, location, meta, owner } from '../../i18n/content.ts';
+import StartupHome from "../../components/StartupHome.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE } from "../../data/site.mjs";
+import { localeOf } from "../../i18n/index.ts";
+import { brand, location, meta, owner } from "../../i18n/content.ts";
 
 const lang = localeOf(Astro.currentLocale);
 const m = meta(lang);
@@ -24,11 +17,11 @@ const who = owner(lang);
  */
 const studioId = `${SITE.url}/#studio`;
 const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      '@type': ['Organization', 'ProfessionalService'],
-      '@id': studioId,
+      "@type": ["Organization", "ProfessionalService"],
+      "@id": studioId,
       name: studio.name,
       description: m.description,
       url: SITE.url,
@@ -37,24 +30,28 @@ const structuredData = {
       // а Google чете точно това поле, за да покаже бутон „обади се“.
       telephone: SITE.phone.e164,
       foundingDate: String(SITE.founded),
-      areaServed: 'BG',
-      address: { '@type': 'PostalAddress', addressLocality: where.city, addressCountry: 'BG' },
+      areaServed: "BG",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: where.city,
+        addressCountry: "BG",
+      },
       founder: {
-        '@type': 'Person',
+        "@type": "Person",
         name: who.name,
-        jobTitle: 'Senior AI Data Engineer',
+        jobTitle: "Senior AI Data Engineer",
         email: SITE.owner.email,
         sameAs: [SITE.owner.linkedin],
       },
-      knowsLanguage: ['bg', 'en'],
+      knowsLanguage: ["bg", "en"],
     },
     {
-      '@type': 'WebSite',
-      '@id': `${SITE.url}/en/#website`,
+      "@type": "WebSite",
+      "@id": `${SITE.url}/en/#website`,
       url: `${SITE.url}/en/`,
       name: studio.name,
-      inLanguage: 'en',
-      publisher: { '@id': studioId },
+      inLanguage: "en",
+      publisher: { "@id": studioId },
     },
   ],
 };
@@ -69,13 +66,5 @@ const structuredData = {
     />
   </Fragment>
 
-  {/* Същият ред като на български, без двете секции, които съществуват
-      само на български — анализаторът и блогът. */}
-  <Hero />
-  <ScrollStatement />
-  <Journey />
-  <AgentIndex />
-  <Proof />
-  <About />
-  <CtaBanner />
+  <StartupHome />
 </BaseLayout>

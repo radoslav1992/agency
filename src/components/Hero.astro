@@ -1,426 +1,121 @@
 ---
-/**
- * Първото движение. Всичко влиза при зареждане, по часовник, а не по скрол —
- * hero-ът стои над сгъвката и никой не скролва до него.
- *
- * Композицията е на три етажа: заглавието взима цялата ширина, под него
- * текстът и обещанията стоят рамо до рамо, а най-долу подсказката за скрол.
- * Преди обещанията бяха лента под всичко и цялата дясна половина на екрана
- * оставаше празна — не като въздух, а като недовършена страница.
- *
- * Портретът е кръгчето до обещанието. Голямата снимка отговаряше на „кой“,
- * докато читателят още пита „какво“; тя се премести в „За мен“, където
- * въпросът вече е зададен. Тук лицето подписва изречението „ако процесът ти
- * не става за автоматизация, ще ти го кажа“ — обещание с име тежи повече от
- * портрет, който плава встрани от текста.
- */
-import { Image } from 'astro:assets';
-import heroPortrait from '../assets/hero-portrait.png';
-import { SITE } from '../data/site.mjs';
-import { href as localised, localeOf } from '../i18n/index.ts';
-import { owner, ui } from '../i18n/content.ts';
-
+import { Image } from "astro:assets";
+import portrait from "../assets/hero-portrait.png";
+import { href as localised, localeOf } from "../i18n/index.ts";
+import { owner } from "../i18n/content.ts";
 const lang = localeOf(Astro.currentLocale);
-const t = ui(lang);
+const en = lang === "en";
 const who = owner(lang);
+const lines = en
+  ? ["Less routine.", "More room", "to grow."]
+  : ["По-малко", "рутина.", "Повече растеж."];
 ---
 
-<section class="hero">
-  <div class="container">
-    <div class="hero__head">
-      {
-        SITE.availability && (
-          <p class="availability stagger" style="--s: 0">
-            <span class="availability__dot" aria-hidden="true" />
-            {SITE.availability}
-          </p>
-        )
-      }
-
-      <h1 class="hero__title">
-        {t.hero.titleLead} <span class="accent">{t.hero.titleAccent}</span>.
-      </h1>
-    </div>
-
-    <div class="hero__body">
-      <div class="hero__copy">
-        {/* „Готови агенти“ + „по мярка“ нарочно заедно: каталогът отдолу продава
-            пакетираните, но вътрешните системи не са агенти и не бива да изпаднат. */}
-        <p class="hero__lead stagger" style="--s: 2">{t.hero.lead}</p>
-
-        <div class="hero__actions stagger" style="--s: 3">
-          {/* „Запази безплатен разговор“ вече води към календара, а не към
-              формата: надписът обещава запазване на час и досега лъжеше. */}
-          <a class="btn btn--primary" href={localised('/booking/', lang)}>{t.hero.ctaPrimary}</a>
-          <a class="btn btn--outline" href={localised('/services/', lang)}>{t.hero.ctaSecondary}</a>
-        </div>
-
-        {/* Обещанието и човекът, който го дава — в един блок нарочно. */}
-        <div class="promise stagger" style="--s: 4">
-          <span class="promise__avatar">
-            <Image
-              class="promise__face"
-              src={heroPortrait}
-              alt={who.name}
-              widths={[128, 224, 336]}
-              sizes="112px"
-              loading="eager"
-              fetchpriority="high"
-            />
+<section class="sa-hero" aria-labelledby="hero-title">
+  <div class="container sa-hero__grid">
+    <div class="sa-hero__copy">
+      <p class="sa-kicker sa-hero__intro">
+        <span class="sa-mini-star" aria-hidden="true">
+          ✳
+        </span>{" "}
+        {en
+          ? "INDEPENDENT DIGITAL & AI STUDIO"
+          : "ДИГИТАЛНО СТУДИО ЗА САЙТОВЕ И AI"}
+      </p>
+      <h1 id="hero-title" aria-label={lines.join(" ")} class="sa-hero__title">
+        {lines.map((line, i) => (
+          <span class="sa-title-line">
+            <span style={`--line:${i}`}>{line}</span>
           </span>
-          <p class="promise__text">
-            {t.hero.subnote}
-            <span class="promise__who">
-              <strong>{who.name}</strong> · {who.role}
-            </span>
+        ))}
+      </h1>
+      <div class="sa-hero__bottom">
+        <svg
+          class="sa-scribble"
+          width="70"
+          height="96"
+          viewBox="0 0 70 96"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M8 2c55 3 63 51 32 48S7 5 34 24c22 15 21 46 2 63m-1-22 1 23 22-6"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+        </svg>
+        <div>
+          <p class="sa-hero__lead">
+            {en
+              ? "Websites that turn visits into conversations. AI agents and automations that take the routine off your hands."
+              : "Сайтове, които превръщат посещенията в разговори. AI агенти и автоматизации, които поемат рутината вместо теб."}
+          </p>
+          <div class="sa-hero__actions">
+            <a
+              class="sa-button sa-button--dark"
+              href={localised("/booking/", lang)}
+            >
+              {en ? "Let’s talk" : "Да поговорим"}{" "}
+              <span aria-hidden="true">↗</span>
+            </a>
+            <a class="sa-text-link" href={localised("/projects/", lang)}>
+              {en ? "Our work" : "Виж проектите"}{" "}
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <p class="sa-hero__note">
+            {en
+              ? "A free first conversation. Directly with the engineer."
+              : "Безплатен първи разговор. Директно с инженера."}
           </p>
         </div>
-
-        {/* Анализаторът съществува само на български, затова редът към него се
-            показва само там. */}
-        {
-          t.hero.analyzerQ && (
-            <p class="hero__analyzer stagger" style="--s: 5">
-              {t.hero.analyzerQ} <a href="/analyzer/">{t.hero.analyzerA}</a>
-            </p>
-          )
-        }
       </div>
-
-      {/*
-        Обещанията заемат дясната колона. Номерата ги връзват визуално с
-        „Открий → Построй → Работи“ и с каталога на агентите — на страницата
-        вече има един и същ начин да се брои. Емоджитата отпаднаха: до
-        Unbounded те бяха единственото място, което издаваше шаблон.
-      */}
-      <ul class="facts">
-        {
-          t.hero.facts.map((fact, i) => (
-            <li class="fact stagger" style={`--s: ${5 + i}`}>
-              <span class="fact__n" aria-hidden="true">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span class="fact__text">{fact}</span>
-            </li>
-          ))
-        }
-      </ul>
     </div>
-
-    <div class="cue" aria-hidden="true"><span class="cue__line"></span></div>
+    <div class="sa-hero__visual">
+      <div class="sa-portrait" data-sa-tilt>
+        <div class="sa-portrait__circle"></div>
+        <Image
+          src={portrait}
+          alt={who.name}
+          widths={[440, 660, 880]}
+          sizes="(max-width: 760px) 90vw, 45vw"
+          loading="eager"
+          fetchpriority="high"
+          class="sa-portrait__image"
+        />
+        <a class="sa-portrait__badge" href="#about">
+          <span class="sa-badge-arrow" aria-hidden="true">
+            ↗
+          </span>
+          <span>
+            <strong>{who.name}</strong>
+            <small>
+              {en
+                ? "Founder · Software & AI engineer"
+                : "Основател · Софтуерен и AI инженер"}
+            </small>
+          </span>
+        </a>
+      </div>
+      <div class="sa-hero__geometry" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
+      <span class="sa-orbit" aria-hidden="true">
+        ✳
+      </span>
+      <p class="sa-hero__location">
+        {en
+          ? "BASED IN SOFIA. BUILT FOR YOUR BUSINESS."
+          : "ОТ СОФИЯ. ЗА ТВОЯ БИЗНЕС."}
+      </p>
+    </div>
   </div>
+  <img
+    class="sa-hero__corner"
+    src="/design/aleric/hero-corner.svg"
+    alt=""
+    width="300"
+    height="300"
+  />
 </section>
-
-<style>
-  .hero {
-    position: relative;
-    /* Затваря `z-index: -1` на сиянието вътре в секцията. */
-    isolation: isolate;
-    padding-block: clamp(44px, 6vw, 84px) clamp(28px, 4vw, 48px);
-  }
-
-  /*
-   * Две меки петна светлина вместо равен фон. Долният ръб избледнява до
-   * нищо, за да няма видима граница там, където свършва сиянието.
-   */
-  .hero::before {
-    content: '';
-    position: absolute;
-    /* Строго в границите на секцията: подадеше ли се настрани, страницата
-       тръгва хоризонтално дори когато сиянието е невидимо. */
-    inset: -30% 0 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(52% 46% at 16% 12%, rgba(226, 84, 43, 0.11), transparent 68%),
-      radial-gradient(46% 44% at 88% 34%, rgba(226, 84, 43, 0.05), transparent 70%),
-      radial-gradient(70% 60% at 62% 0%, var(--bg-blush), transparent 72%);
-    mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
-  }
-
-  .availability {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 22px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    padding: 7px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink-muted);
-  }
-
-  .availability__dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--success);
-    flex: none;
-  }
-
-  /*
-   * Размерът се мери спрямо КОНТЕЙНЕРА, не спрямо екрана — затова `cqw`, а
-   * не `vw`. Най-дългата българска дума („Автоматизирам“) иска цялата
-   * ширина; при `vw` тя се чупеше на „Автоматизира / м“ над 900px.
-   */
-  .hero__head {
-    container-type: inline-size;
-  }
-
-  .hero__title {
-    font-family: var(--font-display);
-    font-size: clamp(28px, 6.6cqw, 80px);
-    line-height: 1.01;
-    letter-spacing: -0.045em;
-    margin: 0;
-    /* Клапан за екрани под 340px; над тях не се задейства. */
-    overflow-wrap: break-word;
-    /*
-     * Заглавието се открива изпод ръба си, вместо просто да изплува.
-     * `clip-path` работи и когато редовете се пренасят различно на двата
-     * езика — разделяне по редове тук би било чупливо.
-     */
-    animation: title-in 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
-    animation-delay: 60ms;
-  }
-
-  @keyframes title-in {
-    from {
-      opacity: 0;
-      clip-path: inset(0 0 105% 0);
-      transform: translateY(0.14em);
-    }
-    to {
-      opacity: 1;
-      clip-path: inset(0 0 -20% 0);
-      transform: none;
-    }
-  }
-
-  .accent {
-    color: var(--accent);
-  }
-
-  /* ---------- вторият етаж ---------- */
-
-  .hero__body {
-    display: grid;
-    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-    gap: clamp(32px, 5vw, 72px);
-    align-items: start;
-    margin-top: clamp(30px, 4vw, 54px);
-  }
-
-  .hero__lead {
-    font-size: clamp(17px, 1.8vw, 20px);
-    line-height: 1.55;
-    color: var(--ink-body);
-    max-width: 44ch;
-    margin: 0;
-  }
-
-  .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 30px;
-  }
-
-  /* ---------- обещанието и лицето зад него ---------- */
-
-  .promise {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: 24px 0 0;
-    max-width: 52ch;
-  }
-
-  /*
-   * Изворът е квадратен портрет до кръста: лицето заема горната трета и е
-   * леко вдясно от центъра. `object-fit: cover` върху квадрат показва
-   * ЦЕЛИЯ кадър, тоест в кръгчето лицето излиза колкото копче, а под него
-   * стои риза.
-   *
-   * Затова снимката е двойно по-голяма от рамката и е изместена така, че
-   * точката (60%, 28%) от кадъра — центърът на лицето — да падне в центъра
-   * на кръга. Видимият прозорец става горната половина: глава и рамене.
-   */
-  .promise__avatar {
-    position: relative;
-    width: 56px;
-    height: 56px;
-    flex: none;
-    border-radius: 50%;
-    overflow: hidden;
-    background: var(--bg-blush);
-    border: 1px solid var(--line);
-  }
-
-  .promise__face {
-    position: absolute;
-    width: 200%;
-    height: auto;
-    left: -70%;
-    top: -6%;
-    /* Глобалното `img { max-width: 100% }` иначе свива тези 200% обратно до
-       ширината на рамката и от кадъра остава само едно рамо. */
-    max-width: none;
-  }
-
-  .promise__text {
-    font-size: 13.5px;
-    line-height: 1.5;
-    color: var(--ink-subtle);
-    margin: 0;
-  }
-
-  .promise__who {
-    display: block;
-    margin-top: 4px;
-    color: var(--ink-muted);
-  }
-
-  .promise__who strong {
-    color: var(--ink);
-    font-weight: 600;
-  }
-
-  .hero__analyzer {
-    font-size: 15px;
-    margin: 24px 0 0;
-    color: var(--ink-body);
-  }
-
-  .hero__analyzer a {
-    font-weight: 600;
-    color: var(--accent);
-    border-bottom: 1px solid var(--accent-soft);
-    padding-bottom: 2px;
-    transition: border-color 0.18s ease;
-  }
-
-  .hero__analyzer a:hover {
-    border-color: var(--accent);
-  }
-
-  /* ---------- обещанията, дясната колона ---------- */
-
-  .facts {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid var(--line);
-  }
-
-  .fact {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 14px;
-    align-items: baseline;
-    padding: 15px 2px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .fact__n {
-    font-family: var(--font-display);
-    font-size: 11.5px;
-    font-weight: 600;
-    /* Броенето е структура, не действие — виж бележката при `.eyebrow`. */
-    color: var(--ink-faint);
-    letter-spacing: 0.04em;
-  }
-
-  .fact__text {
-    font-size: 15px;
-    line-height: 1.5;
-    color: var(--ink-soft);
-  }
-
-  /* ---------- подсказката за скрол ---------- */
-
-  .cue {
-    margin-top: clamp(28px, 4vw, 44px);
-    height: 46px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .cue__line {
-    position: relative;
-    width: 1px;
-    height: 100%;
-    background: var(--line-strong);
-    overflow: hidden;
-  }
-
-  /* Късо ярко парче, което пада надолу по нишката. */
-  .cue__line::after {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 40%;
-    background: var(--accent);
-    animation: cue-fall 2.1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-  }
-
-  @keyframes cue-fall {
-    0% {
-      transform: translateY(-100%);
-    }
-    60%,
-    100% {
-      transform: translateY(250%);
-    }
-  }
-
-  /* ---------- влизането ---------- */
-
-  .stagger {
-    animation: hero-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: calc(var(--s) * 70ms);
-  }
-
-  @keyframes hero-in {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @media (max-width: 900px) {
-    .hero__body {
-      grid-template-columns: 1fr;
-      gap: 32px;
-    }
-
-    .hero__lead,
-    .promise {
-      max-width: none;
-    }
-
-    .cue {
-      display: none;
-    }
-  }
-
-  /* Под 380px кръгчето и двата реда текст до него не се събират в редица. */
-  @media (max-width: 380px) {
-    .promise {
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    .promise__avatar {
-      width: 46px;
-      height: 46px;
-    }
-  }
-</style>

@@ -1,0 +1,254 @@
+---
+import Hero from "./Hero.astro";
+import About from "./About.astro";
+import Proof from "./Proof.astro";
+import AnalyzerStrip from "./AnalyzerStrip.astro";
+import BlogPreview from "./BlogPreview.astro";
+import CtaBanner from "./CtaBanner.astro";
+import { href as localised, localeOf } from "../i18n/index.ts";
+import { ui } from "../i18n/content.ts";
+const lang = localeOf(Astro.currentLocale);
+const en = lang === "en";
+const t = ui(lang);
+const services = en
+  ? [
+      {
+        title: "Websites & digital experiences",
+        body: "A clear, fast website built around your business. Connect an AI agent from day one, or add it when you need it.",
+        href: "/services/#pricing",
+        tag: "DESIGN + DEVELOPMENT",
+      },
+      {
+        title: "AI agents that get to work",
+        body: "Voice, chat, email and documents. An agent with a defined job, your knowledge, and a clear handover to a person.",
+        href: "/agents/",
+        tag: "CONVERSATIONAL AI",
+      },
+      {
+        title: "Less manual work. More progress.",
+        body: "Connect your tools and automate repetitive tasks, with traceable results and human approval where it matters.",
+        href: "/services/",
+        tag: "AUTOMATION + INTEGRATIONS",
+      },
+      {
+        title: "Software built around you",
+        body: "Internal systems and tools that fit how your team actually works. Built, documented and handed over to you.",
+        href: "/services/",
+        tag: "CUSTOM DEVELOPMENT",
+      },
+    ]
+  : [
+      {
+        title: "Сайтове с ясна цел",
+        body: "Бърз и красив сайт, създаден за твоя бизнес. С AI агент от първия ден или с възможност да го добавиш по-късно.",
+        href: "/services/#pricing",
+        tag: "ДИЗАЙН + РАЗРАБОТКА",
+      },
+      {
+        title: "AI агенти за реална работа",
+        body: "Глас, чат, имейли и документи. Агент с конкретна задача, твоите материали и ясна граница кога да включи човек.",
+        href: "/agents/",
+        tag: "РАЗГОВОРЕН AI",
+      },
+      {
+        title: "По-малко ръчни задачи",
+        body: "Свързани системи и автоматизирана рутина. Проследими резултати и човешко одобрение там, където е нужно.",
+        href: "/services/",
+        tag: "АВТОМАТИЗАЦИИ",
+      },
+      {
+        title: "Софтуер по твоя мярка",
+        body: "Вътрешни системи и инструменти за начина, по който работи екипът ти. С документация и пълен достъп до кода.",
+        href: "/services/",
+        tag: "ИНДИВИДУАЛНА РАЗРАБОТКА",
+      },
+    ];
+const band = en
+  ? ["Websites", "AI agents", "Automations", "Made for your business"]
+  : ["Уебсайтове", "AI агенти", "Автоматизации", "За твоя бизнес"];
+---
+
+<div class="startup-home">
+  <Hero />
+  <div class="sa-marquee" aria-label={band.join(" · ")}>
+    <button
+      class="sa-motion-toggle"
+      type="button"
+      data-sa-motion
+      aria-pressed="false"
+      aria-label={
+        en ? "Pause decorative motion" : "Спри декоративните анимации"
+      }
+    >
+      <span aria-hidden="true">Ⅱ</span>
+    </button>
+    <div class="sa-marquee__track" aria-hidden="true">
+      {[0, 1, 2, 3].map(() => (
+        <div class="sa-marquee__group">
+          {band.map((text) => (
+            <span>
+              {text}
+              <i>✳</i>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+  <section
+    class="sa-services sa-section container"
+    aria-labelledby="sa-services-title"
+  >
+    <div class="sa-section-head">
+      <p class="sa-kicker" data-sa-reveal>
+        {en ? "01 / WHAT WE DO" : "01 / КАКВО ПРАВИМ"}
+      </p>
+      <h2 id="sa-services-title" class="sa-heading" data-sa-ink>
+        {en
+          ? "Good ideas deserve more than a pretty website."
+          : "Добрите идеи заслужават повече от красив сайт."}
+      </h2>
+    </div>
+    <div class="sa-services__intro">
+      <p>
+        {en
+          ? "From your first website to the systems behind your next stage of growth."
+          : "От първия сайт до системите, с които бизнесът ти расте."}
+      </p>
+      <div class="sa-slider-controls">
+        <button
+          type="button"
+          data-sa-slide="-1"
+          aria-label={en ? "Previous service" : "Предишна услуга"}
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          data-sa-slide="1"
+          aria-label={en ? "Next service" : "Следваща услуга"}
+        >
+          →
+        </button>
+      </div>
+    </div>
+    <div
+      class="sa-service-track"
+      tabindex="0"
+      role="region"
+      aria-label={en ? "Services" : "Услуги"}
+    >
+      {services.map((s, i) => (
+        <article class="sa-service-card" data-sa-reveal>
+          <div class="sa-service-card__top">
+            <img
+              src={`/design/aleric/service-${i + 1}.svg`}
+              alt=""
+              width="60"
+              height="60"
+            />
+            <span>0{i + 1}</span>
+          </div>
+          <p class="sa-card-tag">{s.tag}</p>
+          <h3>{s.title}</h3>
+          <p class="sa-service-card__body">{s.body}</p>
+          <a href={localised(s.href, lang)}>
+            {en ? "Explore service" : "Виж услугата"}
+            <span aria-hidden="true">↗</span>
+          </a>
+        </article>
+      ))}
+    </div>
+    <div class="sa-service-progress" aria-hidden="true">
+      <span></span>
+    </div>
+  </section>
+  <About />
+  <section class="sa-process sa-section" aria-labelledby="sa-process-title">
+    <div class="container">
+      <div class="sa-process__head">
+        <div>
+          <p class="sa-kicker">
+            {en ? "02 / HOW WE WORK" : "02 / КАК РАБОТИМ"}
+          </p>
+          <h2 id="sa-process-title" class="sa-heading" data-sa-reveal>
+            {en
+              ? "A clear path.\nFrom idea to launch."
+              : "Ясна посока.\nОт идея до резултат."}
+          </h2>
+        </div>
+        <a class="sa-text-link" href={localised("/booking/", lang)}>
+          {en ? "Let’s talk about your project" : "Да обсъдим твоя проект"} ↗
+        </a>
+      </div>
+      <ol class="sa-process__steps">
+        {t.journey.steps.map((step) => (
+          <li data-sa-reveal>
+            <div class="sa-process__number">
+              <img
+                src="/design/aleric/process-circle.png"
+                alt=""
+                width="106"
+                height="106"
+              />
+              <span>{step.n}</span>
+            </div>
+            <h3>{step.title}</h3>
+            <p class="sa-process__kicker">{step.kicker}</p>
+            <p>{step.body}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+  <Proof />
+  <section class="sa-tech sa-section container">
+    <div class="sa-section-head">
+      <div>
+        <p class="sa-kicker">
+          {en ? "04 / CONNECTED BY DESIGN" : "04 / СВЪРЗАНИ ПО ДИЗАЙН"}
+        </p>
+        <h2 class="sa-heading" data-sa-reveal>
+          {en
+            ? "Your tools.\nWorking together."
+            : "Твоите инструменти.\nВ общ ритъм."}
+        </h2>
+      </div>
+      <div class="sa-tech__copy">
+        <p>
+          {en
+            ? "Your website, your customer conversations and your internal systems should work together. We connect the right tools around your process."
+            : "Сайтът, разговорите с клиентите и вътрешните системи трябва да работят заедно. Свързваме подходящите инструменти около твоя процес."}
+        </p>
+        <a class="sa-text-link" href={localised("/agents/", lang)}>
+          {en ? "Meet the AI agents" : "Разгледай AI агентите"} ↗
+        </a>
+      </div>
+    </div>
+    <div class="sa-tech__grid">
+      {[
+        "OpenAI",
+        "ElevenLabs",
+        "n8n",
+        "Cloudflare",
+        "Python",
+        "Java / Spring",
+      ].map((name, i) => (
+        <div data-sa-reveal>
+          <span aria-hidden="true">{["✳", "Ⅱ", "⌘", "☁", "{ }", "↗"][i]}</span>
+          <strong>{name}</strong>
+        </div>
+      ))}
+    </div>
+  </section>
+  {!en && (
+    <>
+      <AnalyzerStrip />
+      <BlogPreview limit={3} />
+    </>
+  )}
+  <CtaBanner />
+</div>
+<script>
+  import "../scripts/startup-motion";
+</script>
