@@ -8,7 +8,7 @@ const { PROCESS, TERMS } = content(lang);
 ---
 
 <section class="process container">
-  <header class="head">
+  <header class="head" data-al-reveal>
     <p class="eyebrow">{t.process.eyebrow}</p>
     <h2 class="section-title">{t.process.title}</h2>
   </header>
@@ -16,7 +16,7 @@ const { PROCESS, TERMS } = content(lang);
   <ol class="steps">
     {
       PROCESS.map((step, index) => (
-        <li class:list={['step', index === 0 && 'step--first']}>
+        <li class:list={['step', index === 0 && 'step--first']} data-al-reveal data-al-from="left" data-al-delay={0.3 + index * 0.1}>
           <p class="step__number">{step.number}</p>
           <h3 class="step__title">{step.title}</h3>
           <p class="step__body">{step.body}</p>

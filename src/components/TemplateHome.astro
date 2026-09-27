@@ -87,10 +87,14 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
 <section class="al-template al-brands tp-bg-common-black">
   <div class="container">
     <p class="al-brands__title">{en ? 'The tools behind the work' : 'Технологиите зад работата'}</p>
-    <div class="al-brands__names">
-      {technologies.map((name) => (
-        <span>{name}</span>
-      ))}
+    <div class="al-brands__window">
+      <div class="al-brands__track">
+        {[false, true].map((duplicate) => (
+          <div class="al-brands__names" aria-hidden={duplicate || undefined}>
+            {technologies.map((name) => <span>{name}</span>)}
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 </section>
@@ -163,7 +167,7 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
         </div>
       </div>
       <div class="col-xl-4 col-lg-2">
-        <div class="al-about-shapes" aria-hidden="true">
+        <div class="al-about-shapes" aria-hidden="true" data-al-reveal data-al-from="top" data-al-ease="bounce.out">
           <i></i>
           <i></i>
         </div>
@@ -174,6 +178,7 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
         <div class="al-about-stage" data-al-reveal>
           <Image
             src={stage}
+            data-al-parallax
             alt={en ? 'Radoslav speaking at a conference' : 'Радослав говори на конференция'}
             widths={[400, 600, 800]}
             sizes="(max-width: 767px) 90vw, 32vw"
@@ -183,28 +188,33 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
       </div>
       <div class="col-lg-4 col-md-6">
         <div class="tp-about-sa-btn">
-          <div class="tp-about-expreance d-flex align-items-end mb-55">
+          <div class="tp-about-expreance d-flex align-items-end mb-55" data-al-reveal data-al-delay="0.5">
             <p class="fs-100 lh-1 mb-0">{ABOUT.stats[0].value}</p>
             <p class="fs-18 ml-20">{ABOUT.stats[0].label}</p>
           </div>
-          <Button href={localised('/contact/', lang)} round>
-            {en ? 'Meet your engineer' : 'Запознай се с инженера'}
-          </Button>
+          <div data-al-reveal data-al-from="top" data-al-ease="bounce.out" data-al-delay="0.6">
+            <Button href={localised('/contact/', lang)} round>
+              {en ? 'Meet your engineer' : 'Запознай се с инженера'}
+            </Button>
+          </div>
         </div>
       </div>
       <div class="col-lg-4">
-        <div class="al-about-portrait" data-al-tilt>
-          <Image
-            src={portrait}
-            alt={who.name}
-            widths={[400, 600, 800]}
-            sizes="(max-width: 767px) 90vw, 32vw"
-            loading="lazy"
-          />
-          <span>
-            {who.name}
-            <small>{who.role}</small>
-          </span>
+        <div data-al-reveal data-al-delay="0.3">
+          <div class="al-about-portrait" data-al-tilt>
+            <Image
+              src={portrait}
+              data-al-parallax
+              alt={who.name}
+              widths={[400, 600, 800]}
+              sizes="(max-width: 767px) 90vw, 32vw"
+              loading="lazy"
+            />
+            <span>
+              {who.name}
+              <small>{who.role}</small>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -241,8 +251,8 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
       aria-hidden="true"
     ></span>
     <ol class="al-process-grid">
-      {t.journey.steps.map((step) => (
-        <li data-al-reveal>
+      {t.journey.steps.map((step, i) => (
+        <li data-al-reveal data-al-from="left" data-al-delay={0.3 + i * 0.1}>
           <div class="al-process-number">
             <img src="/design/aleric/process-circle.png" alt="" />
             <span>{step.n}</span>
@@ -294,7 +304,7 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
         </article>
       ))}
     </div>
-    <div class="al-work-more">
+    <div class="al-work-more" data-al-reveal data-al-from="top" data-al-ease="bounce.out">
       <Button href={localised('/projects/', lang)} round>
         {en ? 'All projects' : 'Всички проекти'}
       </Button>
@@ -306,7 +316,8 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
     <div class="row">
       <div class="col-lg-6">
         <h2 class="fs-70 fs-md-52 lh-1 mb-40" data-al-ink>
-          {en ? 'Your tools.\nWorking together.' : 'Твоите инструменти.\nВ общ ритъм.'}
+          {en ? 'Your tools.' : 'Твоите инструменти.'}<br />
+          {en ? 'Working together.' : 'В общ ритъм.'}
         </h2>
       </div>
       <div class="col-lg-6">
@@ -315,9 +326,9 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
             ? 'Your website, customer conversations and internal systems should work together. We connect the right tools around your process.'
             : 'Сайтът, разговорите с клиенти и вътрешните системи трябва да работят заедно. Свързваме правилните инструменти около твоя процес.'}
         </p>
-        <div class="al-tech-grid">
+        <div class="al-tech-grid" data-al-physics>
           {technologies.map((name, i) => (
-            <div data-al-reveal>
+            <div data-al-chip>
               <img
                 src={`/design/aleric/service-${(i % 4) + 1}.svg`}
                 alt=""

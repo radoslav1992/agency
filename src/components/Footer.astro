@@ -18,7 +18,7 @@ const year = new Date().getFullYear();
 
 <footer class="al-template al-footer tp-bg-common-black">
   <div class="container">
-    <div class="al-footer-top">
+    <div class="al-footer-top" data-al-reveal>
       <a class="al-footer-brand" href={localised('/', lang)}>
         <BrandMark size={62} loading="lazy" />
         <span>{studio.name}</span>
@@ -28,7 +28,7 @@ const year = new Date().getFullYear();
       </a>
     </div>
     <div class="al-footer-grid">
-      <div>
+      <div data-al-reveal data-al-delay="0.3">
         <h2>{where.full}</h2>
         <p>{legalName(lang)}</p>
         <p>{t.footer.reach}</p>
@@ -37,13 +37,13 @@ const year = new Date().getFullYear();
           LinkedIn ↗
         </a>
       </div>
-      <nav aria-label={t.footer.nav}>
+      <nav aria-label={t.footer.nav} data-al-reveal data-al-delay="0.5">
         <h2>{t.footer.navTitle}</h2>
         {links.map((item) => (
           <a href={localised(item.href, lang)}>{item.label}</a>
         ))}
       </nav>
-      <div>
+      <div data-al-reveal data-al-delay="0.7">
         <h2>{t.footer.termsTitle}</h2>
         <a href={localised('/terms/', lang)}>{t.footer.terms}</a>
         <a href={localised('/privacy/', lang)}>{t.footer.privacy}</a>

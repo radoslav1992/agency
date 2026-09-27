@@ -1,27 +1,31 @@
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/design/aleric/space-grotesk-latin-400-normal.woff2') format('woff2');
+  font-family: "Space Grotesk";
+  src: url("/design/aleric/space-grotesk-latin-400-normal.woff2")
+    format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/design/aleric/space-grotesk-latin-500-normal.woff2') format('woff2');
+  font-family: "Space Grotesk";
+  src: url("/design/aleric/space-grotesk-latin-500-normal.woff2")
+    format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/design/aleric/space-grotesk-latin-600-normal.woff2') format('woff2');
+  font-family: "Space Grotesk";
+  src: url("/design/aleric/space-grotesk-latin-600-normal.woff2")
+    format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/design/aleric/space-grotesk-latin-700-normal.woff2') format('woff2');
+  font-family: "Space Grotesk";
+  src: url("/design/aleric/space-grotesk-latin-700-normal.woff2")
+    format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -30,19 +34,19 @@
 :root {
   --sa-peach: #f6b784;
   --al-accent: #ed683c;
-  --font-display: 'Onest Variable', sans-serif;
+  --font-display: "Onest Variable", sans-serif;
   --bg-sand: #f0f0f0;
   --container: 1320px;
   --header-h: 90px;
 }
-html[lang='en'] {
-  --font-display: 'Space Grotesk', 'Onest Variable', sans-serif;
+html[lang="en"] {
+  --font-display: "Space Grotesk", "Onest Variable", sans-serif;
 }
 .al-template {
   --tp-theme-primary: var(--sa-peach);
   --tp-common-nights: var(--al-accent);
-  --tp-ff-body: 'Onest Variable', sans-serif;
-  --tp-ff-p: 'Onest Variable', sans-serif;
+  --tp-ff-body: "Onest Variable", sans-serif;
+  --tp-ff-p: "Onest Variable", sans-serif;
   --tp-ff-heading: var(--font-display);
   --tp-ff-teko: var(--font-display);
   color: #030303;
@@ -92,8 +96,8 @@ html[lang='en'] {
   padding-inline: 12px;
   min-width: 0;
 }
-.al-template :is(h2, p)[class*='fs-'],
-.al-template:is(h2, p)[class*='fs-'] {
+.al-template :is(h2, p)[class*="fs-"],
+.al-template:is(h2, p)[class*="fs-"] {
   white-space: pre-line;
 }
 .al-template :is(a, button):focus-visible,
@@ -217,7 +221,7 @@ body .al-header .nav__lang {
 }
 .al-measure:before,
 .al-measure:after {
-  content: '';
+  content: "";
   position: absolute;
   top: -3px;
   border-block: 3px solid transparent;
@@ -384,7 +388,7 @@ body .al-header .nav__lang {
 }
 .al-brands__title:before,
 .al-brands__title:after {
-  content: '';
+  content: "";
   width: 80px;
   height: 9px;
   border-block: 1px solid #ffffff45;
@@ -406,7 +410,7 @@ body .al-header .nav__lang {
   color: #030303 !important;
 }
 .al-section-label:before {
-  content: '';
+  content: "";
   width: 34px;
   height: 9px;
   border-block: 1px solid;
@@ -478,7 +482,7 @@ body .al-header .nav__lang {
   padding: 0;
   cursor: pointer;
 }
-.al-slider-dots button[aria-pressed='true'] {
+.al-slider-dots button[aria-pressed="true"] {
   background: var(--al-accent);
   border-color: var(--al-accent);
 }
@@ -1811,8 +1815,10 @@ body.sa-page--404.sa-page #main > .wrap {
   border-color: var(--al-accent);
 }
 
-body.sa-page--projects.sa-page .project[href='https://rechbg.com/'] .project__shot,
-.al-project-image[href='https://rechbg.com/'] {
+body.sa-page--projects.sa-page
+  .project[href="https://rechbg.com/"]
+  .project__shot,
+.al-project-image[href="https://rechbg.com/"] {
   aspect-ratio: 1.6;
 }
 .al-template :is(h1, h2, h3) {
@@ -1845,7 +1851,10 @@ body.sa-page.sa-page .services .service__details summary {
   font-weight: 600;
   list-style: none;
 }
-body.sa-page.sa-page .services .service__details summary::-webkit-details-marker {
+body.sa-page.sa-page
+  .services
+  .service__details
+  summary::-webkit-details-marker {
   display: none;
 }
 body.sa-page.sa-page .services .service__details summary span {
@@ -1858,4 +1867,127 @@ body.sa-page.sa-page .services .service__details[open] summary span {
 body.sa-page.sa-page .services .service__details .service__rows {
   padding-block: 15px;
 }
-.al-process-number img { filter: hue-rotate(125deg); }
+.al-process-number img {
+  filter: hue-rotate(125deg);
+}
+
+/* The process accordion is inside a dark section: keep its panel dark too. */
+body.sa-page--services.sa-page .process .terms {
+  background: #252621;
+  border: 1px solid #ffffff30;
+}
+body.sa-page--services.sa-page .process .term__q::after {
+  color: var(--sa-peach);
+}
+body.sa-page--services.sa-page .process .term__q:hover {
+  color: var(--sa-peach);
+}
+body.sa-page--services.sa-page .process .term__q:focus-visible {
+  outline: 2px solid var(--sa-peach);
+  outline-offset: 3px;
+}
+
+/* Continuous decorative motion is applied to the artwork, not the number. */
+.al-process-number img {
+  animation: al-ring-turn 8s linear infinite;
+}
+.al-process-number span {
+  position: relative;
+}
+@keyframes al-ring-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.al-brands__window {
+  overflow: hidden;
+}
+.al-brands__track {
+  display: flex;
+  width: max-content;
+  animation: al-brand-travel 32s linear infinite;
+}
+.al-brands__track .al-brands__names {
+  flex: 0 0 auto;
+  width: max(1250px, var(--container));
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  padding-right: 50px;
+}
+@keyframes al-brand-travel {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.al-ink-line {
+  background-image: linear-gradient(to right, #030303 50%, #aaa 50%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.al-about-portrait img[data-al-parallax] {
+  clip-path: inset(0);
+}
+.al-about-portrait > span {
+  position: relative;
+  background: var(--sa-peach);
+  z-index: 1;
+}
+.al-service-icon {
+  transition: transform 0.4s ease;
+}
+.tp-service-sa-item:is(:hover, :focus-within) .al-service-icon {
+  transform: rotate(90deg);
+}
+.al-tech-grid.al-physics-active {
+  position: relative;
+  display: block;
+  height: 430px;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.al-physics-active > [data-al-chip] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(100px, 11vw, 160px);
+  height: clamp(100px, 11vw, 160px);
+  user-select: none;
+  cursor: grab;
+  will-change: transform;
+}
+.al-physics-active > [data-al-chip] img {
+  pointer-events: none;
+}
+.al-physics-active.is-dragging,
+.al-physics-active.is-dragging > [data-al-chip] {
+  cursor: grabbing;
+}
+@media (max-width: 767px) {
+  .al-tech-grid.al-physics-active {
+    height: 350px;
+  }
+  .al-brands__track .al-brands__names {
+    width: 1000px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .al-brands__track {
+    width: auto;
+    display: block;
+    animation: none;
+  }
+  .al-brands__track .al-brands__names {
+    width: auto;
+    flex-wrap: wrap;
+    padding: 0;
+  }
+  .al-brands__names[aria-hidden="true"] {
+    display: none;
+  }
+  .al-process-number img {
+    animation: none;
+  }
+}

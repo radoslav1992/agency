@@ -19,13 +19,13 @@ const en = lang === 'en';
           <p class="fs-18 mb-10" data-al-reveal>
             {en ? 'Have a project in mind?' : 'Имаш идея за проект?'}
           </p>
-          <h2 class="tp-footer-top-title text-uppercase fw-600 mb-40" data-al-reveal>
+          <h2 class="tp-footer-top-title text-uppercase fw-600 mb-40" data-al-rotate-text>
             {en ? 'Let’s Talk' : 'Да поговорим'}
           </h2>
-          <a class="al-cta-email" href={`mailto:${SITE.email}`}>
+          <a class="al-cta-email" data-al-reveal data-al-delay="0.5" href={`mailto:${SITE.email}`}>
             {SITE.email}
           </a>
-          <div class="tp-rounded-btn-wrap tp-cta-sa-btn text-lg-end mb-30">
+          <div class="tp-rounded-btn-wrap tp-cta-sa-btn text-lg-end mb-30" data-al-reveal data-al-from="top" data-al-ease="bounce.out" data-al-delay="0.7">
             <Button href={localised('/contact/', lang)} round>
               {en ? 'Start the journey' : 'Да започнем'}
             </Button>

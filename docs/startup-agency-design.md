@@ -5,7 +5,7 @@ The active home pages use `TemplateHome.astro` and `TemplateHero.astro`, ported 
 ## Template structure
 
 - Integrated apricot header/hero, vertical social links, right-aligned subtitle, oversized three-line heading, circular founder portrait, original geometric icons and divided measurements.
-- Dark technology strip, three-column service carousel, offset about collage, circular action buttons, dark process section, staggered portfolio and circular technology tiles.
+- Dark technology strip, three-column service carousel, offset about collage, circular action buttons, dark process section, staggered portfolio and falling, draggable technology badges.
 - Editorial journal, oversized centered closing section and rebuilt dark footer. Kova's own content replaces demo claims, stock placeholders, fictitious customers and testimonials.
 - Inner pages use white editorial title areas, divided columns, portfolio/agent galleries, centered contact form, journal rows and the same typography and footer. Existing booking, analyzer, legal, guide and admin functionality remains intact.
 
@@ -19,7 +19,9 @@ Rech BG is included in Bulgarian and English using the user's supplied homepage 
 
 ## Motion
 
-`public/design/aleric/motion.js` and `swiper.js` are the archive's original GSAP/ScrollTrigger bundle and Swiper library, retaining their license headers. `template-motion.ts` adapts the original reveal, scrubbed text, pinned portfolio-title scale/fade, perspective project reveals and 1/2/3-slide carousel settings to Astro components. Circular buttons respond to the pointer and the portrait tilts.
+`public/design/aleric/motion.js` and `swiper.js` are the archive's original GSAP/ScrollTrigger bundle and Swiper library, retaining their license headers. `template-motion.ts` adapts the original reveal, scrubbed text, pinned portfolio-title scale/fade, perspective project reveals and 1/2/3-slide carousel settings to Astro components. Circular buttons respond to the pointer and the portrait tilts. Directional entrances retain per-element delays and bounce easing; both about images have independent scroll parallax. Headings wipe line by line using the bundled SplitText, and closing headings use staggered character rotation. Text is split again after width changes. The brand strip moves continuously and each process ring rotates independently of its number. Footer columns enter in sequence.
+
+The archive’s MIT-licensed `matter.js` drives falling technology badges. `template-physics.ts` adapts the original throwable behavior without jQuery; mouse users can drag and toss the badges, while touch scrolling remains native. Physics pauses outside the viewport and in hidden tabs, and returns to static tiles for reduced motion.
 
 Reduced-motion preferences disable the scroll animations and reduce slider transition time, including when the preference changes live. Native document scrolling, keyboard navigation, anchors and forms are preserved. Core content remains readable if JavaScript is unavailable. No external template demo scripts, forms or tracking endpoints are used.
 
@@ -31,5 +33,7 @@ Reduced-motion preferences disable the scroll animations and reduce slider trans
 - Bulgarian and English booking date/time selection through to the confirmation form against local D1; no booking created.
 - Admin and download fallback states; local GSAP and Swiper loading, carousel navigation, pointer interactions and live reduced-motion changes.
 - Rech BG links and supplied image on the home, Bulgarian project and English project pages.
+- Follow-up regression checks verify all three rotating rings, stationary numbers, both parallax images, brand movement, falling and draggable badges, responsive text splitting, character entrances, and live reduced-motion cleanup/restart in both languages.
+- Services accordion uses an explicit dark panel with readable headings, questions and expanded answers in both languages.
 
 External voice, payment and message-delivery providers were not exercised end to end.
