@@ -1,4 +1,5 @@
 ---
+import PageHero from '../../components/PageHero.astro';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CtaBanner from '../../components/CtaBanner.astro';
@@ -37,15 +38,17 @@ const structuredData = {
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
   </Fragment>
 
+  <PageHero section="AI agents">
+    <Fragment slot="eyebrow">AI agents</Fragment>
+    <Fragment slot="title">Agents that take over a specific job</Fragment>
+    <Fragment slot="lead">
+      Each one is packaged around a familiar problem: a clear scope, a clear
+      list of what is needed from you, and a clear statement of where it does
+      not work. We start with one channel and a pilot on your data — not with a
+      subscription to "AI".
+    </Fragment>
+  </PageHero>
   <div class="container wrap">
-    <p class="eyebrow">AI agents</p>
-    <h1 class="title">Agents that take over a specific job</h1>
-    <p class="lead">
-      Each one is packaged around a familiar problem: a clear scope, a clear list of what is
-      needed from you, and a clear statement of where it does not work. We start with one channel
-      and a pilot on your data — not with a subscription to "AI".
-    </p>
-
     <nav class="jump" aria-label="Agent list">
       {AGENTS.map((agent) => <a href={`#${agent.id}`}>{agent.name}</a>)}
     </nav>

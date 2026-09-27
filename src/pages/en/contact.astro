@@ -1,4 +1,5 @@
 ---
+import PageHero from '../../components/PageHero.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ContactForm from '../../components/ContactForm.astro';
 import { SITE } from '../../data/site.mjs';
@@ -9,14 +10,16 @@ import { SITE } from '../../data/site.mjs';
   description="Get in touch with Kova Studio — an AI agent, automation, an internal system, a business website or training. I read every enquiry myself and reply within one working day."
   canonical="/en/contact/"
 >
+  <PageHero section="Contact">
+    <Fragment slot="eyebrow">Contact</Fragment>
+    <Fragment slot="title">Let's find out whether I can help.</Fragment>
+    <Fragment slot="lead">
+      Tell me briefly how the process runs today and what you want to improve. I
+      read every enquiry myself and reply within one working day.
+    </Fragment>
+  </PageHero>
   <div class="container wrap">
     <div class="lead-col">
-      <p class="eyebrow">Contact</p>
-      <h1 class="title">Let's find out whether I can help.</h1>
-      <p class="lead">
-        Tell me briefly how the process runs today and what you want to improve. I read every
-        enquiry myself and reply within one working day.
-      </p>
       <ContactForm />
     </div>
 

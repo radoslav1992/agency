@@ -1,0 +1,56 @@
+---
+import { href as localised, localeOf } from "../i18n/index";
+const lang = localeOf(Astro.currentLocale);
+const {
+  section = lang === "en" ? "Kova Studio" : "Кова студио",
+  parentHref,
+  parentLabel,
+} = Astro.props;
+---
+
+<header class="sa-page-hero">
+  <div class="container sa-page-hero__inner">
+    <nav
+      class="sa-breadcrumb"
+      aria-label={lang === "en" ? "Breadcrumb" : "Навигационна пътека"}
+    >
+      <a href={localised("/", lang)}>{lang === "en" ? "Home" : "Начало"}</a>
+      <span aria-hidden="true">/</span>
+      {parentHref && (
+        <>
+          <a href={parentHref}>{parentLabel}</a>
+          <span aria-hidden="true">/</span>
+        </>
+      )}
+      <span aria-current="page">{section}</span>
+    </nav>
+    <div class="sa-page-hero__copy">
+      <p class="sa-kicker">
+        <slot name="eyebrow">{section}</slot>
+      </p>
+      <h1 class="sa-page-hero__title">
+        <slot name="title" />
+      </h1>
+      {Astro.slots.has("lead") && (
+        <div class="sa-page-hero__lead">
+          <slot name="lead" />
+        </div>
+      )}
+      {Astro.slots.has("meta") && (
+        <div class="sa-page-hero__meta">
+          <slot name="meta" />
+        </div>
+      )}
+    </div>
+    <span class="sa-page-hero__star" aria-hidden="true">
+      ✳
+    </span>
+    <img
+      class="sa-page-hero__corner"
+      src="/design/aleric/hero-corner.svg"
+      alt=""
+      width="220"
+      height="220"
+    />
+  </div>
+</header>

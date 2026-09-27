@@ -9,6 +9,9 @@
  */
 import '@fontsource-variable/onest';
 import '../styles/global.css';
+import '../styles/startup.css';
+import '../styles/inner-pages.css';
+import BrandMark from '../components/BrandMark.astro';
 
 interface Props {
   title: string;
@@ -24,9 +27,16 @@ const { title } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} — Кова студио</title>
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" />
   </head>
-  <body class="admin">
+  <body class="admin sa-site sa-admin">
+    <header class="sa-admin-bar">
+      <a href="/">
+        <BrandMark size={38} loading="eager" />
+        <strong>Кова студио</strong>
+      </a>
+      <span>Управление на разговорите</span>
+    </header>
     <main class="admin__main">
       <slot />
     </main>

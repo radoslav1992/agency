@@ -2,6 +2,7 @@
 import '@fontsource-variable/onest';
 import '../styles/global.css';
 import '../styles/startup.css';
+import '../styles/inner-pages.css';
 
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -28,6 +29,7 @@ interface Props {
    * най-често показваната ѝ версия е точно тази в чуждата емисия.
    */
   ogImage?: string;
+  pageStyle?: string;
 }
 
 const lang = localeOf(Astro.currentLocale);
@@ -43,6 +45,7 @@ const {
   ogType = 'website',
   noindex = false,
   ogImage: ogImageOverride,
+  pageStyle,
 } = Astro.props;
 
 /* Името на студиото следва езика — иначе английските подстраници
@@ -58,6 +61,18 @@ const ogImage = new URL(ogImageOverride ?? '/og.png', Astro.site ?? Astro.url.or
  */
 const langAlternates = alternates(Astro.url.pathname);
 const origin = Astro.site ?? Astro.url.origin;
+const barePath = Astro.url.pathname.replace(/^\/en(?=\/|$)/, '') || '/';
+const isHome = barePath === '/';
+const section = barePath.split('/').filter(Boolean)[0] || 'home';
+const pageKind =
+  pageStyle ??
+  (section === 'blog' && barePath.split('/').filter(Boolean).length > 1
+    ? 'article'
+    : section === 'guides' && barePath.endsWith('/download/')
+      ? 'download'
+      : section === 'guides' && barePath.split('/').filter(Boolean).length > 1
+        ? 'guide'
+        : section);
 ---
 
 <!doctype html>
@@ -135,14 +150,17 @@ const origin = Astro.site ?? Astro.url.origin;
     <link rel="alternate" type="application/rss+xml" title={`${t.layout.blogTitle} — ${studio.name}`} href="/rss.xml" />
     <slot name="head" />
   </head>
-  <body>
+  <body class:list={['sa-site', !isHome && 'sa-page', `sa-page--${pageKind}`]}>
     <a class="skip-link" href="#main">{t.layout.skip}</a>
     <Header />
-    <main id="main">
+    <main id="main" data-inner-page={!isHome || undefined}>
       <slot />
     </main>
     <Footer />
     <CookieConsent />
     <VoiceAgent />
+    <script>
+      import '../scripts/inner-page-motion';
+    </script>
   </body>
 </html>

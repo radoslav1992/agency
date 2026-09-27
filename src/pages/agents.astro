@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaBanner from '../components/CtaBanner.astro';
@@ -33,14 +34,16 @@ const structuredData = {
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
   </Fragment>
 
+  <PageHero section="AI агенти">
+    <Fragment slot="eyebrow">AI агенти</Fragment>
+    <Fragment slot="title">Агенти, които поемат конкретна работа</Fragment>
+    <Fragment slot="lead">
+      Всеки от тях е пакетиран за познат проблем: ясен обхват, ясно какво е
+      нужно от теб и ясно къде не става. Започваме с един канал и пилот с твои
+      данни — не с абонамент за „AI“.
+    </Fragment>
+  </PageHero>
   <div class="container wrap">
-    <p class="eyebrow">AI агенти</p>
-    <h1 class="title">Агенти, които поемат конкретна работа</h1>
-    <p class="lead">
-      Всеки от тях е пакетиран за познат проблем: ясен обхват, ясно какво е нужно от теб и ясно
-      къде не става. Започваме с един канал и пилот с твои данни — не с абонамент за „AI“.
-    </p>
-
     <nav class="jump" aria-label="Списък с агентите">
       {AGENTS.map((agent) => <a href={`#${agent.id}`}>{agent.name}</a>)}
     </nav>

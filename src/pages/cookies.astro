@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../data/site.mjs';
 ---
@@ -8,11 +9,13 @@ import { SITE } from '../data/site.mjs';
   description="Какви бисквитки използва сайтът на Кова студио."
   canonical="/cookies/"
 >
-  <div class="container legal">
-    <p class="eyebrow">Условия</p>
-    <h1>Политика за бисквитки</h1>
-    <p class="updated">Последна актуализация: август 2026 г.</p>
+  <PageHero section="Бисквитки">
+    <Fragment slot="eyebrow">Условия</Fragment>
+    <Fragment slot="title">Политика за бисквитки</Fragment>
 
+    <Fragment slot="meta">Последна актуализация: август 2026 г.</Fragment>
+  </PageHero>
+  <div class="container legal">
     <h2>Какви бисквитки ползва сайтът</h2>
     <ul>
       <li>

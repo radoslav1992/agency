@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../data/site.mjs';
 ---
@@ -8,11 +9,13 @@ import { SITE } from '../data/site.mjs';
   description="Общи условия за работа с Кова студио — оферти, плащания, собственост върху кода, поддръжка и предаване на проекта."
   canonical="/terms/"
 >
-  <div class="container legal">
-    <p class="eyebrow">Условия</p>
-    <h1>Общи условия</h1>
-    <p class="updated">Последна актуализация: август 2026 г.</p>
+  <PageHero section="Общи условия">
+    <Fragment slot="eyebrow">Условия</Fragment>
+    <Fragment slot="title">Общи условия</Fragment>
 
+    <Fragment slot="meta">Последна актуализация: август 2026 г.</Fragment>
+  </PageHero>
+  <div class="container legal">
     <h2>Кой стои зад сайта</h2>
     <p>
       Услугите на този сайт се предоставят от {SITE.legalName}, {SITE.location}. Връзка:

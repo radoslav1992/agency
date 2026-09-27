@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 ---
@@ -8,15 +9,19 @@ import CtaBanner from '../components/CtaBanner.astro';
   description="Виж какво Google и AI търсачките виждат в сайта ти — SEO, сигурност, достъпност, технологии и домейн. Безплатно, без регистрация и без запазване на резултатите."
   canonical="/analyzer/"
 >
+  <PageHero section="Анализатор">
+    <Fragment slot="eyebrow">Безплатна проверка на сайт</Fragment>
+    <Fragment slot="title">
+      Виж какво Google и AI търсачките виждат в сайта ти
+    </Fragment>
+    <Fragment slot="lead">
+      Въведи адреса и получаваш техническа проверка на SEO, сигурността,
+      достъпността, използваните технологии, домейна и това дали AI търсачките
+      могат да те четат. Безплатно, без регистрация и без запазване на
+      резултатите.
+    </Fragment>
+  </PageHero>
   <section class="container hero">
-    <p class="eyebrow">Безплатна проверка на сайт</p>
-    <h1 class="title">Виж какво Google и AI търсачките виждат в сайта ти</h1>
-    <p class="lead">
-      Въведи адреса и получаваш техническа проверка на SEO, сигурността, достъпността,
-      използваните технологии, домейна и това дали AI търсачките могат да те четат. Безплатно,
-      без регистрация и без запазване на резултатите.
-    </p>
-
     <form class="scan" data-analyzer-form novalidate>
       <label class="scan__label" for="scan-url">Адрес на сайта</label>
       <div class="scan__row">

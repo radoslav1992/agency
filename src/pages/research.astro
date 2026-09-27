@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../data/site.mjs';
 
@@ -17,11 +18,15 @@ import { SITE } from '../data/site.mjs';
   description="Кова студио прави периодичен технически анализ на извадка от български фирмени сайтове. Кой съм, какво събирам и как да изключите сайта си от проверката."
   canonical="/research/"
 >
-  <div class="container legal">
-    <p class="eyebrow">Изследване</p>
-    <h1>Изследване на българския уеб</h1>
-    <p class="updated">Робот: <code>KovaResearchBot/1.0</code></p>
+  <PageHero section="Изследване">
+    <Fragment slot="eyebrow">Изследване</Fragment>
+    <Fragment slot="title">Изследване на българския уеб</Fragment>
 
+    <Fragment slot="meta">
+      Робот: <code>KovaResearchBot/1.0</code>
+    </Fragment>
+  </PageHero>
+  <div class="container legal">
     <p>
       Ако сте стигнали дотук от логовете на сайта си — здравейте. Аз съм Радослав Додников,
       основател на {SITE.name}. Провеждам периодичен технически анализ на извадка от български

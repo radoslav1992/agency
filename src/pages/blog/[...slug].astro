@@ -1,4 +1,5 @@
 ---
+import PageHero from '../../components/PageHero.astro';
 import type { GetStaticPaths } from 'astro';
 import BrandMark from '../../components/BrandMark.astro';
 import { render } from 'astro:content';
@@ -41,18 +42,22 @@ const articleSchema = {
     <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
   </Fragment>
 
+  <PageHero section="Блог">
+    <Fragment slot="eyebrow">{post.data.tag}</Fragment>
+    <Fragment slot="title">{post.data.title}</Fragment>
+    <Fragment slot="lead">{post.data.excerpt}</Fragment>
+    <Fragment slot="meta">
+      <div class="sa-article-meta">
+        <span class="meta__tag">{post.data.tag}</span>
+        <time datetime={post.data.pubDate.toISOString()}>
+          {formatDate(post.data.pubDate)}
+        </time>
+        <span>{post.data.readMinutes} мин четене</span>
+      </div>
+    </Fragment>
+  </PageHero>
   <article class="container wrap">
     <a class="back" href="/blog/">← Всички публикации</a>
-
-    <header class="head">
-      <p class="meta">
-        <span class="meta__tag">{post.data.tag}</span>
-        <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-        <span>{post.data.readMinutes} мин четене</span>
-      </p>
-      <h1 class="title">{post.data.title}</h1>
-      <p class="excerpt">{post.data.excerpt}</p>
-    </header>
 
     <div class="prose">
       <Content />

@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactForm from '../components/ContactForm.astro';
 import { SITE } from '../data/site.mjs';
@@ -9,14 +10,17 @@ import { SITE } from '../data/site.mjs';
   description="Пиши на Кова студио — AI асистент, автоматизация, вътрешна система, бизнес сайт или обучение. Преглеждам всяко запитване лично и отговарям до един работен ден."
   canonical="/contact/"
 >
+  <PageHero section="Контакти">
+    <Fragment slot="eyebrow">Контакти</Fragment>
+    <Fragment slot="title">Нека видим дали мога да помогна.</Fragment>
+    <Fragment slot="lead">
+      Разкажи ми накратко как работи процесът в момента и какво искаш да
+      подобриш. Ще прегледам запитването лично и ще ти отговоря до един работен
+      ден.
+    </Fragment>
+  </PageHero>
   <div class="container wrap">
     <div class="lead-col">
-      <p class="eyebrow">Контакти</p>
-      <h1 class="title">Нека видим дали мога да помогна.</h1>
-      <p class="lead">
-        Разкажи ми накратко как работи процесът в момента и какво искаш да подобриш. Ще прегледам
-        запитването лично и ще ти отговоря до един работен ден.
-      </p>
       <ContactForm />
     </div>
 

@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import CtaBanner from '../components/CtaBanner.astro';
@@ -19,14 +20,16 @@ const PILOT_EXAMPLES = [
   description="Продукти, разработени от Кова студио — от първоначалната идея до пускането и поддръжката. Всеки от тях работи в момента и може да бъде изпробван."
   canonical="/projects/"
 >
+  <PageHero section="Проекти">
+    <Fragment slot="eyebrow">Проекти</Fragment>
+    <Fragment slot="title">Продукти, които можеш да изпробваш</Fragment>
+    <Fragment slot="lead">
+      Тук показвам продукти, които съм разработил от първоначалната идея до
+      пускането и поддръжката. Всеки от тях работи в момента и може да бъде
+      отворен и изпробван.
+    </Fragment>
+  </PageHero>
   <div class="container wrap">
-    <p class="eyebrow">Проекти</p>
-    <h1 class="title">Продукти, които можеш да изпробваш</h1>
-    <p class="lead">
-      Тук показвам продукти, които съм разработил от първоначалната идея до пускането и
-      поддръжката. Всеки от тях работи в момента и може да бъде отворен и изпробван.
-    </p>
-
     <section class="pilot" id="pilot" aria-labelledby="pilot-title">
       <h2 class="pilot__title" id="pilot-title">Пилотна програма за компании</h2>
       <p class="pilot__body">

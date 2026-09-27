@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 /**
  * Услуги, процес, цени и условия — всичко, което преди стоеше натрупано на
  * началната страница.
@@ -54,11 +55,11 @@ const structuredData = {
     />
   </Fragment>
 
-  <header class="page-head">
-    <p class="eyebrow">{t.services.eyebrow}</p>
-    <h1 class="page-head__title">{t.servicesPage.heading}</h1>
-    <p class="page-head__lead">{t.servicesPage.lead}</p>
-  </header>
+  <PageHero section="Услуги">
+    <Fragment slot="eyebrow">{t.services.eyebrow}</Fragment>
+    <Fragment slot="title">{t.servicesPage.heading}</Fragment>
+    <Fragment slot="lead">{t.servicesPage.lead}</Fragment>
+  </PageHero>
 
   <Services />
   <Process />

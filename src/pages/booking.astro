@@ -1,4 +1,5 @@
 ---
+import PageHero from '../components/PageHero.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BookingPicker from '../components/BookingPicker.astro';
 import { ui } from '../i18n/content.ts';
@@ -19,13 +20,12 @@ const t = ui('bg').booking;
   canonical="/booking/"
   noindex={Astro.url.search !== ''}
 >
+  <PageHero section="Разговор">
+    <Fragment slot="eyebrow">{t.eyebrow}</Fragment>
+    <Fragment slot="title">{t.title}</Fragment>
+    <Fragment slot="lead">{t.lead}</Fragment>
+  </PageHero>
   <div class="container wrap">
-    <header class="head">
-      <p class="eyebrow">{t.eyebrow}</p>
-      <h1 class="title">{t.title}</h1>
-      <p class="lead">{t.lead}</p>
-    </header>
-
     <BookingPicker />
   </div>
 </BaseLayout>

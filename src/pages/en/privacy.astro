@@ -1,4 +1,5 @@
 ---
+import PageHero from '../../components/PageHero.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { SITE } from '../../data/site.mjs';
 import { localeOf } from '../../i18n/index.ts';
@@ -14,11 +15,13 @@ const who = legalName(localeOf(Astro.currentLocale));
   description="What information the Kova Studio site collects, why, and for how long."
   canonical="/en/privacy/"
 >
-  <div class="container legal">
-    <p class="eyebrow">Terms</p>
-    <h1>Privacy policy</h1>
-    <p class="updated">Last updated: August 2026</p>
+  <PageHero section="Privacy">
+    <Fragment slot="eyebrow">Terms</Fragment>
+    <Fragment slot="title">Privacy policy</Fragment>
 
+    <Fragment slot="meta">Last updated: August 2026</Fragment>
+  </PageHero>
+  <div class="container legal">
     <p class="note">
       This is a translation for convenience. In case of any discrepancy the
       <a href="/privacy/">Bulgarian version</a> prevails.
