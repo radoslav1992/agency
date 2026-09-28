@@ -1,5 +1,6 @@
 ---
 import BrandMark from './BrandMark.astro';
+import PartnerBadge from './PartnerBadge.astro';
 import { SITE } from '../data/site.mjs';
 import { href as localised, localeOf } from '../i18n/index.ts';
 import { brand, cta, legalName, location, nav, phone, ui } from '../i18n/content.ts';
@@ -36,6 +37,7 @@ const year = new Date().getFullYear();
         <a href={SITE.owner.linkedin} rel="me noopener" target="_blank">
           LinkedIn ↗
         </a>
+        <PartnerBadge />
       </div>
       <nav aria-label={t.footer.nav} data-al-reveal data-al-delay="0.5">
         <h2>{t.footer.navTitle}</h2>

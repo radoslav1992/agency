@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Hero from './TemplateHero.astro';
+import PartnerBadge from './PartnerBadge.astro';
 import Button from './TemplateButton.astro';
 import Cta from './TemplateCta.astro';
 import portrait from '../assets/hero-portrait.png';
@@ -80,8 +81,15 @@ const services = en
         '/services/',
       ],
     ];
-const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Supabase', 'Lovable'];
+const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Supabase', 'Lovable', 'Astro', 'Java', 'Python', 'Gemini', 'Anthropic'];
 const technologyLogos: Record<string, string> = {
+  OpenAI: '/design/technologies/openai-blossom.png',
+  n8n: '/design/technologies/n8n-wordmark.png',
+  Astro: '/design/technologies/astro-symbol.png',
+  Java: '/design/technologies/java.svg',
+  Python: '/design/technologies/python.svg',
+  Gemini: '/design/technologies/gemini.svg',
+  Anthropic: '/design/technologies/anthropic.svg',
   ElevenLabs: '/design/technologies/elevenlabs-symbol.svg',
   Stripe: '/design/technologies/stripe-wordmark.png',
   Lovable: '/design/technologies/lovable-logomark.png',
@@ -202,6 +210,7 @@ const technologyLogos: Record<string, string> = {
               {en ? 'Meet your engineer' : 'Запознай се с инженера'}
             </Button>
           </div>
+          <PartnerBadge />
         </div>
       </div>
       <div class="col-lg-4">
@@ -337,9 +346,9 @@ const technologyLogos: Record<string, string> = {
               <img
                 src={technologyLogos[name] ?? `/design/aleric/service-${(i % 4) + 1}.svg`}
                 alt=""
-                width={name === 'Stripe' ? 80 : 36}
+                width={name === 'Stripe' || name === 'n8n' ? 80 : 36}
                 height="36"
-                style="object-fit: contain; max-width: 100%; flex-shrink: 0;"
+                style={`object-fit: contain; max-width: 100%; flex-shrink: 0;${name === 'Stripe' || name === 'n8n' ? ' width: 80px;' : ''}${name === 'OpenAI' ? ' transform: scale(2);' : ''}`}
               />
               <strong>{name}</strong>
             </div>

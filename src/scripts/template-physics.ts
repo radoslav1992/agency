@@ -38,6 +38,12 @@ export function initTechnologyPhysics(Matter: any) {
         Matter.Composite.clear(engine.world, false);
         scene.classList.add('al-physics-active');
         width = scene.clientWidth;
+        const size = Math.max(...chips.map((chip) => chip.offsetWidth), 1);
+        const columns = Math.max(1, Math.min(3, Math.floor(width / size)));
+        const rows = Math.ceil(chips.length / columns);
+        const minimum = matchMedia('(max-width: 767px)').matches ? 350 : 430;
+        // Leave enough room for every badge, including the narrower mobile pile.
+        scene.style.height = `${Math.max(minimum, Math.ceil(rows * size + size / 2))}px`;
         const height = scene.clientHeight;
         const wall = { isStatic: true };
         Matter.Composite.add(engine.world, [
@@ -72,6 +78,10 @@ export function initTechnologyPhysics(Matter: any) {
         });
         Matter.Composite.add(engine.world, bodies);
         draw();
+        requestAnimationFrame(() => {
+          (window as Window & { ScrollTrigger?: { refresh: () => void } })
+            .ScrollTrigger?.refresh();
+        });
       };
       const start = () => {
         if (!started) {
@@ -156,6 +166,7 @@ export function initTechnologyPhysics(Matter: any) {
         scene.removeEventListener('pointercancel', stopDrag);
         document.removeEventListener('visibilitychange', visibility);
         scene.classList.remove('al-physics-active');
+        scene.style.removeProperty('height');
         delete scene.dataset.motionState;
         chips.forEach((chip) => chip.style.removeProperty('transform'));
       });

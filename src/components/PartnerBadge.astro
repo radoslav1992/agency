@@ -1,0 +1,37 @@
+---
+import { localeOf } from '../i18n/index.ts';
+import { owner } from '../i18n/content.ts';
+const lang = localeOf(Astro.currentLocale);
+const who = owner(lang);
+const label = lang === 'en'
+  ? `${who.name} — Lovable Certified Partner 2026`
+  : `${who.name} — сертифициран партньор на Lovable за 2026 г.`;
+---
+
+<div class="partner-badge">
+  <img
+    src="/design/technologies/lovable-certified-partner-2026.png"
+    alt={label}
+    width="522"
+    height="176"
+    loading="lazy"
+    decoding="async"
+  />
+</div>
+
+<style>
+  .partner-badge {
+    margin-top: 24px;
+    padding: 8px;
+    width: 100%;
+    max-width: 280px;
+    background: #181818;
+    border: 1px solid #ffffff26;
+    border-radius: 8px;
+  }
+  .partner-badge img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+</style>
