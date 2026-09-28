@@ -120,12 +120,12 @@ function initTemplateMotion() {
           gsap.fromTo(
             el,
             face
-              ? { xPercent: -2, yPercent: 0, scale: 1.06, transformOrigin: 'center top' }
+              ? { xPercent: -2, yPercent: 0, scale: 1.15, transformOrigin: el.closest('.al-about-stage') ? '32% top' : '60% top' }
               : { yPercent: -6, scale: 1.15 },
             {
               xPercent: face ? 2 : 0,
               yPercent: face ? 0 : 6,
-              scale: face ? 1.06 : 1.15,
+              scale: 1.15,
               ease: 'none',
               scrollTrigger: {
                 trigger: el.parentElement,

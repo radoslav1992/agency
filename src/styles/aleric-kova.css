@@ -539,9 +539,9 @@ body .al-header .nav__lang {
   height: 340px;
   width: 100%;
   box-sizing: border-box;
-  padding: 24px 12px 0;
-  object-fit: contain;
-  object-position: center top;
+  padding: 12px 0 0;
+  object-fit: cover;
+  object-position: 60% top;
 }
 .al-about-portrait > span {
   display: block;
@@ -1767,8 +1767,15 @@ body.sa-page--404.sa-page #main > .wrap {
 .al-hero-note strong {
   display: block;
 }
+/* Keep the close framing anchored above the face, including without motion. */
+.al-about-stage img,
+.al-about-portrait img {
+  transform: scale(1.15);
+  transform-origin: 60% top;
+}
 .al-about-stage img {
   object-position: 32% top;
+  transform-origin: 32% top;
 }
 
 .al-journal > * {
