@@ -330,7 +330,9 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
           {technologies.map((name, i) => (
             <div data-al-chip>
               <img
-                src={`/design/aleric/service-${(i % 4) + 1}.svg`}
+                src={name === 'ElevenLabs'
+                  ? '/design/technologies/elevenlabs-symbol.svg'
+                  : `/design/aleric/service-${(i % 4) + 1}.svg`}
                 alt=""
                 width="36"
                 height="36"
