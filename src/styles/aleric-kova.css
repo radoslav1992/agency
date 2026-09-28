@@ -285,9 +285,12 @@ body .al-header .nav__lang {
   transition: transform 0.25s;
 }
 .al-hero-portrait img {
+  display: block;
   width: 100%;
-  height: 115%;
-  object-fit: cover;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12% 8% 0 0;
+  object-fit: contain;
   object-position: center top;
   max-width: none;
 }
@@ -512,7 +515,7 @@ body .al-header .nav__lang {
   height: 100%;
   width: 100%;
   object-fit: cover;
-  object-position: 44% center;
+  object-position: 32% top;
 }
 .al-template .tp-about-sa-btn,
 .al-template.tp-about-sa-btn {
@@ -532,10 +535,13 @@ body .al-header .nav__lang {
   overflow: hidden;
 }
 .al-about-portrait img {
+  display: block;
   height: 340px;
   width: 100%;
-  object-fit: cover;
-  object-position: center 15%;
+  box-sizing: border-box;
+  padding: 24px 12px 0;
+  object-fit: contain;
+  object-position: center top;
 }
 .al-about-portrait > span {
   display: block;
@@ -1762,7 +1768,7 @@ body.sa-page--404.sa-page #main > .wrap {
   display: block;
 }
 .al-about-stage img {
-  object-position: 44% top;
+  object-position: 32% top;
 }
 
 .al-journal > * {

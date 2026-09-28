@@ -158,7 +158,7 @@ export const TERMS: { title: string; body: string }[] = [
 export const ABOUT = {
   heading: "Hello — I'm Radoslav.",
   paragraphs: [
-    'I founded Kova Studio. For over six years I have been building corporate software — internal systems and AI over real business data. I teach generative AI and natural language processing at university and I am a PhD candidate in computer science.',
+    'I founded Kova Studio. For over seven years I have been building corporate software — internal systems and AI over real business data. I teach generative AI and natural language processing at university and I am a PhD candidate in computer science.',
     'I lead every project myself. When a job needs design, security or marketing, I bring in people I have worked with before — but I stay the person you deal with, and the responsibility stays mine.',
     /*
      * This used to read "I take on few projects at a time" with no
@@ -169,7 +169,7 @@ export const ABOUT = {
     'Bespoke projects I take on few at a time — otherwise I cannot know them in detail, and that detail is precisely what you are buying. The site-and-agent package is different: the work is described up front and does not cost the same hours.',
   ],
   stats: [
-    { value: '6+', label: 'years as a software engineer' },
+    { value: '7+', label: 'years as a software engineer' },
     { value: 'PhD candidate', label: 'in computer science, university lecturer in generative AI' },
   ],
   skills: [

@@ -114,12 +114,18 @@ function initTemplateMotion() {
       document
         .querySelectorAll<HTMLElement>('[data-al-parallax]')
         .forEach((el) => {
+          // Keep the top of people's heads in frame throughout the scroll.
+          // Top-anchored lateral movement preserves motion without an upward crop.
+          const face = el.dataset.alParallax === 'face';
           gsap.fromTo(
             el,
-            { yPercent: -6, scale: 1.15 },
+            face
+              ? { xPercent: -2, yPercent: 0, scale: 1.06, transformOrigin: 'center top' }
+              : { yPercent: -6, scale: 1.15 },
             {
-              yPercent: 6,
-              scale: 1.15,
+              xPercent: face ? 2 : 0,
+              yPercent: face ? 0 : 6,
+              scale: face ? 1.06 : 1.15,
               ease: 'none',
               scrollTrigger: {
                 trigger: el.parentElement,
