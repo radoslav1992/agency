@@ -1,6 +1,11 @@
 ---
 import { localeOf } from '../i18n/index.ts';
 import { owner } from '../i18n/content.ts';
+interface Props {
+  variant?: 'light' | 'dark';
+}
+const { variant = 'dark' } = Astro.props;
+const isLight = variant === 'light';
 const lang = localeOf(Astro.currentLocale);
 const who = owner(lang);
 const label = lang === 'en'
@@ -8,12 +13,14 @@ const label = lang === 'en'
   : `${who.name} — сертифициран партньор на Lovable за 2026 г.`;
 ---
 
-<div class="partner-badge">
+<div class:list={["partner-badge", { "partner-badge-light": isLight }]}>
   <img
-    src="/design/technologies/lovable-certified-partner-2026.png"
+    src={isLight
+      ? "/design/technologies/lovable-certified-partner-2026-light.png"
+      : "/design/technologies/lovable-certified-partner-2026.png"}
     alt={label}
-    width="522"
-    height="176"
+    width={isLight ? 524 : 522}
+    height={isLight ? 178 : 176}
     loading="lazy"
     decoding="async"
   />
@@ -28,6 +35,11 @@ const label = lang === 'en'
     background: #181818;
     border: 1px solid #ffffff26;
     border-radius: 8px;
+  }
+  .partner-badge-light {
+    padding: 0;
+    background: transparent;
+    border: 0;
   }
   .partner-badge img {
     display: block;

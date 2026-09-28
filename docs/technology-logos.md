@@ -10,6 +10,6 @@ Additional sources:
 - Gemini: https://gemini.google/about/ — the colored symbol from the site's inline header SVG; symbol paths, masks and gradients retained.
 - Anthropic: https://github.com/simple-icons/simple-icons/blob/develop/icons/anthropic.svg
 
-The partner badge is displayed near the homepage introduction and in the shared footer. Its accessible text names Radoslav and the 2026 certification in the active language.
+The light outlined partner badge is displayed near the homepage introduction; the dark version is used in the shared footer. Its accessible text names Radoslav and the 2026 certification in the active language.
 
 Physics scene height adapts to the badge count and available width. The same falling and dragging behavior remains, with the existing static fallback for reduced motion.
