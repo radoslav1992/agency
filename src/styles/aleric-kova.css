@@ -1920,12 +1920,15 @@ body.sa-page--services.sa-page .process .term__q:focus-visible {
   width: max-content;
   animation: al-brand-travel 32s linear infinite;
 }
+/* Each copy grows with its names so the duplicate never starts under them;
+   the minimum keeps a short list wide enough to fill the loop seamlessly. */
 .al-brands__track .al-brands__names {
   flex: 0 0 auto;
-  width: max(1250px, var(--container));
+  width: max-content;
+  min-width: max(1250px, var(--container));
   flex-wrap: nowrap;
   justify-content: space-around;
-  padding-right: 50px;
+  padding-right: 25px;
 }
 @keyframes al-brand-travel {
   to {
@@ -1983,7 +1986,7 @@ body.sa-page--services.sa-page .process .term__q:focus-visible {
     height: 350px;
   }
   .al-brands__track .al-brands__names {
-    width: 1000px;
+    min-width: 1000px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1994,6 +1997,7 @@ body.sa-page--services.sa-page .process .term__q:focus-visible {
   }
   .al-brands__track .al-brands__names {
     width: auto;
+    min-width: 0;
     flex-wrap: wrap;
     padding: 0;
   }
