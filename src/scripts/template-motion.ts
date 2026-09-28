@@ -173,6 +173,10 @@ function initTemplateMotion() {
                 trigger: area,
                 start: 'top center-=200',
                 pin: el,
+                // Pin with a transform instead of `position: fixed`: the fixed
+                // switch made the scaled title count as a layout shift on every
+                // scroll past the projects (CLS 0.3–0.8 on desktop).
+                pinType: 'transform',
                 end: 'bottom bottom+=10',
                 pinSpacing: false,
                 scrub: 1,

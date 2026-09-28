@@ -1,5 +1,8 @@
 import type { APIRoute } from 'astro';
-import { NEEDS } from '../../data/content.ts';
+import { NEEDS as NEEDS_BG } from '../../data/content.ts';
+import { NEEDS as NEEDS_EN } from '../../data/content.en.ts';
+import { href, type Locale } from '../../i18n/index.ts';
+import { UI } from '../../i18n/ui.ts';
 
 /** The only route that is not prerendered — it runs on the Cloudflare Worker. */
 export const prerender = false;
@@ -12,18 +15,19 @@ type Submission = {
   website: string;
   /** Текстовият отчет от анализатора — празен при обикновено запитване. */
   report: string;
+  /** Езикът на формата. Анализаторът не го праща и остава на български. */
+  lang: Locale;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-const ERRORS = {
-  badRequest: 'Невалидно запитване.',
-  name: 'Моля, попълни името си.',
-  email: 'Моля, попълни валиден имейл адрес.',
-  message: 'Моля, разкажи накратко за проекта.',
-  notConfigured: 'Формата още не е свързана с имейл. Пиши ми директно на имейла отдолу.',
-  send: 'Не успях да изпратя запитването. Пиши ми директно на имейла отдолу.',
-} as const;
+/**
+ * Отметките, които формата предлага на всеки език. Английската форма праща
+ * английските надписи — сверени с българския списък, те изпадаха всичките.
+ */
+const NEEDS: Record<Locale, readonly string[]> = { bg: NEEDS_BG, en: NEEDS_EN };
+
+const errorsFor = (lang: Locale) => UI[lang].form.errors;
 
 function clean(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
@@ -46,6 +50,9 @@ async function readSubmission(request: Request): Promise<{ data: Submission; isJ
     needs = form.getAll('needs').map(String);
   }
 
+  const lang: Locale = raw.lang === 'en' ? 'en' : 'bg';
+  const options = NEEDS[lang];
+
   return {
     isJson,
     data: {
@@ -54,16 +61,18 @@ async function readSubmission(request: Request): Promise<{ data: Submission; isJ
       message: clean(raw.message, 4000),
       website: clean(raw.website, 100),
       report: clean(raw.report, 28000),
-      // Only keep options the form actually offers.
-      needs: needs.filter((need) => NEEDS.includes(need)).slice(0, NEEDS.length),
+      // Only keep options the form actually offers in that language.
+      needs: needs.filter((need) => options.includes(need)).slice(0, options.length),
+      lang,
     },
   };
 }
 
 function validate(data: Submission): string | null {
-  if (data.name.length < 2) return ERRORS.name;
-  if (!EMAIL_RE.test(data.email)) return ERRORS.email;
-  if (data.message.length < 10) return ERRORS.message;
+  const errors = errorsFor(data.lang);
+  if (data.name.length < 2) return errors.name;
+  if (!EMAIL_RE.test(data.email)) return errors.email;
+  if (data.message.length < 10) return errors.message;
   return null;
 }
 
@@ -110,7 +119,10 @@ async function sendEmail(env: Env, data: Submission): Promise<void> {
   const name = headerSafe(data.name);
   const isReview = data.report.length > 0;
 
-  const bodyLines = [`Име: ${data.name}`, `Имейл: ${data.email}`, `Нужди: ${needs}`, '', data.message];
+  const bodyLines = [`Име: ${data.name}`, `Имейл: ${data.email}`, `Нужди: ${needs}`];
+  // Отговорът трябва да е на езика, на който човекът е писал.
+  if (data.lang === 'en') bodyLines.push('Език: английски (от /en/contact/)');
+  bodyLines.push('', data.message);
   if (isReview) {
     bodyLines.push('', '--- Отчет от анализатора ---', '', data.report.replace(/\r?\n/g, '\r\n'));
   }
@@ -142,18 +154,20 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
   try {
     submission = await readSubmission(request);
   } catch {
-    return Response.json({ ok: false, error: ERRORS.badRequest }, { status: 400 });
+    return Response.json({ ok: false, error: errorsFor('bg').badRequest }, { status: 400 });
   }
 
   const { data, isJson } = submission;
+  const ERRORS = errorsFor(data.lang);
 
   const respond = (ok: boolean, error?: string, status = 200) => {
     if (isJson) {
       return Response.json(ok ? { ok: true } : { ok: false, error }, { status });
     }
-    // No-JS fallback: bounce back to the form with a readable message.
+    // No-JS fallback: bounce back to the form, in its own language, with a readable message.
+    const back = href('/contact/', data.lang);
     return redirect(
-      ok ? '/contact/?sent=1' : `/contact/?error=${encodeURIComponent(error ?? ERRORS.send)}`,
+      ok ? `${back}?sent=1` : `${back}?error=${encodeURIComponent(error ?? ERRORS.send)}`,
       303,
     );
   };

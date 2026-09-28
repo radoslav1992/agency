@@ -342,8 +342,15 @@ body .al-header .nav__lang {
   text-align: center;
   z-index: 1;
 }
+/* The template's `.tp-rounded-btn-wrap a` is more specific than `.al-button`
+   and turned the closing CTA into an inline-block with 18px text, pushing the
+   label to the top of the circle. Restating these keeps every round button alike. */
 .al-template .al-button.tp-btn-rounded,
 .al-template.al-button.tp-btn-rounded {
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
   width: 175px;
   height: 175px;
   border: 1px solid #030303;
@@ -1828,10 +1835,12 @@ body.sa-page--404.sa-page #main > .wrap {
   border-color: var(--al-accent);
 }
 
+/* Full-width 16:10 captures whose headline starts near the left edge — the
+   narrower card crop would cut the logo and the first letters off. */
 body.sa-page--projects.sa-page
-  .project[href="https://rechbg.com/"]
+  .project:is([href="https://rechbg.com/"], [href="https://saprichastie.org/"])
   .project__shot,
-.al-project-image[href="https://rechbg.com/"] {
+.al-project-image:is([href="https://rechbg.com/"], [href="https://saprichastie.org/"]) {
   aspect-ratio: 1.6;
 }
 .al-template :is(h1, h2, h3) {

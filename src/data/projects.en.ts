@@ -34,7 +34,7 @@ export const PROJECTS: Project[] = [
     url: 'https://zapiski.bg/',
     tagline:
       'You upload your material and ask it directly. Answers come with the source cited, and shared notebooks and team libraries keep the same knowledge reachable for a whole team or course.',
-    tags: ['AI', 'RAG', 'Own product'],
+    tags: ['AI', 'RAG'],
     own: true,
     alt: 'A Zapiski screen with a notebook, uploaded documents and an answer citing its source',
   },

@@ -3,12 +3,15 @@ interface Props {
   href: string;
   round?: boolean;
   class?: string;
+  /** `false` for server-rendered targets such as /booking/ — see BookingPicker. */
+  prefetch?: boolean;
 }
-const { href, round = false, class: extra = '' } = Astro.props;
+const { href, round = false, class: extra = '', prefetch = true } = Astro.props;
 ---
 
 <a
   href={href}
+  data-astro-prefetch={prefetch ? undefined : 'false'}
   class:list={[
     round ? 'tp-btn-rounded' : 'tp-btn-lg tp-round-26 tp-bg-common-black tp-text-common-white',
     'al-button',

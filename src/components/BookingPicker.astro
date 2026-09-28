@@ -35,7 +35,14 @@ const db = Astro.locals.runtime?.env?.BOOKINGS;
 const now = Date.now();
 const DAY = 86_400_000;
 
-/** Адрес на същата страница с други параметри — пази езиковия префикс. */
+/**
+ * Адрес на същата страница с други параметри — пази езиковия префикс.
+ *
+ * ⚠️ Всяка връзка, направена с това, носи `data-astro-prefetch="false"`.
+ * Страницата се рисува на сървъра и всяко отваряне пита D1 за свободните
+ * часове; с `prefetchAll` + `viewport` видимите дни и часове се теглеха
+ * наготово — по една заявка към базата за всяка клетка на екрана.
+ */
 function withParams(next: Record<string, string | undefined>): string {
   const url = new URL(Astro.url);
   url.search = '';
@@ -231,7 +238,7 @@ const contactHref = lang === 'en' ? '/en/contact/' : '/contact/';
       view.kind === 'notFound' && (
         <div class="empty">
           <p class="empty__text">{t.notFound}</p>
-          <a class="btn btn--primary" href={withParams({})}>
+          <a class="btn btn--primary" href={withParams({})} data-astro-prefetch="false">
             {t.pickDay}
           </a>
         </div>
@@ -266,7 +273,7 @@ const contactHref = lang === 'en' ? '/en/contact/' : '/contact/';
           )}
 
           {view.cancelled && (
-            <a class="btn btn--primary ticket__again" href={withParams({})}>
+            <a class="btn btn--primary ticket__again" href={withParams({})} data-astro-prefetch="false">
               {t.pickDay}
             </a>
           )}
@@ -304,6 +311,7 @@ const contactHref = lang === 'en' ? '/en/contact/' : '/contact/';
                           cell.isToday && 'cell--today',
                         ]}
                         href={withParams({ date: cell.date })}
+                        data-astro-prefetch="false"
                         aria-label={`${longDateLabel(new Date(cell.date + 'T12:00:00Z').getTime(), TIMEZONE, lang)} — ${cell.free} ${t.free}`}
                         aria-current={cell.date === view.date ? 'true' : undefined}
                       >
@@ -343,6 +351,7 @@ const contactHref = lang === 'en' ? '/en/contact/' : '/contact/';
                       <a
                         class="time"
                         href={withParams({ date: view.date!, slot: String(slot.startUtc) })}
+                        data-astro-prefetch="false"
                       >
                         {zonedTimeLabel(slot.startUtc, TIMEZONE)}
                       </a>
@@ -366,7 +375,7 @@ const contactHref = lang === 'en' ? '/en/contact/' : '/contact/';
                 <span class="chosen__zone">{zone}</span>
               </p>
             </div>
-            <a class="chosen__change" href={withParams({ date: view.date })}>
+            <a class="chosen__change" href={withParams({ date: view.date })} data-astro-prefetch="false">
               {t.changeTime}
             </a>
           </div>

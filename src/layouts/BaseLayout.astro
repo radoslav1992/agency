@@ -163,7 +163,8 @@ const pageKind =
     <CookieConsent />
     <VoiceAgent />
     <script is:inline src="/design/aleric/motion.js" defer></script>
-    <script is:inline src="/design/aleric/swiper.js" defer></script>
+    {/* Only the homepage has a slider (services) and a physics scene (tools). */}
+    {isHome && <script is:inline src="/design/aleric/swiper.js" defer></script>}
     {isHome && <script is:inline src="/design/aleric/matter.js" defer></script>}
     <script>
       import '../scripts/template-motion';

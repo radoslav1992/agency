@@ -18,7 +18,11 @@ import { SITE } from '../data/site.mjs';
   data-sent={t.form.sent}
   data-thanks={t.form.thanks}
   data-prefill={t.form.prefill}
+  data-error-generic={t.form.errors.generic}
+  data-error-offline={t.form.errors.offline}
 >
+  {/* Сървърът приема отметките и връща грешките на този език. */}
+  <input type="hidden" name="lang" value={lang} />
   <div class="row">
     <label class="field">
       {t.form.name}
@@ -37,7 +41,7 @@ import { SITE } from '../data/site.mjs';
         type="email"
         name="email"
         autocomplete="email"
-        placeholder="ime@firma.bg"
+        placeholder={t.form.emailPlaceholder}
         required
         maxlength="180"
       />
@@ -313,6 +317,7 @@ import { SITE } from '../data/site.mjs';
         message: String(data.get('message') ?? ''),
         website: String(data.get('website') ?? ''),
         needs: data.getAll('needs').map(String),
+        lang: String(data.get('lang') ?? ''),
       };
 
       submit?.setAttribute('disabled', '');
@@ -337,9 +342,9 @@ import { SITE } from '../data/site.mjs';
           return;
         }
 
-        show(result.error ?? 'Нещо се обърка. Пиши ми директно на имейла отдолу.', 'error');
+        show(result.error ?? form.dataset.errorGeneric ?? '', 'error');
       } catch {
-        show('Няма връзка със сървъра. Пиши ми директно на имейла отдолу.', 'error');
+        show(form.dataset.errorOffline ?? '', 'error');
       } finally {
         if (submit && submit.textContent !== form.dataset.sent) {
           submit.removeAttribute('disabled');

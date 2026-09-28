@@ -7,6 +7,11 @@ import Button from './TemplateButton.astro';
 import Cta from './TemplateCta.astro';
 import portrait from '../assets/hero-portrait.png';
 import stage from '../assets/stage-talk.png';
+import openaiLogo from '../assets/technologies/openai-blossom.png';
+import n8nLogo from '../assets/technologies/n8n-wordmark.png';
+import astroLogo from '../assets/technologies/astro-symbol.png';
+import stripeLogo from '../assets/technologies/stripe-wordmark.png';
+import lovableLogo from '../assets/technologies/lovable-logomark.png';
 import { href as localised, localeOf } from '../i18n/index.ts';
 import { content, projects as projectsFor, owner, ui } from '../i18n/content.ts';
 import { getPosts, formatDate } from '../lib/posts.ts';
@@ -82,18 +87,23 @@ const services = en
       ],
     ];
 const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Supabase', 'Lovable', 'Astro', 'Java', 'Python', 'Gemini', 'Anthropic'];
-const technologyLogos: Record<string, string> = {
-  OpenAI: '/design/technologies/openai-blossom.png',
-  n8n: '/design/technologies/n8n-wordmark.png',
-  Astro: '/design/technologies/astro-symbol.png',
+/* The supplied PNGs stay untouched in src/assets and are only scaled down at
+   build time — the largest was 1883px wide for a 36px badge. SVGs are served as is. */
+const technologyLogos: Record<string, ImageMetadata | string> = {
+  OpenAI: openaiLogo,
+  n8n: n8nLogo,
+  Astro: astroLogo,
   Java: '/design/technologies/java.svg',
   Python: '/design/technologies/python.svg',
   Gemini: '/design/technologies/gemini.svg',
   Anthropic: '/design/technologies/anthropic.svg',
   ElevenLabs: '/design/technologies/elevenlabs-symbol.svg',
-  Stripe: '/design/technologies/stripe-wordmark.png',
-  Lovable: '/design/technologies/lovable-logomark.png',
+  Stripe: stripeLogo,
+  Lovable: lovableLogo,
+  Supabase: '/design/technologies/supabase.svg',
+  Cloudflare: '/design/technologies/cloudflare.svg',
 };
+const isWordmark = (name: string) => name === 'Stripe' || name === 'n8n';
 ---
 
 <Hero />
@@ -254,7 +264,7 @@ const technologyLogos: Record<string, string> = {
       </div>
       <div class="col-lg-6">
         <p class="text-lg-end">
-          <a class="al-light-link" href={localised('/booking/', lang)}>
+          <a class="al-light-link" href={localised('/booking/', lang)} data-astro-prefetch="false">
             {en ? 'Ready to start? Let’s talk ↗' : 'Готов ли си? Да поговорим ↗'}
           </a>
         </p>
@@ -341,18 +351,30 @@ const technologyLogos: Record<string, string> = {
             : 'Сайтът, разговорите с клиенти и вътрешните системи трябва да работят заедно. Свързваме правилните инструменти около твоя процес.'}
         </p>
         <div class="al-tech-grid" data-al-physics>
-          {technologies.map((name, i) => (
-            <div data-al-chip>
-              <img
-                src={technologyLogos[name] ?? `/design/aleric/service-${(i % 4) + 1}.svg`}
-                alt=""
-                width={name === 'Stripe' || name === 'n8n' ? 80 : 36}
-                height="36"
-                style={`object-fit: contain; max-width: 100%; flex-shrink: 0;${name === 'Stripe' || name === 'n8n' ? ' width: 80px;' : ''}${name === 'OpenAI' ? ' transform: scale(2);' : ''}`}
-              />
-              <strong>{name}</strong>
-            </div>
-          ))}
+          {technologies.map((name, i) => {
+            const logo = technologyLogos[name] ?? `/design/aleric/service-${(i % 4) + 1}.svg`;
+            const width = isWordmark(name) ? 80 : 36;
+            const style = `object-fit: contain; max-width: 100%; flex-shrink: 0;${isWordmark(name) ? ' width: 80px;' : ''}${name === 'OpenAI' ? ' transform: scale(2);' : ''}`;
+            return (
+              <div data-al-chip>
+                {typeof logo === 'string' ? (
+                  <img src={logo} alt="" width={width} height="36" loading="lazy" decoding="async" style={style} />
+                ) : (
+                  <Image
+                    src={logo}
+                    alt=""
+                    width={width}
+                    height={36}
+                    densities={name === 'OpenAI' ? [2, 4, 6] : [1, 2, 3]}
+                    loading="lazy"
+                    decoding="async"
+                    style={style}
+                  />
+                )}
+                <strong>{name}</strong>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

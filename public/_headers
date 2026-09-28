@@ -31,3 +31,15 @@ https://agency.radoslav-dodnikov.workers.dev/*
 
 /*.svg
   Cache-Control: public, max-age=604800
+
+# Библиотеките и шрифтовете на шаблона (GSAP, Swiper, Matter, Space Grotesk…).
+# Без правило се ползваше `max-age=0, must-revalidate` — ~145 KB се
+# проверяваха наново при всяко отваряне. Имената им нямат хеш, затова, както
+# при `/brand/*`, кешът изтича сам за седмица. Само `.js` и `.woff2`:
+# картинките в `/design/` вече се хващат от `/*.png` и `/*.svg`, а две
+# съвпадащи правила залепват стойностите си със запетая.
+/design/*.js
+  Cache-Control: public, max-age=604800
+
+/design/*.woff2
+  Cache-Control: public, max-age=604800

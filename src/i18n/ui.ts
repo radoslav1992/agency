@@ -198,7 +198,7 @@ export const UI = {
       navTitle: 'Навигация',
       contactTitle: 'Контакт',
       termsTitle: 'Условия',
-      reach: '· Работа с клиенти от цялата страна',
+      reach: 'Работа с клиенти от цялата страна',
       promise: 'Всеки проект — с писмена оферта, договор и фактура.',
       rights: '. Всички права запазени.',
       terms: 'Общи условия',
@@ -211,6 +211,7 @@ export const UI = {
       name: 'Име',
       namePlaceholder: 'Име и фамилия',
       email: 'Имейл',
+      emailPlaceholder: 'ime@firma.bg',
       need: 'От какво имаш нужда?',
       message: 'Разкажи ми накратко',
       messagePlaceholder:
@@ -223,6 +224,17 @@ export const UI = {
       thanks: 'Благодаря! Получих запитването и ще ти отговоря до един работен ден.',
       /** `{url}` се замества с адреса, дошъл от анализатора. */
       prefill: 'Проверих {url} с безплатната проверка на сайтове. Кои три неща да оправя първо?',
+      /** Грешките от `/api/contact` и от връзката — на езика, на който е попълнена формата. */
+      errors: {
+        badRequest: 'Невалидно запитване.',
+        name: 'Моля, попълни името си.',
+        email: 'Моля, попълни валиден имейл адрес.',
+        message: 'Моля, разкажи накратко за проекта.',
+        notConfigured: 'Формата още не е свързана с имейл. Пиши ми директно на имейла отдолу.',
+        send: 'Не успях да изпратя запитването. Пиши ми директно на имейла отдолу.',
+        generic: 'Нещо се обърка. Пиши ми директно на имейла отдолу.',
+        offline: 'Няма връзка със сървъра. Пиши ми директно на имейла отдолу.',
+      },
     },
 
     booking: {
@@ -451,7 +463,7 @@ export const UI = {
       navTitle: 'Navigation',
       contactTitle: 'Contact',
       termsTitle: 'Terms',
-      reach: '· Working with clients across Europe',
+      reach: 'Working with clients across Europe',
       promise: 'Every project comes with a written quote, a contract and an invoice.',
       rights: '. All rights reserved.',
       terms: 'Terms of service',
@@ -464,6 +476,7 @@ export const UI = {
       name: 'Name',
       namePlaceholder: 'First and last name',
       email: 'Email',
+      emailPlaceholder: 'name@company.com',
       need: 'What do you need?',
       message: 'Tell me briefly',
       messagePlaceholder:
@@ -475,6 +488,16 @@ export const UI = {
       orEmail: 'Or just email me at ',
       thanks: 'Thank you. I have your enquiry and will reply within one working day.',
       prefill: 'I checked {url} with the free site audit. Which three things should I fix first?',
+      errors: {
+        badRequest: 'Invalid request.',
+        name: 'Please enter your name.',
+        email: 'Please enter a valid email address.',
+        message: 'Please tell me briefly about the project.',
+        notConfigured: 'The form is not connected to email yet. Please email me directly at the address below.',
+        send: 'I could not send your enquiry. Please email me directly at the address below.',
+        generic: 'Something went wrong. Please email me directly at the address below.',
+        offline: 'Could not reach the server. Please email me directly at the address below.',
+      },
     },
 
     booking: {
