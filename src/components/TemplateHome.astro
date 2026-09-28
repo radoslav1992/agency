@@ -80,7 +80,12 @@ const services = en
         '/services/',
       ],
     ];
-const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Supabase'];
+const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Supabase', 'Lovable'];
+const technologyLogos: Record<string, string> = {
+  ElevenLabs: '/design/technologies/elevenlabs-symbol.svg',
+  Stripe: '/design/technologies/stripe-wordmark.png',
+  Lovable: '/design/technologies/lovable-logomark.png',
+};
 ---
 
 <Hero />
@@ -330,12 +335,11 @@ const technologies = ['OpenAI', 'ElevenLabs', 'Cloudflare', 'n8n', 'Stripe', 'Su
           {technologies.map((name, i) => (
             <div data-al-chip>
               <img
-                src={name === 'ElevenLabs'
-                  ? '/design/technologies/elevenlabs-symbol.svg'
-                  : `/design/aleric/service-${(i % 4) + 1}.svg`}
+                src={technologyLogos[name] ?? `/design/aleric/service-${(i % 4) + 1}.svg`}
                 alt=""
-                width="36"
+                width={name === 'Stripe' ? 80 : 36}
                 height="36"
+                style="object-fit: contain; max-width: 100%; flex-shrink: 0;"
               />
               <strong>{name}</strong>
             </div>
